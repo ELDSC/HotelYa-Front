@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gran Hotel Central | Tu alojamiento ideal</title>
+    <meta name="description" content="Plataforma de gestión hotelera y reserva de alojamiento disponible en tiempo real.">
+    <link rel="icon" type="image/png" href="assets/images/logoHoteleriasYa.png">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <!-- Encabezado principal y navegación -->
+    <header class="header" id="mainHeader">
+        <div class="container header-container">
+            <a href="#" class="logo-area" aria-label="Gran Hotel Central">
+                <span style="font-weight:bold; font-size:1.5rem; color:var(--color-primary)">Gran Hotel Central</span>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="#informacion" class="nav-link">Información</a>
+                <a href="#productos" class="nav-link">Productos</a>
+                <a href="#clientes" class="nav-link">Clientes</a>
+                <a href="#video" class="nav-link">Video</a>
+            </nav>
+
+            <div class="auth-area">
+                <div class="user-profile" id="userProfileBtn">
+                    <div class="user-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <span class="user-name" id="userNameDisplay">Invitado</span>
+                </div>
+                <button class="btn btn-primary btn-login" id="loginBtnTrigger">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    Acceder
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Slider principal (3 a 5 imágenes) -->
+    <section class="hero-section">
+        <div class="carousel" id="heroCarousel">
+            <div class="carousel-slide active">
+                <img src="assets/images/hero1.jpg" alt="Alojamiento moderno y elegante" class="carousel-img">
+            </div>
+            <div class="carousel-slide">
+                <img src="assets/images/hero2.jpg" alt="Habitación boutique de descanso" class="carousel-img">
+            </div>
+            <div class="carousel-slide">
+                <img src="assets/images/hero3.jpg" alt="Resort con vistas y confort" class="carousel-img">
+            </div>
+            <div class="carousel-slide">
+                <img src="assets/images/hero4.jpg" alt="Instalaciones ejecutivas y urbanas" class="carousel-img">
+            </div>
+        </div>
+
+        <div class="container hero-content">
+            <div class="hero-text-area">
+                <span class="hero-tagline">Exclusividad &middot; Confort &middot; Experiencia Premium</span>
+                <h1 class="hero-title">Gran Hotel Central<br><span>Tu estadía de lujo en el corazón histórico</span></h1>
+                <p class="hero-subtitle-text">Conectamos a nuestros huéspedes con la mejor experiencia de hospitalidad.</p>
+            </div>
+        </div>
+
+        <!-- Botones de navegación del slider -->
+        <button class="carousel-btn prev-btn" id="carouselPrevBtn" aria-label="Imagen anterior">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="carousel-btn next-btn" id="carouselNextBtn" aria-label="Siguiente imagen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Puntos indicadores del slider -->
+        <div class="carousel-controls" id="carouselControls">
+            <button class="carousel-dot active" data-index="0" aria-label="Imagen 1"></button>
+            <button class="carousel-dot" data-index="1" aria-label="Imagen 2"></button>
+            <button class="carousel-dot" data-index="2" aria-label="Imagen 3"></button>
+            <button class="carousel-dot" data-index="3" aria-label="Imagen 4"></button>
+        </div>
+    </section>
+
+    <!-- Barra de búsqueda eliminada para la vista dedicada -->
+
+    <!-- 1. Sección Información -->
+    <section class="section-info" id="informacion">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Información</h2>
+                <p class="section-subtitle">Gran Hotel Central: Tradición y Lujo</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-content-left">
+                    <h3 class="info-heading">Tu estadía en el corazón histórico</h3>
+                    <p class="info-paragraph">
+                        Descubre el <strong>Gran Hotel Central</strong>, tu refugio perfecto con instalaciones de primera clase. Ofrecemos una estancia inolvidable con todas las comodidades modernas esenciales para un descanso perfecto en el centro de la ciudad.
+                    </p>
+                    <p class="info-paragraph">
+                        Disfruta de la mejor experiencia sin intermediarios, con una atención personalizada y detalles que harán de tu viaje algo único.
+                    </p>
+
+                    <div class="info-highlights">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div>
+                                <h4>Disponibilidad Instantánea</h4>
+                                <p>Consulta habitaciones libres en el acto sin llamadas previas.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </div>
+                            <div>
+                                <h4>Modalidad Flexible</h4>
+                                <p>Paquetes por horas o por noche que se adaptan a tu presupuesto.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            </div>
+                            <div>
+                                <h4>Seguridad y Confianza</h4>
+                                <p>Establecimientos validados y atención de soporte continua.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-image-side">
+                    <div class="info-image-card">
+                        <img src="assets/images/hero2.jpg" alt="Ambiente confortable en HoteleriasYa" class="info-img">
+                        <div class="info-stat-badge">
+                            <span class="stat-number">+100%</span>
+                            <span class="stat-text">Disponibilidad en Tiempo Real</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Sección Productos (3 Habitaciones) -->
+    <section class="section-hotels" id="productos">
+        <div class="container">
+            <div class="hotel-list-header">
+                <h2 class="hotel-list-title">Nuestras Habitaciones</h2>
+                <p class="section-subtitle">Tres opciones de alojamiento diseñadas para tu máximo confort.</p>
+            </div>
+            <div class="hotel-grid">
+                <div class="hotel-card" style="padding: 1.5rem; background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div class="hotel-card-image" style="height:200px; margin-bottom:1rem; border-radius:var(--radius-md); overflow:hidden;">
+                        <img src="assets/images/hero2.jpg" alt="Estándar" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <h3 class="hotel-name" style="font-size:1.25rem; margin-bottom:0.5rem; color:var(--color-primary);">Habitación Estándar</h3>
+                    <p style="font-size:0.9rem; color:var(--color-text-light); margin-bottom:1rem;">Ideal para nómadas o parejas. Cama queen, vista a la ciudad y todas las comodidades esenciales.</p>
+                    <button class="btn btn-outline-dark" style="width:100%;">Reservar</button>
+                </div>
+                <div class="hotel-card" style="padding: 1.5rem; background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div class="hotel-card-image" style="height:200px; margin-bottom:1rem; border-radius:var(--radius-md); overflow:hidden;">
+                        <img src="assets/images/hero1.jpg" alt="Intermedia" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <h3 class="hotel-name" style="font-size:1.25rem; margin-bottom:0.5rem; color:var(--color-primary);">Habitación Intermedia</h3>
+                    <p style="font-size:0.9rem; color:var(--color-text-light); margin-bottom:1rem;">Espacio amplio con zona de estar. Cama King, balcón panorámico y amenidades superiores.</p>
+                    <button class="btn btn-outline-dark" style="width:100%;">Reservar</button>
+                </div>
+                <div class="hotel-card" style="padding: 1.5rem; background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div class="hotel-card-image" style="height:200px; margin-bottom:1rem; border-radius:var(--radius-md); overflow:hidden;">
+                        <img src="assets/images/hero4.jpg" alt="Lujo" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <h3 class="hotel-name" style="font-size:1.25rem; margin-bottom:0.5rem; color:var(--color-primary);">Habitación de Lujo</h3>
+                    <p style="font-size:0.9rem; color:var(--color-text-light); margin-bottom:1rem;">Suite penthouse con vistas espectaculares, servicio de mayordomo y jacuzzi privado.</p>
+                    <button class="btn btn-outline-dark" style="width:100%;">Reservar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Sección Clientes (Reviews) -->
+    <section class="section-audience" id="clientes">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Lo que dicen nuestros huéspedes</h2>
+                <p class="section-subtitle">Opiniones reales de quienes vivieron la experiencia Gran Hotel Central.</p>
+            </div>
+            
+            <div class="audience-grid">
+                <div class="audience-card" style="padding:2rem;">
+                    <div style="color:var(--color-primary); margin-bottom:1rem; font-size:1.5rem;">★★★★★</div>
+                    <p class="audience-card-desc" style="font-style:italic;">"La habitación de lujo superó todas mis expectativas, y la vista al centro histórico es simplemente mágica."</p>
+                    <h3 class="audience-card-title" style="font-size:1rem; margin-bottom:0; font-family:var(--font-family-base);">- María F.</h3>
+                </div>
+                <div class="audience-card" style="padding:2rem;">
+                    <div style="color:var(--color-primary); margin-bottom:1rem; font-size:1.5rem;">★★★★★</div>
+                    <p class="audience-card-desc" style="font-style:italic;">"El mejor servicio que he recibido. El personal fue extremadamente amable y la cama de la habitación estándar es súper cómoda."</p>
+                    <h3 class="audience-card-title" style="font-size:1rem; margin-bottom:0; font-family:var(--font-family-base);">- Carlos R.</h3>
+                </div>
+                <div class="audience-card" style="padding:2rem;">
+                    <div style="color:var(--color-primary); margin-bottom:1rem; font-size:1.5rem;">★★★★★</div>
+                    <p class="audience-card-desc" style="font-style:italic;">"La ubicación es inmejorable. Puedes caminar a los principales museos y regresar a disfrutar de las instalaciones premium del hotel."</p>
+                    <h3 class="audience-card-title" style="font-size:1rem; margin-bottom:0; font-family:var(--font-family-base);">- Elena G.</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Apartado de Video (Video Representativo) -->
+    <section class="section-video" id="video">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Video Representativo</h2>
+                <p class="section-subtitle">Conoce cómo funciona la experiencia y el flujo de reserva de HoteleriasYa</p>
+            </div>
+            
+            <div class="video-container-wide">
+                <div class="video-player-box" id="videoPlayerBox">
+                    <video id="hotelVideo" class="main-video-element" poster="assets/images/hero3.jpg" controls preload="metadata">
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                        Tu navegador no soporta la reproducción de video HTML5.
+                    </video>
+                    <div class="video-overlay" id="videoOverlay">
+                        <button class="play-btn-overlay" id="customPlayBtn" aria-label="Reproducir video representativo">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </button>
+                        <span class="video-caption-label">Ver demostración de la plataforma</span>
+                    </div>
+                </div>
+                <div class="video-info-bar">
+                    <span class="video-pill">Demostración en video &middot; 2 minutos</span>
+                    <p class="video-note">Aprende a buscar por ubicación, seleccionar estancias por hora o por noche y confirmar al instante en HoteleriasYa.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer estructurado en 3 columnas -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- Columna 1: 3 Redes Sociales + Logos HoteleriasYa y UTP -->
+                <div class="footer-col footer-col-brand">
+                    <h4 class="footer-title">Redes Sociales</h4>
+                    <p class="footer-text">Síguenos en nuestras redes oficiales y conoce más sobre nuestro proyecto.</p>
+                    
+                    <ul class="footer-links-list">
+                        <li>
+                            <a href="https://instagram.com/granhotelcentral" target="_blank" rel="noopener noreferrer" class="social-text-link">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                                <span>Instagram: @GranHotelCentral</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://facebook.com/granhotelcentral" target="_blank" rel="noopener noreferrer" class="social-text-link">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                <span>Facebook: Gran Hotel Central</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://twitter.com/granhotelcentral" target="_blank" rel="noopener noreferrer" class="social-text-link">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-2.719 0-4.924 2.205-4.924 4.924 0 .386.043.762.127 1.124-4.092-.205-7.719-2.165-10.148-5.144-.424.729-.666 1.577-.666 2.476 0 1.708.868 3.216 2.188 4.098-.807-.026-1.566-.247-2.228-.616v.061c0 2.385 1.697 4.374 3.946 4.827-.413.112-.849.171-1.296.171-.317 0-.625-.03-.928-.086.627 1.956 2.444 3.379 4.6 3.419-1.684 1.319-3.808 2.105-6.115 2.105-.398 0-.79-.023-1.177-.067 2.179 1.397 4.768 2.212 7.548 2.212 9.057 0 14.01-7.505 14.01-14.01 0-.213-.005-.425-.014-.636.961-.693 1.796-1.562 2.457-2.549z"/></svg>
+                                <span>Twitter: @GranHotelCentral</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Logos de Gran Hotel Central -->
+                    <div class="utp-logo-container">
+                        <span class="utp-label">Gran Hotel Central &middot; Tu destino:</span>
+                        <div class="footer-logos-row">
+                            <span style="font-weight:bold; font-size:1.2rem; color:var(--color-primary)">Gran Hotel Central</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Contacto y Correo -->
+                <div class="footer-col footer-col-contact">
+                    <h4 class="footer-title">Contacto</h4>
+                    <p class="footer-text">Comunícate con nuestro equipo para reservas o integración de establecimientos.</p>
+                    
+                    <div class="contact-details">
+                        <div class="contact-entry">
+                            <span class="contact-tag">Teléfono / WhatsApp:</span>
+                            <a href="tel:947102850" class="contact-value">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                947102850
+                            </a>
+                        </div>
+
+                        <div class="contact-entry">
+                            <span class="contact-tag">Correo Electrónico:</span>
+                            <a href="mailto:reservas@granhotelcentral.com" class="contact-value">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                reservas@granhotelcentral.com
+                            </a>
+                        </div>
+
+                        <div class="contact-entry">
+                            <span class="contact-tag">Horario de Soporte:</span>
+                            <span class="contact-info-text">Lunes a Domingo: 24 Horas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 3: 3 Rubros Relacionados -->
+                <div class="footer-col footer-col-rubros">
+                    <h4 class="footer-title">Rubros Relacionados</h4>
+                    <p class="footer-text">Conoce establecimientos y aliados del sector hotelero:</p>
+                    
+                    <ul class="rubros-list">
+                        <li class="rubro-item">
+                            <a href="https://www.instagram.com/hotel.smart.love/?hl=es" target="_blank" rel="noopener noreferrer" class="rubro-link">
+                                <div class="rubro-bullet">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                </div>
+                                <div>
+                                    <strong>Hotel Smart Love</strong>
+                                    <span>Instagram Oficial</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="rubro-item">
+                            <a href="https://www.facebook.com/p/Selva-Hotel-61560415207378/" target="_blank" rel="noopener noreferrer" class="rubro-link">
+                                <div class="rubro-bullet">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                </div>
+                                <div>
+                                    <strong>Selva Hotel</strong>
+                                    <span>Página en Facebook</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="rubro-item">
+                            <a href="https://www.instagram.com/hoteldakmarlin/" target="_blank" rel="noopener noreferrer" class="rubro-link">
+                                <div class="rubro-bullet">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                </div>
+                                <div>
+                                    <strong>Hotel Dak Marlin</strong>
+                                    <span>Instagram Oficial</span>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Créditos y derechos -->
+            <div class="footer-bottom">
+                <p>&copy; 2026 Gran Hotel Central - Todos los derechos reservados.</p>
+                <div class="legal-links">
+                    <a href="#informacion">Información</a>
+                    <a href="#productos">Productos</a>
+                    <a href="#clientes">Clientes</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de autenticación -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-container">
+            <button class="modal-close" id="closeAuthModal" aria-label="Cerrar modal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="auth-content">
+                <div class="auth-header">
+                    <h2 class="auth-title">Iniciar Sesión</h2>
+                    <p class="auth-subtitle">Accede a HoteleriasYa para gestionar tus reservas y favoritos</p>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="email">Correo Electrónico</label>
+                        <input type="email" id="email" class="form-input" placeholder="tu@correo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Contraseña</label>
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <div class="auth-actions">
+                        <button type="submit" class="btn btn-primary btn-full">Ingresar a HoteleriasYa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts JS -->
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

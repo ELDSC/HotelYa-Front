@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
                         <div class="hotel-amenities">${amenitiesHtml}${extraAmenities}</div>
                         <div class="hotel-footer">
-                            <div class="hotel-price">
+                            <div class="hotel-price" style="display: none;">
                                 <span class="price-value">S/ ${hotel.price.toFixed(2)}</span>
                                 <span class="price-type">/ ${hotel.type}</span>
                             </div>
@@ -49,7 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
             hotelContainer.querySelectorAll('.btn-check-hotel').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const hotelName = e.target.getAttribute('data-name');
-                    alert(`¡Excelente elección! Consultando disponibilidad en tiempo real para: ${hotelName}`);
+                    if (hotelName === 'Gran Hotel Central') {
+                        window.location.href = 'hotel-central.html';
+                    } else {
+                        alert(`¡Excelente elección! Consultando disponibilidad en tiempo real para: ${hotelName}`);
+                    }
                 });
             });
         }
