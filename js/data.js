@@ -1,4 +1,4 @@
-// js/data.js
+// Catálogo de 6 productos y alojamientos de HotelYa
 const MOCK_HOTELS = [
     {
         id: 1,
@@ -32,9 +32,9 @@ const MOCK_HOTELS = [
         type: "Noche",
         rating: 4.9,
         reviews: 312,
-        amenities: ["Wifi", "Desayuno", "Piscina", "Gimnasio", "Estacionamiento"],
-        image: "assets/images/hero1.jpg",
-        featured: false
+        amenities: ["Wifi", "Desayuno", "Piscina", "Gimnasio"],
+        image: "assets/images/hero3.jpg",
+        featured: true
     },
     {
         id: 4,
@@ -44,9 +44,33 @@ const MOCK_HOTELS = [
         type: "Por Hora",
         rating: 4.2,
         reviews: 56,
-        amenities: ["Wifi", "Recepción 24h"],
-        image: "assets/images/hero2.jpg",
+        amenities: ["Wifi", "Recepción 24h", "Aire Acondicionado"],
+        image: "assets/images/hero4.jpg",
         featured: false
+    },
+    {
+        id: 5,
+        name: "Hotel Mirador Ejecutivo",
+        location: "Distrito Financiero",
+        price: 95.00,
+        type: "Noche",
+        rating: 4.7,
+        reviews: 140,
+        amenities: ["Wifi Alta Velocidad", "Desayuno Buffet", "Sala de Reuniones"],
+        image: "assets/images/hotel5.jpg",
+        featured: false
+    },
+    {
+        id: 6,
+        name: "Cabañas Jardín Imperial",
+        location: "Zona Campestre",
+        price: 60.00,
+        type: "Paquete 6h",
+        rating: 4.6,
+        reviews: 98,
+        amenities: ["Wifi", "Áreas Verdes", "Jacuzzi", "Parrilla"],
+        image: "assets/images/hotel6.jpg",
+        featured: true
     }
 ];
 
