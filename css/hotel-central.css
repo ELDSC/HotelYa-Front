@@ -148,32 +148,147 @@ body.hotel-theme {
     margin-bottom: 3rem;
 }
 
-/* Habitaciones (Cards) */
-.hotel-theme .hotel-card {
-    background: var(--hotel-white) !important;
-    border-radius: var(--hotel-radius) !important;
-    box-shadow: var(--hotel-shadow) !important;
-    border: 1px solid var(--hotel-cream-dark);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+/* =========================================
+   NUEVO ESTILO EDITORIAL: Información
+   ========================================= */
+.hotel-theme .editorial-info-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    margin-top: 4rem;
 }
-.hotel-theme .hotel-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(44, 29, 17, 0.12) !important;
+@media (min-width: 992px) {
+    .hotel-theme .editorial-info-split {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
 }
-.hotel-theme .hotel-name {
-    color: var(--hotel-burgundy) !important;
+.hotel-theme .editorial-heading {
+    font-size: 2.5rem;
     font-family: var(--font-hotel-serif);
-    font-weight: 600;
-}
-.hotel-theme .hotel-card .btn-outline-dark {
-    border-color: var(--hotel-burgundy);
     color: var(--hotel-burgundy);
-    border-radius: var(--hotel-radius);
-    min-height: 44px;
+    margin-bottom: 2rem;
+    line-height: 1.2;
 }
-.hotel-theme .hotel-card .btn-outline-dark:hover {
-    background-color: var(--hotel-burgundy);
-    color: var(--hotel-white);
+.hotel-theme .editorial-paragraph {
+    font-size: 1.1rem;
+    color: var(--hotel-charcoal);
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+.hotel-theme .has-dropcap::first-letter {
+    font-family: var(--font-hotel-serif);
+    font-size: 4.5rem;
+    color: var(--hotel-gold);
+    float: left;
+    line-height: 0.8;
+    margin-right: 0.5rem;
+    margin-top: 0.2rem;
+}
+.hotel-theme .editorial-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 2rem;
+    border-top: 1px solid var(--hotel-cream-dark);
+    padding-top: 2rem;
+}
+.hotel-theme .editorial-list li {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    position: relative;
+    padding-left: 1.5rem;
+}
+.hotel-theme .editorial-list li::before {
+    content: "•";
+    color: var(--hotel-gold);
+    position: absolute;
+    left: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.hotel-theme .editorial-list-title {
+    font-weight: 600;
+    color: var(--hotel-burgundy);
+}
+.hotel-theme .editorial-info-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--hotel-gold);
+    padding: 0.5rem;
+    background-color: var(--hotel-white);
+}
+
+/* =========================================
+   NUEVO ESTILO EDITORIAL: Habitaciones
+   ========================================= */
+.hotel-theme .hotel-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+@media (min-width: 768px) {
+    .hotel-theme .hotel-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+.hotel-theme .editorial-room-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transition: transform 0.4s ease;
+}
+.hotel-theme .editorial-room-card:hover {
+    transform: translateY(-5px);
+}
+.hotel-theme .editorial-room-image {
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+    border: 1px solid var(--hotel-cream-dark);
+    margin-bottom: 1.5rem;
+}
+.hotel-theme .editorial-room-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+.hotel-theme .editorial-room-card:hover .editorial-room-image img {
+    transform: scale(1.05);
+}
+.hotel-theme .editorial-room-content {
+    text-align: center;
+}
+.hotel-theme .editorial-room-title {
+    font-family: var(--font-hotel-serif);
+    font-size: 1.8rem;
+    color: var(--hotel-burgundy);
+    margin-bottom: 0.5rem;
+}
+.hotel-theme .editorial-room-desc {
+    font-family: var(--font-hotel-sans);
+    font-size: 0.95rem;
+    color: var(--hotel-charcoal);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+.hotel-theme .editorial-room-action {
+    display: inline-block;
+    font-family: var(--font-hotel-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--hotel-gold);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hotel-gold);
+    padding-bottom: 2px;
+    transition: color 0.3s ease, border-color 0.3s ease;
+    min-height: 44px; /* Accesibilidad */
+    line-height: 44px;
+}
+.hotel-theme .editorial-room-action:hover {
+    color: var(--hotel-burgundy);
+    border-color: var(--hotel-burgundy);
 }
 
 /* Reviews */
@@ -243,10 +358,10 @@ body.hotel-theme {
         transform: translateY(0) !important;
     }
 
-    /* Staggering para tarjetas */
-    .hotel-grid .hotel-card:nth-child(1) { transition-delay: 0.1s; }
-    .hotel-grid .hotel-card:nth-child(2) { transition-delay: 0.2s; }
-    .hotel-grid .hotel-card:nth-child(3) { transition-delay: 0.3s; }
+    /* Staggering para tarjetas editoriales */
+    .hotel-grid .editorial-room-card:nth-child(1) { transition-delay: 0.1s; }
+    .hotel-grid .editorial-room-card:nth-child(2) { transition-delay: 0.2s; }
+    .hotel-grid .editorial-room-card:nth-child(3) { transition-delay: 0.3s; }
 }
 
 /* Accesibilidad para usuarios que prefieren sin movimiento */
@@ -256,10 +371,10 @@ body.hotel-theme {
         transform: none;
         transition: none;
     }
-    .hotel-theme .btn-primary, .hotel-theme .hotel-card {
+    .hotel-theme .btn-primary, .hotel-theme .editorial-room-card {
         transition: none;
     }
-    .hotel-theme .hotel-card:hover {
+    .hotel-theme .editorial-room-card:hover, .hotel-theme .editorial-room-card:hover .editorial-room-image img {
         transform: none;
     }
 }
