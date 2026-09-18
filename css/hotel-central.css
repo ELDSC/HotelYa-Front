@@ -1,0 +1,265 @@
+/* 
+   ==========================================================================
+   Gran Hotel Central - Identidad Visual y Estilos Exclusivos
+   ==========================================================================
+   Basado en principios de Frontend Design & Web Interface Guidelines
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+    /* Paleta Clásico Histórico */
+    --hotel-cream: #F4F1EA;
+    --hotel-cream-dark: #E6E2D6;
+    --hotel-burgundy: #4A151C;
+    --hotel-burgundy-light: #6C222A;
+    --hotel-gold: #D4AF37;
+    --hotel-gold-light: #F3E5AB;
+    --hotel-charcoal: #2C2C2C;
+    --hotel-wood: #2C1D11;
+    --hotel-white: #FFFFFF;
+
+    /* Tipografía */
+    --font-hotel-serif: 'Playfair Display', serif;
+    --font-hotel-sans: 'Inter', sans-serif;
+
+    /* Espaciados y Radios - Minimalismo Clásico */
+    --hotel-radius: 4px; /* Menos redondeado para dar aspecto más formal y clásico */
+    --hotel-shadow: 0 10px 30px rgba(44, 29, 17, 0.08);
+}
+
+/* Base Override para la Landing */
+body.hotel-theme {
+    background-color: var(--hotel-cream);
+    color: var(--hotel-charcoal);
+    font-family: var(--font-hotel-sans);
+    line-height: 1.6;
+}
+
+/* Tipografía */
+.hotel-theme h1, 
+.hotel-theme h2, 
+.hotel-theme h3, 
+.hotel-theme .hotel-serif {
+    font-family: var(--font-hotel-serif);
+    color: var(--hotel-burgundy);
+    text-wrap: balance; /* Previene viudas tipográficas */
+}
+
+/* Focus Accesible */
+.hotel-theme *:focus-visible {
+    outline: 2px solid var(--hotel-gold);
+    outline-offset: 4px;
+}
+.hotel-theme *:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Header */
+.hotel-theme .header {
+    background-color: var(--hotel-white);
+    border-bottom: 1px solid var(--hotel-cream-dark);
+}
+.hotel-theme .logo-area span {
+    font-family: var(--font-hotel-serif);
+    color: var(--hotel-burgundy) !important;
+    font-weight: 700;
+    font-size: 1.75rem !important;
+    letter-spacing: -0.02em;
+}
+
+.hotel-theme .nav-links a {
+    font-family: var(--font-hotel-sans);
+    font-weight: 500;
+    color: var(--hotel-charcoal);
+    transition: color 0.3s ease;
+}
+.hotel-theme .nav-links a:hover {
+    color: var(--hotel-burgundy);
+}
+
+.hotel-theme .btn-primary {
+    background-color: var(--hotel-burgundy);
+    color: var(--hotel-white);
+    border: none;
+    border-radius: var(--hotel-radius);
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-hotel-sans);
+    font-weight: 500;
+    min-height: 44px; /* Accesibilidad táctil */
+    min-width: 44px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.hotel-theme .btn-primary:hover {
+    background-color: var(--hotel-burgundy-light);
+    transform: translateY(-2px);
+}
+
+/* Hero Section */
+.hotel-theme .hero-section {
+    background: linear-gradient(rgba(44, 29, 17, 0.7), rgba(44, 29, 17, 0.7)), url('../assets/images/hero2.jpg') center/cover no-repeat;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 0;
+}
+.hotel-theme .hero-tagline {
+    color: var(--hotel-gold);
+    font-family: var(--font-hotel-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+.hotel-theme .hero-title {
+    color: var(--hotel-white);
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+.hotel-theme .hero-title span {
+    font-size: 2rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--hotel-cream);
+}
+.hotel-theme .hero-subtitle-text {
+    color: var(--hotel-cream);
+    font-family: var(--font-hotel-sans);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Secciones Generales */
+.hotel-theme .section-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+.hotel-theme .section-subtitle {
+    font-family: var(--font-hotel-sans);
+    color: var(--hotel-charcoal);
+    opacity: 0.8;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* Habitaciones (Cards) */
+.hotel-theme .hotel-card {
+    background: var(--hotel-white) !important;
+    border-radius: var(--hotel-radius) !important;
+    box-shadow: var(--hotel-shadow) !important;
+    border: 1px solid var(--hotel-cream-dark);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.hotel-theme .hotel-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(44, 29, 17, 0.12) !important;
+}
+.hotel-theme .hotel-name {
+    color: var(--hotel-burgundy) !important;
+    font-family: var(--font-hotel-serif);
+    font-weight: 600;
+}
+.hotel-theme .hotel-card .btn-outline-dark {
+    border-color: var(--hotel-burgundy);
+    color: var(--hotel-burgundy);
+    border-radius: var(--hotel-radius);
+    min-height: 44px;
+}
+.hotel-theme .hotel-card .btn-outline-dark:hover {
+    background-color: var(--hotel-burgundy);
+    color: var(--hotel-white);
+}
+
+/* Reviews */
+.hotel-theme .section-audience {
+    background-color: var(--hotel-burgundy);
+    color: var(--hotel-cream);
+}
+.hotel-theme .section-audience .section-title,
+.hotel-theme .section-audience .section-subtitle {
+    color: var(--hotel-cream);
+}
+.hotel-theme .audience-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: var(--hotel-radius);
+    backdrop-filter: blur(10px);
+}
+.hotel-theme .audience-card-desc {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--hotel-cream);
+}
+.hotel-theme .audience-card-title {
+    color: var(--hotel-gold) !important;
+    margin-top: 1.5rem;
+}
+
+/* Footer */
+.hotel-theme .footer {
+    background-color: var(--hotel-wood);
+    color: var(--hotel-cream);
+}
+.hotel-theme .footer-title {
+    color: var(--hotel-gold);
+    font-family: var(--font-hotel-serif);
+}
+.hotel-theme .social-text-link, .hotel-theme .contact-value, .hotel-theme .footer-links-list a {
+    color: var(--hotel-cream-dark);
+}
+.hotel-theme .social-text-link:hover, .hotel-theme .contact-value:hover, .hotel-theme .footer-links-list a:hover {
+    color: var(--hotel-gold);
+}
+.hotel-theme .utp-label {
+    color: var(--hotel-cream-dark);
+}
+
+/* =========================================
+   ANIMACIONES NATIVAS (Intersección JS)
+   ========================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+    }
+    
+    .animate-fade-in {
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        will-change: opacity;
+    }
+
+    .is-visible {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+
+    /* Staggering para tarjetas */
+    .hotel-grid .hotel-card:nth-child(1) { transition-delay: 0.1s; }
+    .hotel-grid .hotel-card:nth-child(2) { transition-delay: 0.2s; }
+    .hotel-grid .hotel-card:nth-child(3) { transition-delay: 0.3s; }
+}
+
+/* Accesibilidad para usuarios que prefieren sin movimiento */
+@media (prefers-reduced-motion: reduce) {
+    .animate-fade-up, .animate-fade-in {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .hotel-theme .btn-primary, .hotel-theme .hotel-card {
+        transition: none;
+    }
+    .hotel-theme .hotel-card:hover {
+        transform: none;
+    }
+}
