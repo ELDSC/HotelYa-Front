@@ -393,3 +393,26 @@ body.hotel-theme {
 
 .hotel-theme #ubicacion .section-header { text-align: center; }
 .hotel-theme .main-video-element { object-fit: contain; }
+
+.hotel-theme .hotel-back-row {
+    position: absolute;
+    top: calc(var(--header-height) + 1rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    text-align: left;
+}
+.hotel-theme .hotel-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    background: var(--hotel-navy);
+    color: var(--hotel-white);
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+.hotel-theme .hotel-back-button:hover { background: var(--hotel-navy-light); }
