@@ -1274,15 +1274,13 @@ input, select {
   color: #ffffff;
 }
 
-.rubro-bullet {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
+.rubro-logo {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #ffffff;
 }
 
 .rubro-link strong {
@@ -1438,3 +1436,6 @@ input, select {
   }
 }
 
+
+.hotel-card-image.hotel-card-image-logo { background: #050b36; }
+.hotel-card-image.hotel-card-image-logo img { object-fit: contain; }

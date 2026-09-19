@@ -1,6 +1,6 @@
 /* 
    ==========================================================================
-   Gran Hotel Central - Identidad Visual y Estilos Exclusivos
+   Lumi's Hotel - Identidad Visual y Estilos Exclusivos
    ==========================================================================
    Basado en principios de Frontend Design & Web Interface Guidelines
 */
@@ -8,15 +8,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
 
 :root {
-    /* Paleta Clásico Histórico */
+    /* Paleta azul y dorado del hotel */
     --hotel-cream: #F4F1EA;
     --hotel-cream-dark: #E6E2D6;
-    --hotel-burgundy: #4A151C;
-    --hotel-burgundy-light: #6C222A;
+    --hotel-navy: #08134C;
+    --hotel-navy-light: #123474;
     --hotel-gold: #D4AF37;
     --hotel-gold-light: #F3E5AB;
     --hotel-charcoal: #2C2C2C;
-    --hotel-wood: #2C1D11;
+    --hotel-midnight: #050B2C;
     --hotel-white: #FFFFFF;
 
     /* Tipografía */
@@ -42,7 +42,7 @@ body.hotel-theme {
 .hotel-theme h3, 
 .hotel-theme .hotel-serif {
     font-family: var(--font-hotel-serif);
-    color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
     text-wrap: balance; /* Previene viudas tipográficas */
 }
 
@@ -62,7 +62,7 @@ body.hotel-theme {
 }
 .hotel-theme .logo-area span {
     font-family: var(--font-hotel-serif);
-    color: var(--hotel-burgundy) !important;
+    color: var(--hotel-navy) !important;
     font-weight: 700;
     font-size: 1.75rem !important;
     letter-spacing: -0.02em;
@@ -75,11 +75,11 @@ body.hotel-theme {
     transition: color 0.3s ease;
 }
 .hotel-theme .nav-links a:hover {
-    color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
 }
 
 .hotel-theme .btn-primary {
-    background-color: var(--hotel-burgundy);
+    background-color: var(--hotel-navy);
     color: var(--hotel-white);
     border: none;
     border-radius: var(--hotel-radius);
@@ -91,13 +91,13 @@ body.hotel-theme {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 .hotel-theme .btn-primary:hover {
-    background-color: var(--hotel-burgundy-light);
+    background-color: var(--hotel-navy-light);
     transform: translateY(-2px);
 }
 
 /* Hero Section */
 .hotel-theme .hero-section {
-    background: linear-gradient(rgba(44, 29, 17, 0.7), rgba(44, 29, 17, 0.7)), url('../assets/images/hero2.jpg') center/cover no-repeat;
+    background: #08134C;
     height: 80vh;
     display: flex;
     align-items: center;
@@ -166,7 +166,7 @@ body.hotel-theme {
 .hotel-theme .editorial-heading {
     font-size: 2.5rem;
     font-family: var(--font-hotel-serif);
-    color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
     margin-bottom: 2rem;
     line-height: 1.2;
 }
@@ -208,7 +208,7 @@ body.hotel-theme {
 }
 .hotel-theme .editorial-list-title {
     font-weight: 600;
-    color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
 }
 .hotel-theme .editorial-info-image img {
     width: 100%;
@@ -243,7 +243,7 @@ body.hotel-theme {
 }
 .hotel-theme .editorial-room-image {
     width: 100%;
-    height: 350px;
+    aspect-ratio: 9 / 16;
     overflow: hidden;
     border: 1px solid var(--hotel-cream-dark);
     margin-bottom: 1.5rem;
@@ -263,7 +263,7 @@ body.hotel-theme {
 .hotel-theme .editorial-room-title {
     font-family: var(--font-hotel-serif);
     font-size: 1.8rem;
-    color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
     margin-bottom: 0.5rem;
 }
 .hotel-theme .editorial-room-desc {
@@ -287,13 +287,13 @@ body.hotel-theme {
     line-height: 44px;
 }
 .hotel-theme .editorial-room-action:hover {
-    color: var(--hotel-burgundy);
-    border-color: var(--hotel-burgundy);
+    color: var(--hotel-navy);
+    border-color: var(--hotel-navy);
 }
 
 /* Reviews */
 .hotel-theme .section-audience {
-    background-color: var(--hotel-burgundy);
+    background-color: var(--hotel-navy);
     color: var(--hotel-cream);
 }
 .hotel-theme .section-audience .section-title,
@@ -318,7 +318,7 @@ body.hotel-theme {
 
 /* Footer */
 .hotel-theme .footer {
-    background-color: var(--hotel-wood);
+    background-color: var(--hotel-midnight);
     color: var(--hotel-cream);
 }
 .hotel-theme .footer-title {
@@ -378,3 +378,18 @@ body.hotel-theme {
         transform: none;
     }
 }
+
+.hotel-theme .lumis-header-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 4px; }
+.hotel-theme .lumis-footer-logo { display: block; width: 160px; height: 160px; object-fit: contain; margin-bottom: 1rem; }
+.hotel-theme .audience-card { padding: 2rem; }
+@media (max-width: 600px) {
+    .hotel-theme .logo-area { gap: 0.5rem; }
+    .hotel-theme .logo-area span { font-size: 1.15rem !important; }
+    .hotel-theme .hero-title { font-size: 2.75rem; }
+    .hotel-theme .hero-title span { font-size: 1.5rem; }
+}
+
+.hotel-theme .hero-section .carousel-img { object-position: center top; }
+
+.hotel-theme #ubicacion .section-header { text-align: center; }
+.hotel-theme .main-video-element { object-fit: contain; }

@@ -16,17 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const extraAmenities = hotel.amenities.length > 3 ? `<span class="amenity-tag">+${hotel.amenities.length - 3}</span>` : '';
                 
                 card.innerHTML = `
-                    <div class="hotel-card-image">
+                    <div class="hotel-card-image${hotel.imageFit === 'contain' ? ' hotel-card-image-logo' : ''}">
                         <img src="${hotel.image}" alt="${hotel.name}" loading="lazy">
                         ${hotel.featured ? '<div class="hotel-badge">Destacado</div>' : ''}
                     </div>
                     <div class="hotel-card-content">
                         <div class="hotel-header">
                             <h3 class="hotel-name">${hotel.name}</h3>
-                            <div class="hotel-rating">
+                            ${hotel.rating ? `<div class="hotel-rating">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                                 ${hotel.rating} <span>(${hotel.reviews})</span>
-                            </div>
+                            </div>` : ''}
                         </div>
                         <p class="hotel-location">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -38,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="price-value">S/ ${hotel.price.toFixed(2)}</span>
                                 <span class="price-type">/ ${hotel.type}</span>
                             </div>
-                            <button class="btn btn-primary btn-sm btn-check-hotel" data-name="${hotel.name}">Ver Disponibilidad</button>
+                            ${hotel.detailUrl
+                                ? `<a class="btn btn-primary btn-sm" href="${hotel.detailUrl}">Ver Disponibilidad</a>`
+                                : `<button class="btn btn-primary btn-sm btn-check-hotel" data-name="${hotel.name}">Ver Disponibilidad</button>`}
                         </div>
                     </div>
                 `;
@@ -49,11 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hotelContainer.querySelectorAll('.btn-check-hotel').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const hotelName = e.target.getAttribute('data-name');
-                    if (hotelName === 'Gran Hotel Central') {
-                        window.location.href = 'hotel-central.html';
-                    } else {
-                        alert(`¡Excelente elección! Consultando disponibilidad en tiempo real para: ${hotelName}`);
-                    }
+                    alert(`¡Excelente elección! Consultando disponibilidad en tiempo real para: ${hotelName}`);
                 });
             });
         }

@@ -2,14 +2,16 @@
 const MOCK_HOTELS = [
     {
         id: 1,
-        name: "Gran Hotel Central",
-        location: "Centro Histórico",
+        name: "Lumi's Hotel",
+        location: "San Juan de Miraflores, Lima",
         price: 85.00,
         type: "Noche",
-        rating: 4.8,
-        reviews: 124,
-        amenities: ["Wifi", "Desayuno", "Estacionamiento"],
-        image: "assets/images/hero1.jpg",
+        rating: null,
+        reviews: 0,
+        amenities: ["San Juan de Miraflores", "Consultar habitaciones"],
+        image: "assets/images/lumis-hotel-logo.jpg",
+        imageFit: "contain",
+        detailUrl: "hotel-central.html",
         featured: true
     },
     {
