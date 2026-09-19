@@ -135,20 +135,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let userEmail = localStorage.getItem('userEmail') || '';
     
     const loginBtnTrigger = document.getElementById('loginBtnTrigger');
+    const authButtonLabel = document.getElementById('authButtonLabel');
     const userProfileBtn = document.getElementById('userProfileBtn');
     const userNameDisplay = document.getElementById('userNameDisplay');
     const authModal = document.getElementById('authModal');
     const loginForm = document.getElementById('loginForm');
     
     const updateAuthUI = () => {
-        if (loginBtnTrigger) loginBtnTrigger.classList.toggle('hidden', isLoggedIn);
         if (userProfileBtn) userProfileBtn.classList.toggle('active', isLoggedIn);
-        if (isLoggedIn && userNameDisplay) userNameDisplay.textContent = userEmail.split('@')[0];
+        if (userNameDisplay) userNameDisplay.textContent = isLoggedIn ? userEmail.split('@')[0] : 'Invitado';
+        if (authButtonLabel) authButtonLabel.textContent = isLoggedIn ? 'Cerrar sesión' : 'Acceder';
+        if (loginBtnTrigger) {
+            loginBtnTrigger.setAttribute('aria-label', isLoggedIn ? 'Cerrar sesión' : 'Acceder');
+        }
     };
     
     updateAuthUI();
 
-    loginBtnTrigger?.addEventListener('click', () => authModal?.classList.add('active'));
+    loginBtnTrigger?.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            authModal?.classList.add('active');
+            return;
+        }
+
+        if (confirm('¿Deseas cerrar tu sesión actual?')) {
+            isLoggedIn = false;
+            userEmail = '';
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            updateAuthUI();
+        }
+    });
     document.getElementById('closeAuthModal')?.addEventListener('click', () => authModal?.classList.remove('active'));
     
     // Cerrar modal al hacer clic en el fondo oscuro
@@ -168,14 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAuthUI();
         e.target.reset();
         alert(`¡Bienvenido de nuevo a HotelYa, ${userEmail}!`);
-    });
-
-    userProfileBtn?.addEventListener('click', () => {
-        if (confirm("¿Deseas cerrar tu sesión actual?")) {
-            isLoggedIn = false;
-            localStorage.clear();
-            updateAuthUI();
-        }
     });
 
     // 6. Motor de búsqueda rápida

@@ -234,7 +234,6 @@ input, select {
   display: flex; 
   align-items: center; 
   gap: 8px; 
-  cursor: pointer; 
 }
 .user-name { 
   font-size: 11px; 
