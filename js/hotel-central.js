@@ -1,6 +1,6 @@
 /* 
    ==========================================================================
-   Gran Hotel Central - Animaciones Nativas
+   Lumi's Hotel - Animaciones Nativas
    ==========================================================================
    Usando IntersectionObserver para animaciones al hacer scroll.
 */

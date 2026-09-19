@@ -46,7 +46,7 @@ La arquitectura de la interfaz está construida completamente en tecnologías we
 
 ### 4. Catálogo de Productos y Servicios (Cards con Hover Shadow)
 - Despliegue dinámico de 6 alojamientos destacados desde `js/data.js`:
-  1. **Gran Hotel Central** (Centro Histórico)
+  1. **Lumi's Hotel** (San Juan de Miraflores, Lima)
   2. **Boutique Suite Valle** (Valle Sur)
   3. **Resort Costa Azul** (Frente al Mar)
   4. **Hostal El Viajero** (Centro Comercial)
@@ -159,3 +159,7 @@ O con la extensión **Live Server** de VS Code. Luego abre en tu navegador `http
 <p align="center">
   Desarrollado con dedicación para <strong>HoteleriasYa</strong> &copy; 2026. Todos los derechos reservados.
 </p>
+
+### Lumi's Hotel
+
+El primer alojamiento enlaza a `hotel-central.html`, cuya ruta se conserva. Logo proporcionado por el usuario. Dirección y teléfono tomados de https://yandex.com/maps/org/lumi_hotel/132122445572/; dirección contrastada con https://monjitasclub.com/hospedajes/ (18/09/2026). No se verificó contacto telefónico. Las fotografías y categorías de habitaciones (temática, matrimonial y premium) fueron proporcionadas por el usuario. Las descripciones se basan en las imágenes; tarifas, decoración y disponibilidad se consultan con el hotel. No se atribuyen reseñas ni redes sociales sin verificar al hotel.
