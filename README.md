@@ -113,7 +113,7 @@ Dirección y teléfono proceden de las referencias conservadas en el proyecto: h
 
 ## Acceso y administración del dueño
 
-«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `panel-dueno.html` permite crear el único hotel de su cuenta como borrador y administrar **Mi hotel, Habitaciones, Multimedia, Contenido y Publicación**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
+«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `panel-dueno.html` permite crear el único hotel de su cuenta como borrador y administrar **Inicio, Información, Habitaciones y Multimedia**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
 
 Usar `127.0.0.1` tanto para la web como para `VITE_API_BASE_URL` en desarrollo. Las llamadas de autenticación llevan credenciales y CSRF; las operaciones privadas llevan Authorization Bearer. Los errores se muestran por campo y conservan los datos para reintentar. El guardado es explícito por sección y el navegador advierte antes de abandonar formularios modificados.
 
@@ -134,3 +134,5 @@ El panel comparte tipografía, paleta y botones con el catálogo. Inicio agrupa 
 Las confirmaciones del panel usan el componente Toast de Bootstrap, situado abajo, con cierre manual y automático a los 3,5 segundos. Los errores permanecen junto al campo o ajuste correspondiente. Solo se importa el JavaScript de Toast; sus estilos se adaptan a la paleta del aplicativo.
 
 Habitaciones usa una carga directa de imágenes con selección múltiple y miniaturas ordenables, sin biblioteca compartida ni campo de texto alternativo. Las características mantienen sus categorías en filas delimitadas. Las tarifas muestran siempre Por hora, Paquete de horas y Por noche; se activan individualmente y solo requieren precio en soles y duración del paquete. Las confirmaciones siguen apareciendo únicamente en el toast inferior de Bootstrap.
+
+Información incluye al final **Presentación**, con hasta tres tarjetas de «Tu próxima estadía» en un grid adaptable: comparten fila cuando hay espacio y se apilan en móvil. Se pueden añadir, ordenar y quitar, y se guardan con «Guardar presentación», independientemente de la ficha del hotel.

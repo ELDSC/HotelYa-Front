@@ -74,7 +74,7 @@ function header(): void {
     renderDashboard();
 }
 function updateHeading(): void {
-    const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia', content: 'Contenido' };
+    const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia' };
     requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
     const link = requiredElement('publicHotelLink', 'a'); link.hidden = !current;
     if (current) link.href = `hotel-central.html?id=${current.detail.id}${current.published ? '' : '&preview=1'}`;
@@ -296,23 +296,47 @@ function renderMedia(section: HTMLElement): void {
     section.append(form);
 }
 function renderCards(section: HTMLElement): void {
-    const { form, grid, status, submit } = formCard('Tu próxima estadía'); grid.className = 'card-editor-list';
+    const { form, grid, status, submit } = formCard('Presentación'); grid.className = 'presentation-grid';
+    form.classList.add('presentation-editor'); form.setAttribute('aria-label', 'Presentación');
+    submit.textContent = 'Guardar presentación';
+    const heading = element('div', 'presentation-heading');
+    const copy = element('div');
+    copy.append(form.querySelector('h2')!, element('p', 'muted', 'Personaliza las tarjetas de «Tu próxima estadía» en tu página. Máximo 3 tarjetas.'));
+    const count = element('span', 'presentation-count'); count.setAttribute('aria-live', 'polite');
+    heading.append(copy, count); form.prepend(heading);
     const cards: StayCard[] = structuredClone(current!.detail.stayCards ?? []);
+    const add = button('Añadir tarjeta', () => {
+        if (cards.length >= 3) return;
+        cards.push({ title: '', description: '' }); markDirty(form); draw();
+        grid.querySelector<HTMLInputElement>(`[name="stayCards.${cards.length - 1}.title"]`)?.focus();
+    });
     const draw = () => {
+        count.textContent = `${cards.length} / 3`;
+        add.hidden = cards.length >= 3;
         grid.replaceChildren(); cards.forEach((card, i) => {
-            const row = element('div', 'content-card-editor');
+            const row = element('fieldset', 'presentation-card');
+            row.append(element('legend', '', `Tarjeta ${i + 1}`));
             const title = field(row, `stayCards.${i}.title`, 'Título *', card.title); title.required = true; title.maxLength = 200; title.addEventListener('input', () => { card.title = title.value; });
             const desc = field(row, `stayCards.${i}.description`, 'Texto *', card.description, 'textarea'); desc.required = true; desc.maxLength = 5000; desc.addEventListener('input', () => { card.description = desc.value; });
-            const actions = element('div', 'compact-actions');
-            const up = button('↑', () => { [cards[i - 1], cards[i]] = [cards[i]!, cards[i - 1]!]; markDirty(form); draw(); }); up.disabled = i === 0; up.setAttribute('aria-label', 'Mover tarjeta arriba');
-            const down = button('↓', () => { [cards[i + 1], cards[i]] = [cards[i]!, cards[i + 1]!]; markDirty(form); draw(); }); down.disabled = i === cards.length - 1; down.setAttribute('aria-label', 'Mover tarjeta abajo');
-            actions.append(up, down, button('Quitar tarjeta', () => { cards.splice(i, 1); markDirty(form); draw(); }, 'danger-link')); row.append(actions); grid.append(row);
+            const actions = element('div', 'presentation-card-actions');
+            const move = (offset: number) => {
+                const target = i + offset;
+                [cards[target], cards[i]] = [cards[i]!, cards[target]!]; markDirty(form); draw();
+                grid.querySelector<HTMLInputElement>(`[name="stayCards.${target}.title"]`)?.focus();
+            };
+            const up = button('←', () => move(-1), 'icon-button'); up.disabled = i === 0; up.setAttribute('aria-label', 'Mover tarjeta antes'); up.title = 'Mover antes';
+            const down = button('→', () => move(1), 'icon-button'); down.disabled = i === cards.length - 1; down.setAttribute('aria-label', 'Mover tarjeta después'); down.title = 'Mover después';
+            actions.append(up, down, button('Quitar tarjeta', () => {
+                cards.splice(i, 1); markDirty(form); draw();
+                (grid.querySelector<HTMLInputElement>(`[name="stayCards.${Math.min(i, cards.length - 1)}.title"]`) ?? add).focus();
+            }, 'danger-link')); row.append(actions); grid.append(row);
         });
+        if (!cards.length) grid.append(element('p', 'muted presentation-empty', 'Añade una tarjeta para presentar lo que ofrece tu hotel.'));
     }; draw();
-    form.insertBefore(button('+ Añadir tarjeta', () => { cards.push({ title: '', description: '' }); markDirty(form); draw(); }), status);
+    form.querySelector('.form-actions')!.prepend(add);
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
-            try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Contenido guardado.'); }
+            try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Presentación guardada.'); }
             catch (error) { showFailure(form, status, error); }
         });
     }); watchForm(form, () => cards.map(card => ({ title: card.title.trim(), description: card.description.trim() }))); section.append(form);
@@ -356,13 +380,13 @@ function renderDashboard(): void {
 }
 function render(): void {
     content.replaceChildren(); sections.clear(); roomForm = null;
-    view('dashboard'); renderHotel(view('hotel'));
-    for (const key of ['rooms', 'media', 'content']) {
+    view('dashboard'); const hotel = view('hotel'); renderHotel(hotel);
+    if (current) renderCards(hotel);
+    for (const key of ['rooms', 'media']) {
         const section = view(key);
         if (!current) { section.append(element('div', 'editor-card', 'Primero guarda la información de tu hotel en Mi hotel.')); continue; }
         if (key === 'rooms') renderRooms(section);
         if (key === 'media') renderMedia(section);
-        if (key === 'content') renderCards(section);
     }
     if (!current) active = 'hotel';
     header(); activate(active); content.setAttribute('aria-busy', 'false');
