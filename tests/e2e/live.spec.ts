@@ -1,0 +1,28 @@
+import { test, expect } from '@playwright/test';
+import type { HotelSummary, HotelDetail } from '../../src/types/catalog';
+import { api } from '../environment';
+test('real Spring Boot catalog and detail', async ({ page, request }, testInfo) => {
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const response = await request.get(`${api}/api/hotels`);
+    expect(response.ok()).toBe(true);
+    const hotels = await response.json() as HotelSummary[];
+    expect(hotels.length).toBeGreaterThan(0);
+    const first = hotels[0]!;
+    const detailResponse = await request.get(`${api}/api/hotels/${first.id}`);
+    expect(detailResponse.ok()).toBe(true);
+    const detail = await detailResponse.json() as HotelDetail;
+    await page.goto('./');
+    await expect(page.locator('.hotel-card')).toHaveCount(hotels.length);
+    await page.getByRole('link', { name: 'Ver hotel', exact: true }).first().click();
+    await expect(page.locator('.hero-title')).toHaveText(detail.name);
+    await expect(page.locator('.editorial-room-card')).toHaveCount(detail.roomTypes.length);
+    await expect(page.locator('.catalog-rates li')).toHaveCount(detail.roomTypes.reduce((total, room) => total + room.rates.length, 0));
+    await page.locator('#productos').scrollIntoViewIfNeeded();
+    await expect.poll(() => page.locator('main img').evaluateAll(nodes => nodes.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth > 0))).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('live-detail-desktop.png'), fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('live-detail-mobile.png'), fullPage: true });
+    expect(errors).toEqual([]);
+});

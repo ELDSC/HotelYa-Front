@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
 :root {
   /* Paleta de colores de HotelYa */
   --color-primary: #101F1A;
@@ -44,7 +46,6 @@
   --transition-slow: 600ms ease;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 /* Reseteo y estilos base */
 *, *::before, *::after { 
@@ -455,6 +456,8 @@ input, select {
 }
 
 @media (min-width: 768px) {
+  /* Keep the carousel buttons above the search bar that overlaps the hero. */
+  .carousel-controls { bottom: 90px; }
   .search-container { 
     margin-top: -70px; 
     padding: 0 var(--spacing-8); 
@@ -1438,3 +1441,14 @@ input, select {
 
 .hotel-card-image.hotel-card-image-logo { background: #050b36; }
 .hotel-card-image.hotel-card-image-logo img { object-fit: contain; }
+
+/* Catalog data states, shared by listing and hotel detail. */
+.catalog-state { grid-column: 1 / -1; padding: 2rem; text-align: center; }
+.catalog-state p { margin-bottom: 1rem; }
+.hotel-description { color: var(--text-muted, #666); margin: 0 0 1rem; line-height: 1.6; }
+.catalog-rate-title { margin: 1rem 0 .5rem; }
+.catalog-rates, .catalog-details { padding-left: 1.2rem; margin: 1rem 0; line-height: 1.7; }
+.catalog-gallery { display: flex; gap: .5rem; flex-wrap: wrap; }
+.catalog-gallery img { width: 100px; height: 80px; object-fit: cover; border-radius: .5rem; }
+.catalog-hero .hero-title { overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
