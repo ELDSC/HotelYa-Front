@@ -5,7 +5,7 @@ import { element, requiredElement } from '../ui/dom';
 import { HttpError } from '../api/client';
 import { restoreSession, signOut } from '../features/auth';
 import * as api from '../api/owner';
-import type { OwnerHotel, HotelWrite, RoomWrite, MediaInfo } from '../api/owner';
+import type { OwnerHotel, HotelWrite, RoomWrite } from '../api/owner';
 import type { RoomTypeDetail, Photo, RoomDetail, StayCard, DetailKind } from '../types/catalog';
 import { asset } from '../utils/assets';
 import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
@@ -14,13 +14,10 @@ const globalError = requiredElement('panelError', 'div');
 const sections = new Map<string, HTMLElement>();
 const previews = new Map<string, string>();
 let current: OwnerHotel | null = null;
-let files: MediaInfo[] = [];
 let active = 'dashboard';
 let roomForm: HTMLFormElement | null = null;
 let roomEditor: HTMLElement;
 let roomList: HTMLElement;
-let mediaGallery: HTMLElement;
-let hotelMediaForm: HTMLFormElement | null = null;
 let serial = 0;
 let settingsPending = false;
 protectChanges();
@@ -62,7 +59,6 @@ function activate(name: string): void {
 }
 function header(): void {
     updateHeading();
-    const badge = requiredElement('publicationBadge', 'span'); badge.textContent = current?.published ? 'Publicado' : 'Borrador'; badge.classList.toggle('published', Boolean(current?.published));
     renderDashboard();
 }
 function updateHeading(): void {
@@ -121,10 +117,10 @@ function previewNode(path: string, video: boolean, alt: string): HTMLElement {
         indicator.remove();
         if (video) { const node = element('video'); node.src = url; node.controls = true; node.preload = 'metadata'; node.setAttribute('aria-label', alt); box.append(node); }
         else { const node = element('img'); node.src = url; node.alt = alt; node.loading = 'lazy'; box.append(node); }
-    }).catch(() => { box.textContent = 'No pudimos cargar la imagen.'; });
+    }).catch(() => { box.textContent = 'No pudimos cargar el archivo.'; });
     return box;
 }
-async function removeRoomFiles(photos: Photo[]): Promise<boolean> {
+async function removeMediaFiles(photos: Pick<Photo, 'path'>[]): Promise<boolean> {
     const paths = [...new Set(photos.map(photo => photo.path).filter(path => path.startsWith('/api/media/')))];
     const results = await Promise.allSettled(paths.map(async path => {
         await api.deleteMedia(path.slice('/api/media/'.length));
@@ -209,7 +205,7 @@ function editRoom(room?: RoomTypeDetail): void {
         const remove = button('Eliminar tipo de habitación', () => {
             if (!confirm(`¿Eliminar ${room.name} y sus fotos asociadas, detalles y tarifas?`)) return;
             void busy(remove, async () => {
-                try { current = await api.deleteRoom(room.id); markSaved(form); const cleaned = await removeRoomFiles([...room.photos, ...photos]); renderRoomList(); editRoom(); header(); toast(cleaned ? 'Tipo de habitación eliminado.' : 'Tipo de habitación eliminado. No pudimos eliminar algún archivo asociado.'); }
+                try { current = await api.deleteRoom(room.id); markSaved(form); const cleaned = await removeMediaFiles([...room.photos, ...photos]); renderRoomList(); editRoom(); header(); toast(cleaned ? 'Tipo de habitación eliminado.' : 'Tipo de habitación eliminado. No pudimos eliminar algún archivo asociado.'); }
                 catch (error) { showFailure(form, status, error); }
             });
         }, 'danger'); form.querySelector('.form-actions')!.prepend(remove);
@@ -224,7 +220,7 @@ function editRoom(room?: RoomTypeDetail): void {
                 current = await api.saveRoom(body, room?.id); markSaved(form); renderRoomList(); header();
                 const updated = room ? current.detail.roomTypes.find(r => r.id === room.id) : current.detail.roomTypes.find(r => !(roomIdsAtOpen.includes(r.id)));
                 const removed = (room?.photos ?? []).filter(photo => photo.path.startsWith('/api/media/') && !photos.some(item => item.path === photo.path));
-                const cleaned = await removeRoomFiles(removed);
+                const cleaned = await removeMediaFiles(removed);
                 editRoom(updated); if (!cleaned) toast('Habitación guardada. No pudimos eliminar algún archivo retirado.'); else toast('Tipo de habitación guardado.');
             } catch (error) { showFailure(form, status, error); }
         });
@@ -236,68 +232,56 @@ function renderRooms(section: HTMLElement): void {
     const layout = element('div', 'rooms-layout'); const aside = element('div', 'room-list'); roomList = element('div'); roomEditor = element('div');
     aside.append(button('+ Nuevo tipo', () => { if (discardRoom()) editRoom(); }, 'primary'), roomList); layout.append(aside, roomEditor); section.append(layout); renderRoomList(); editRoom(current!.detail.roomTypes[0]);
 }
-function mediaSelectors(form: HTMLFormElement): void {
-    for (const key of ['logoPath', 'facadePath', 'videoPath'] as const) {
-        const input = form.querySelector<HTMLSelectElement>(`[name="${key}"]`)!; const value = input.value;
-        input.querySelectorAll('[data-uploaded]').forEach(node => node.remove());
-        for (const file of files.filter(file => file.contentType.startsWith(key === 'videoPath' ? 'video/' : 'image/'))) {
-            const option = element('option', '', file.originalName); option.value = file.path; option.dataset.uploaded = 'true'; input.append(option);
-        }
-        input.value = value;
-    }
-    markDirty(form);
-}
-function renderMediaGallery(): void {
-    if (!mediaGallery) return;
-    mediaGallery.replaceChildren(); if (hotelMediaForm) mediaSelectors(hotelMediaForm);
-    for (const file of files) {
-        const card = element('article', 'media-card'); card.append(previewNode(file.path, file.contentType.startsWith('video/'), file.originalName), element('strong', '', file.originalName), element('span', 'muted', `${(file.byteSize / 1024 / 1024).toFixed(1)} MB`));
-        const remove = button('Eliminar archivo', () => {
-            if (!confirm(`¿Eliminar definitivamente ${file.originalName}? Primero debe estar retirado de la ficha y de las habitaciones.`)) return;
-            void busy(remove, async () => {
-                try { await api.deleteMedia(file.id); files = files.filter(item => item.id !== file.id); const url = previews.get(file.path); if (url) URL.revokeObjectURL(url); previews.delete(file.path); renderMediaGallery(); toast('Archivo eliminado.'); }
-                catch (error) { showFailure(card, globalError, error); }
-            });
-        }, 'danger-link'); card.append(remove); mediaGallery.append(card);
-    }
-    if (!files.length) mediaGallery.append(element('p', 'muted', 'Aún no has subido archivos nuevos. Las fotos originales se conservan en la ficha y en cada tipo.'));
-}
 function renderMedia(section: HTMLElement): void {
-    const uploadCard = element('div', 'editor-card'); uploadCard.append(element('h2', '', 'Biblioteca de archivos'), element('p', 'muted', 'JPEG, PNG o WebP hasta 10 MB. Video MP4 hasta 100 MB. Los archivos de borradores son privados.'));
-    const input = field(uploadCard, 'file', 'Subir fotos o video', '', 'file') as HTMLInputElement; input.accept = 'image/jpeg,image/png,image/webp,video/mp4'; input.multiple = true;
-    const status = element('div'); status.setAttribute('aria-live', 'polite'); uploadCard.append(status);
-    input.addEventListener('change', () => {
-        const selected = [...input.files ?? []]; if (!selected.length) return; input.disabled = true;
-        const indicator = loader('Subiendo archivos'); status.replaceChildren(indicator);
-        void (async () => {
-            let added = 0;
-            try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } status.replaceChildren(); toast(`${added} archivo(s) subido(s).`); }
-            catch (error) { showFailure(uploadCard, status, error); }
-            finally { indicator.remove(); input.disabled = false; input.value = ''; }
-        })();
-    });
-    mediaGallery = element('div', 'media-grid'); uploadCard.append(mediaGallery); section.append(uploadCard);
-    const editor = formCard('Logo, portada y video'); hotelMediaForm = editor.form;
-    for (const [key, label] of [['logoPath', 'Logo'], ['facadePath', 'Portada / fachada'], ['videoPath', 'Video del hotel']] as const) {
-        const path = current!.detail[key]; const options: [string, string][] = [['', 'Sin archivo']];
-        if (path && !path.startsWith('/api/media/')) options.push([path, 'Archivo actual del hotel']);
-        const input = select(editor.grid, key, label, path ?? '', options);
-        const previewBox = element('div', 'identity-preview'); editor.grid.append(previewBox);
-        const draw = () => { previewBox.replaceChildren(); if (input.value) previewBox.append(previewNode(input.value, key === 'videoPath', label)); };
-        input.addEventListener('change', draw); mediaSelectorsForInitial(input, key); input.value = path ?? ''; draw();
-    }
-    editor.form.addEventListener('submit', event => {
-        event.preventDefault(); void busy(editor.submit, async () => {
-            try {
-                const data = new FormData(editor.form); const body = current!.detail;
-                current = await api.saveHotel({ ...body, logoPath: String(data.get('logoPath') || '') || null, facadePath: String(data.get('facadePath') || '') || null, videoPath: String(data.get('videoPath') || '') || null }, false);
-                markSaved(editor.form); header(); editor.status.replaceChildren(); toast('Logo, portada y video guardados.');
-            } catch (error) { showFailure(editor.form, editor.status, error); }
+    const form = element('form', 'editor-card hotel-media');
+    form.addEventListener('submit', event => event.preventDefault());
+    for (const [key, label] of [['logoPath', 'Logo'], ['facadePath', 'Portada'], ['videoPath', 'Video']] as const) {
+        const row = element('div', 'hotel-media-row'); row.dataset.media = key;
+        const copy = element('div', 'hotel-media-copy'); copy.append(element('h2', '', label),
+            element('p', 'muted', key === 'videoPath' ? 'MP4 · Hasta 100 MB' : 'JPEG, PNG o WebP · Hasta 10 MB'));
+        const previewBox = element('div', 'identity-preview');
+        const controls = element('div', 'compact-actions');
+        const input = element('input', 'form-control sr-only'); input.type = 'file'; input.name = key;
+        input.accept = key === 'videoPath' ? 'video/mp4' : 'image/jpeg,image/png,image/webp';
+        input.setAttribute('aria-label', `Subir ${label.toLowerCase()}`);
+        const status = element('div'); status.setAttribute('aria-live', 'polite');
+        let pending: File | null = null;
+        const upload = button('Subir archivo', () => { if (pending) void save(pending); else input.click(); });
+        const choose = button('Elegir otro archivo', () => input.click());
+        const remove = button('Eliminar', () => { void save(null); }, 'danger');
+        const draw = () => {
+            const path = current!.detail[key]; previewBox.replaceChildren();
+            if (path) previewBox.append(previewNode(path, key === 'videoPath', label));
+            else previewBox.append(element('span', 'muted', 'Sin archivo'));
+            upload.textContent = pending ? 'Reintentar' : path ? 'Cambiar archivo' : 'Subir archivo';
+            remove.hidden = !path; choose.hidden = !pending;
+        };
+        const save = async (file: File | null): Promise<void> => {
+            const trigger = file ? upload : remove;
+            await busy(trigger, async () => {
+                let uploaded: string | null = null;
+                const previous = current!.detail[key];
+                try {
+                    if (file) uploaded = (await api.uploadMedia(file)).path;
+                    current = await api.saveHotel({ ...current!.detail, [key]: uploaded }, false);
+                    pending = null; input.value = ''; markSaved(form); status.replaceChildren(); header();
+                    const cleaned = previous && previous !== uploaded
+                        ? await removeMediaFiles([{ path: previous }]) : true;
+                    toast(cleaned ? `${label} ${file ? key === 'facadePath' ? 'guardada' : 'guardado' : key === 'facadePath' ? 'eliminada' : 'eliminado'} correctamente.`
+                        : `${label} guardado. No pudimos eliminar el archivo anterior.`);
+                } catch (error) {
+                    if (uploaded) await removeMediaFiles([{ path: uploaded }]);
+                    showFailure(row, status, error);
+                }
+            });
+            draw();
+        };
+        input.addEventListener('change', () => {
+            pending = input.files?.[0] ?? null; if (pending) void save(pending);
         });
-    }); watchForm(editor.form); section.append(editor.form); renderMediaGallery();
-}
-function mediaSelectorsForInitial(input: HTMLSelectElement, key: string): void {
-    for (const file of files.filter(file => file.contentType.startsWith(key === 'videoPath' ? 'video/' : 'image/'))) { const option = element('option', '', file.originalName); option.value = file.path; option.dataset.uploaded = 'true'; input.append(option); }
+        controls.append(input, upload, choose, remove); row.append(copy, previewBox, controls, status); form.append(row); draw();
+    }
+    section.append(form);
 }
 function renderCards(section: HTMLElement): void {
     const { form, grid, status, submit } = formCard('Tu próxima estadía'); grid.className = 'card-editor-list';
@@ -359,7 +343,7 @@ function renderDashboard(): void {
     section.append(settings);
 }
 function render(): void {
-    content.replaceChildren(); sections.clear(); roomForm = null; hotelMediaForm = null;
+    content.replaceChildren(); sections.clear(); roomForm = null;
     view('dashboard'); renderHotel(view('hotel'));
     for (const key of ['rooms', 'media', 'content']) {
         const section = view(key);
@@ -376,7 +360,7 @@ async function load(): Promise<void> {
     try {
         const user = await restoreSession(); if (!user) { window.location.replace('acceder.html'); return; }
         requiredElement('ownerEmail', 'span').textContent = user.email;
-        try { current = await api.getOwnerHotel(); files = await api.getMedia(); }
+        try { current = await api.getOwnerHotel(); }
         catch (error) { if (error instanceof HttpError && error.status === 404) current = null; else throw error; }
         render();
     } catch (error) {
