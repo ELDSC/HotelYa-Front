@@ -6,7 +6,7 @@ export const hotel: HotelDetail = {
     id: 1, name: "Lumi's Hotel", description: 'Hotel de prueba', location: 'Lima',
     address: 'Dirección de prueba', phone: '+51999999999', logoPath: 'assets/images/lumis-hotel-logo.jpg',
     facadePath: 'assets/images/lumis-hotel-fachada.jpg', videoPath: 'assets/videos/lumis-promocional.mp4',
-    latitude: null, longitude: null, whatsapp: null, openingHours: null, checkInOutConditions: null,
+    latitude: null, longitude: null, openingHours: null, checkInOutConditions: null,
     hasParking: null, stayCards: [{ title: 'Una escapada en pareja', description: 'Haz espacio para compartir y descansar.' }],
     roomTypes: ['Temática', 'Matrimonial', 'Premium'].map((name, index) => ({
         id: index + 1, code: name, name, description: 'Descripción de prueba', totalUnits: null, availableUnits: null,

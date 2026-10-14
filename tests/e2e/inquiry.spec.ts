@@ -45,7 +45,7 @@ test('configured map uses the exact backend URL and aligns with its heading', as
 
 test('rate opens recommendations only in a dialog and missing WhatsApp prevents consultation', async ({ page }, testInfo) => {
     await page.route(`${api}/api/hotels/1`, route => route.fulfill({ json: {
-        ...hotel, roomTypes: [{ ...room, details: [...room.details, ...recommendations] }],
+        ...hotel, phone: null, roomTypes: [{ ...room, details: [...room.details, ...recommendations] }],
     } }));
     await page.goto('hotel-central.html?id=1');
     await expect(page.getByText(recommendations[0].text)).toHaveCount(0);
@@ -60,7 +60,7 @@ test('rate opens recommendations only in a dialog and missing WhatsApp prevents 
     await expect(dialog.locator('.inquiry-duration')).toHaveText('2 paquetes de 3 horas (6 horas en total)');
     await expect(dialog.locator('.inquiry-total')).toContainText('120.00');
     await expect(dialog.getByRole('button', { name: 'Consultar por WhatsApp' })).toBeDisabled();
-    await expect(dialog.getByRole('status')).toContainText('no tiene un número de WhatsApp configurado');
+    await expect(dialog.getByRole('status')).toContainText('no tiene un teléfono y WhatsApp válido configurado');
     await page.screenshot({ path: testInfo.outputPath('inquiry-desktop.png') });
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -79,9 +79,12 @@ test('rate opens recommendations only in a dialog and missing WhatsApp prevents 
 test('WhatsApp consultation contains the configured number, selected mode, duration and total', async ({ page, context }) => {
     await context.route('https://wa.me/**', route => route.fulfill({ contentType: 'text/html', body: 'Consulta de prueba' }));
     await page.route(`${api}/api/hotels/1`, route => route.fulfill({ json: {
-        ...hotel, whatsapp: '+51912345678', phone: '+51111111111', roomTypes: [room],
+        ...hotel, phone: '+51912345678', roomTypes: [room],
     } }));
     await page.goto('hotel-central.html?id=1');
+    await expect(page.locator('#informacion')).toContainText('Teléfono y WhatsApp: +51 912 345 678');
+    await expect(page.locator('#hotelFooterContact a')).toHaveAttribute('href', 'tel:+51912345678');
+    await expect(page.locator('#hotelFooterContact a')).toHaveText('+51 912 345 678');
     await page.getByRole('button', { name: /Consultar Temática: Por hora/ }).click();
     const dialog = page.getByRole('dialog');
     for (const [mode, label, quantity, duration, total] of [

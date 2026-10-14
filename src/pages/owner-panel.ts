@@ -13,6 +13,8 @@ import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges,
 import { ownerPages, type OwnerPage } from '../config/owner-pages';
 import { mountOwnerLayout } from '../ui/owner-layout';
 import { appPath } from '../utils/urls';
+import { phoneValue } from '../utils/phone';
+import { phoneField } from '../ui/phone-field';
 const page = document.body.dataset.ownerPage;
 if (!page || !Object.hasOwn(ownerPages, page)) throw new Error('Página del panel desconocida.');
 const active = page as OwnerPage;
@@ -85,7 +87,7 @@ function hotelBody(form: HTMLFormElement): HotelWrite {
     const optional = (key: string): string | null => text(key) || null;
     return {
         name: text('name'), description: text('description'), address: text('address'), location: text('location'),
-        phone: optional('phone'), whatsapp: optional('whatsapp'), latitude: current?.detail.latitude ?? null, longitude: current?.detail.longitude ?? null, mapUrl: optional('mapUrl'),
+        phone: phoneValue(text('phone')), latitude: current?.detail.latitude ?? null, longitude: current?.detail.longitude ?? null, mapUrl: optional('mapUrl'),
         openingHours: null, openingTime: optional('openingTime'), closingTime: optional('closingTime'), checkInOutConditions: optional('checkInOutConditions'),
         hasParking: current?.detail.hasParking ?? null,
         logoPath: current?.detail.logoPath ?? null, facadePath: current?.detail.facadePath ?? null, videoPath: current?.detail.videoPath ?? null,
@@ -94,9 +96,10 @@ function hotelBody(form: HTMLFormElement): HotelWrite {
 function renderHotel(section: HTMLElement): void {
     const { form, grid, status, submit } = formCard('');
     const hotel = current?.detail;
-    for (const [key, label] of [['name', 'Nombre del hotel *'], ['location', 'Zona o distrito *'], ['address', 'Dirección *'], ['phone', 'Teléfono (formato +51…)'], ['whatsapp', 'WhatsApp (formato +51…)']] as const) {
-        const input = field(grid, key, label, hotel?.[key]); input.required = ['name', 'location', 'address'].includes(key); input.maxLength = key === 'address' ? 500 : key === 'phone' || key === 'whatsapp' ? 40 : 200;
+    for (const [key, label] of [['name', 'Nombre del hotel *'], ['location', 'Zona o distrito *'], ['address', 'Dirección *']] as const) {
+        const input = field(grid, key, label, hotel?.[key]); input.required = true; input.maxLength = key === 'address' ? 500 : 200;
     }
+    grid.append(phoneField(hotel?.phone));
     const desc = field(grid, 'description', 'Descripción *', hotel?.description, 'textarea'); desc.required = true; desc.maxLength = 10000;
     const map = field(grid, 'mapUrl', 'URL del lugar', hotel?.mapUrl, 'url'); map.maxLength = 2048;
     map.placeholder = 'https://maps.app.goo.gl/…';

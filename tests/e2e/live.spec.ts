@@ -33,7 +33,7 @@ test('real Spring Boot catalog and detail', async ({ page, request }, testInfo) 
         await firstRate.click();
         const dialog = page.getByRole('dialog');
         await expect(dialog).toContainText(detail.roomTypes.find(room => room.rates.length)!.name);
-        if (!detail.whatsapp) await expect(dialog.getByRole('button', { name: 'Consultar por WhatsApp' })).toBeDisabled();
+        if (!detail.phone) await expect(dialog.getByRole('button', { name: 'Consultar por WhatsApp' })).toBeDisabled();
         await page.screenshot({ path: testInfo.outputPath('live-inquiry-mobile.png') });
     }
     expect(errors).toEqual([]);

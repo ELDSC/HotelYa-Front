@@ -36,6 +36,11 @@
  border-color:#81958b; box-shadow:0 0 0 2px #101f1a0a;
 }
 .form-field textarea { min-height:108px; resize:vertical; }
+.phone-control { display:flex; align-items:stretch; border:1px solid var(--color-border); border-radius:4px; background:var(--color-surface); overflow:hidden; }
+.phone-prefix { display:flex; align-items:center; padding:12px 14px; border-right:1px solid var(--color-border); background:#f1f3f1; font-weight:500; white-space:nowrap; }
+.form-field .phone-control input { border:0; border-radius:0; letter-spacing:.06em; }
+.phone-control:focus-within { border-color:#81958b; box-shadow:0 0 0 2px #101f1a0a; }
+.form-field .phone-control input:focus { box-shadow:none; }
 .form-field input[type=file] { font-size:.8rem; }
 .full-width { grid-column:1/-1; }
 .required-mark,.field-error { color:#b42318; }

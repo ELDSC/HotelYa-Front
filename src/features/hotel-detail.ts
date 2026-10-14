@@ -6,6 +6,7 @@ import { state } from '../ui/catalog-state';
 import { createStayInquiry } from '../ui/stay-inquiry';
 import { asset } from '../utils/assets';
 import { formatMoney, rateModeLabel } from '../utils/rates';
+import { formatPhone } from '../utils/phone';
 
 export function initHotelDetail(): void {
     const container = requiredElement('hotelDetailContainer', 'div');
@@ -34,7 +35,7 @@ export function initHotelDetail(): void {
         return node;
     }
     function phoneLink(phone: string | null, label: string, className: string) {
-        if (!phone || !/^\+[0-9]{7,15}$/.test(phone)) return null;
+        if (!phone || !/^\+51[0-9]{9}$/.test(phone)) return null;
         const link = element('a', className, label);
         link.href = `tel:${phone}`;
         return link;
@@ -77,8 +78,7 @@ export function initHotelDetail(): void {
         const text = element('div', 'editorial-info-text');
         const details = element('ul', 'editorial-list');
         row(details, 'Dirección', hotel.address);
-        row(details, 'Teléfono', hotel.phone);
-        row(details, 'WhatsApp', hotel.whatsapp);
+        row(details, 'Teléfono y WhatsApp', formatPhone(hotel.phone));
         row(details, 'Horarios', hotel.openingTime && hotel.closingTime
             ? `${hotel.openingTime.slice(0, 5)} a ${hotel.closingTime.slice(0, 5)}` : hotel.openingHours);
         row(details, 'Entrada y salida', hotel.checkInOutConditions);
@@ -193,7 +193,7 @@ export function initHotelDetail(): void {
         });
         const footer = requiredElement('hotelFooterContact', 'div');
         footer.replaceChildren(element('p', 'footer-text', hotel.address));
-        const phone = phoneLink(hotel.phone, hotel.phone ?? '', 'contact-value');
+        const phone = phoneLink(hotel.phone, formatPhone(hotel.phone), 'contact-value');
         if (phone) footer.append(phone);
     }
     async function loadHotel() {

@@ -44,10 +44,9 @@ export function createStayInquiry(hotel: HotelDetail): { dialog: HTMLDialogEleme
         const actions = element('div', 'inquiry-actions');
         const error = element('p', 'inquiry-contact-note'); error.setAttribute('role', 'status');
         const submit = element('button', 'btn btn-primary', 'Consultar por WhatsApp'); submit.type = 'submit';
-        // Use only the hotel's configured WhatsApp, never its phone as a fallback.
-        const whatsapp = hotel.whatsapp && /^\+[1-9][0-9]{6,14}$/.test(hotel.whatsapp) ? hotel.whatsapp.slice(1) : null;
+        const whatsapp = hotel.phone && /^\+51[0-9]{9}$/.test(hotel.phone) ? hotel.phone.slice(1) : null;
         submit.disabled = !whatsapp;
-        if (!whatsapp) error.textContent = 'Este hotel aún no tiene un número de WhatsApp configurado para consultas.';
+        if (!whatsapp) error.textContent = 'Este hotel aún no tiene un teléfono y WhatsApp válido configurado para consultas.';
         const selectedRate = () => room.rates[Number(mode.value)];
         function update(): void {
             const rate = selectedRate();
