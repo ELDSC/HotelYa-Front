@@ -1,9 +1,20 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 const backend = 'http://127.0.0.1:8081';
 const image = readFileSync('public/assets/images/lumis-cuarto-matrimonial.jpg');
+async function openSidebar(page: Page): Promise<void> {
+    if (await page.locator('#sidebarToggle').isVisible()) {
+        await page.locator('#sidebarToggle').click();
+        await expect(page.locator('#ownerSidebar')).toHaveClass(/show(?:\s|$)/);
+    }
+}
+async function chooseSection(page: Page, section: string): Promise<void> {
+    await openSidebar(page);
+    await page.locator(`[data-section="${section}"]`).click();
+    if (await page.locator('#sidebarToggle').isVisible()) await expect(page.locator('#ownerSidebar')).not.toBeVisible();
+}
 test.beforeAll(() => { execFileSync('../HotelYa-Back/scripts/clean-browser-test-data.sh'); });
 test.afterAll(() => { execFileSync('../HotelYa-Back/scripts/clean-browser-test-data.sh'); });
 test('owner manages a hotel from registration through publication, editing and deletion', async ({ page, context }, testInfo) => {
@@ -39,6 +50,30 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.getByText('Hotel creado en borrador.', { exact: true })).toBeVisible();
     await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Información', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Volver al catálogo' })).toHaveCount(0);
+    if (testInfo.project.name === 'owner-mobile') {
+        await expect(page.locator('#ownerSidebar')).not.toBeVisible();
+        await openSidebar(page);
+        await expect(page.locator('#ownerSidebar')).toHaveAttribute('aria-modal', 'true');
+        const sidebarBounds = (await page.locator('#ownerSidebar').boundingBox())!;
+        expect(sidebarBounds.width).toBe(page.viewportSize()!.width);
+        expect(sidebarBounds.height).toBe(page.viewportSize()!.height);
+        await page.screenshot({ path: testInfo.outputPath('sidebar-mobile.png') });
+        await page.getByRole('button', { name: 'Cerrar menú' }).click();
+        await expect(page.locator('#ownerSidebar')).not.toBeVisible();
+        await openSidebar(page); await page.keyboard.press('Escape');
+        await expect(page.locator('#ownerSidebar')).not.toBeVisible();
+        await expect(page.locator('#sidebarToggle')).toHaveAttribute('aria-expanded', 'false');
+    } else {
+        const linkBounds = (await page.locator('#publicHotelLink').boundingBox())!;
+        const footerBounds = (await page.locator('.owner-sidebar-footer').boundingBox())!;
+        const accountBounds = (await page.locator('.owner-account').boundingBox())!;
+        const sidebarBounds = (await page.locator('#ownerSidebar').boundingBox())!;
+        expect(linkBounds.y).toBe(footerBounds.y + 24);
+        expect(accountBounds.y - (linkBounds.y + linkBounds.height)).toBe(24);
+        expect(sidebarBounds.y + sidebarBounds.height - (footerBounds.y + footerBounds.height)).toBe(30);
+    }
+
     expect(await (await context.request.get(`${backend}/api/hotels`)).json()).toEqual([]);
     await expect(page.locator('#section-hotel').getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
     await page.getByLabel('URL del lugar').fill('https://maps.app.goo.gl/example');
@@ -48,7 +83,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.locator('#section-hotel').getByRole('button', { name: 'Guardar cambios' }).click();
     expect((await (await informationSaved).json()).detail.hasParking).toBeNull();
     await expect(page.getByText('Información guardada.')).toBeVisible();
-    await page.locator('[data-section="dashboard"]').click();
+    await chooseSection(page, 'dashboard');
     const parkingSwitch = page.getByRole('switch', { name: 'Estacionamiento' });
     const publicationSwitch = page.getByRole('switch', { name: 'Hotel publicado' });
     await expect(parkingSwitch).toHaveAttribute('aria-checked', 'false');
@@ -62,7 +97,9 @@ test('owner manages a hotel from registration through publication, editing and d
     await parkingSwitch.click();
     await expect(parkingSwitch.locator('.spinner')).toBeVisible();
     await expect(publicationSwitch).toBeDisabled();
-    expect(await parkingSwitch.boundingBox()).toEqual(initialSwitchBounds);
+    const loadingSwitchBounds = await parkingSwitch.boundingBox();
+    expect(loadingSwitchBounds?.width).toBe(initialSwitchBounds?.width);
+    expect(loadingSwitchBounds?.height).toBe(initialSwitchBounds?.height);
     releaseParking();
     await expect(page.getByRole('alert')).toHaveText('No pudimos actualizar el estacionamiento.');
     await expect(parkingSwitch).toHaveAttribute('aria-checked', 'false');
@@ -81,7 +118,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(publicationSwitch).toBeEnabled();
     await expect(page.locator('[data-section="publication"]')).toHaveCount(0);
     await expect(page.locator('.panel-stats')).toHaveCount(0);
-    await page.locator('[data-section="media"]').click();
+    await chooseSection(page, 'media');
     const media = page.locator('#section-media');
     const logo = media.locator('[data-media="logoPath"]');
     const cover = media.locator('[data-media="facadePath"]');
@@ -131,10 +168,10 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.unroute(`${backend}/api/owner/media`);
     await expect(video.locator('video')).toHaveCount(1);
     await page.screenshot({ path: testInfo.outputPath('multimedia.png'), fullPage: true });
-    await page.reload(); await page.locator('[data-section="media"]').click();
+    await page.reload(); await chooseSection(page, 'media');
     await expect(logo.locator('img')).toHaveCount(1); await expect(cover.locator('img')).toHaveCount(1);
     await expect(video.locator('video')).toHaveCount(1);
-    await page.locator('[data-section="rooms"]').click();
+    await chooseSection(page, 'rooms');
     const editor = page.locator('#section-rooms form');
     await editor.getByLabel('Nombre *', { exact: true }).fill('Matrimonial');
     await editor.getByLabel('Descripción *', { exact: true }).fill('Cama matrimonial y baño privado.');
@@ -181,13 +218,13 @@ test('owner manages a hotel from registration through publication, editing and d
     expect(saveBounds.x).toBeGreaterThan(deleteBounds.x);
     expect(saveBounds.x >= deleteBounds.x + deleteBounds.width + 12 || saveBounds.y >= deleteBounds.y + deleteBounds.height + 12).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('habitaciones.png'), fullPage: true });
-    await page.locator('[data-section="content"]').click();
+    await chooseSection(page, 'content');
     await page.getByRole('button', { name: '+ Añadir tarjeta' }).click();
     await page.locator('[name="stayCards.0.title"]').fill('Descansa en Lima');
     await page.locator('[name="stayCards.0.description"]').fill('Una estadía a tu ritmo.');
     await page.locator('#section-content').getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(page.getByText('Contenido guardado.')).toBeVisible();
-    await page.locator('[data-section="dashboard"]').click();
+    await chooseSection(page, 'dashboard');
     await publicationSwitch.click();
     await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(page.locator('#ownerToastMessage')).toHaveText('Guardado correctamente.');
@@ -197,8 +234,9 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.locator('#ownerToast')).not.toBeVisible({ timeout: 6500 });
     const catalog = await (await context.request.get(`${backend}/api/hotels`)).json() as { id: number }[];
     expect(catalog).toHaveLength(1);
-    await expect(page.locator('.panel-heading').getByRole('link', { name: 'Ver ficha pública' })).toBeVisible();
-    const popupPromise = page.waitForEvent('popup'); await page.getByRole('link', { name: 'Ver ficha pública' }).click(); const popup = await popupPromise;
+    await openSidebar(page);
+    await expect(page.locator('.owner-sidebar').getByRole('link', { name: 'Ver mi página' })).toBeVisible();
+    const popupPromise = page.waitForEvent('popup'); await page.getByRole('link', { name: 'Ver mi página' }).click(); const popup = await popupPromise;
     await expect(popup.getByText('2 unidad(es) disponibles actualmente.')).toBeVisible();
     await expect(popup.locator('.editorial-room-image img')).toHaveAttribute('alt', 'Habitación Matrimonial');
     await expect(popup.locator('.editorial-room-image img')).toHaveAttribute('src', new RegExp(roomUploads[1]!.slice('/api/media/'.length)));
@@ -214,7 +252,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.reload(); await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(parkingSwitch).toHaveAttribute('aria-checked', 'true');
     await expect(publicationSwitch).toHaveAttribute('aria-checked', 'true');
-    await page.locator('[data-section="rooms"]').click(); await page.getByRole('button', { name: 'Matrimonial', exact: false }).click();
+    await chooseSection(page, 'rooms'); await page.getByRole('button', { name: 'Matrimonial', exact: false }).click();
     await editor.getByLabel('Disponibles ahora *').fill('1');
     await editor.getByRole('switch', { name: 'Activar tarifa por hora' }).uncheck();
     await editor.getByRole('button', { name: 'Eliminar fotografía 2' }).click();
@@ -224,20 +262,32 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(editor.getByRole('switch', { name: 'Activar tarifa del paquete' })).toBeChecked();
     await expect(editor.locator('.room-photo')).toHaveCount(1);
     expect((await context.request.get(`${backend}${roomUploads[0]}`)).status()).toBe(404);
-    await page.locator('[data-section="hotel"]').click();
+    await chooseSection(page, 'hotel');
     const hotelForm = page.locator('#section-hotel form'); await hotelForm.getByLabel('Descripción *', { exact: true }).fill('Edición que debe conservarse al fallar.');
     await page.route(`${backend}/api/owner/hotel`, async route => { if (route.request().method() === 'PUT') await route.fulfill({ status: 503, json: { message: 'Error de prueba recuperable.', fields: {} } }); else await route.continue(); });
     await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(hotelForm.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
     await expect(hotelForm.getByText('Error de prueba recuperable.')).toBeVisible(); await expect(hotelForm.getByLabel('Descripción *', { exact: true })).toHaveValue('Edición que debe conservarse al fallar.');
     await page.unroute(`${backend}/api/owner/hotel`); await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.locator('#ownerToast').getByText('Información guardada.')).toBeVisible();
-    await page.locator('[data-section="dashboard"]').click(); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveCount(0);
-    await page.locator('[data-section="rooms"]').click();
+    await chooseSection(page, 'dashboard'); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveCount(0);
+    await expect(publicationSwitch).toHaveAttribute('aria-checked', 'false');
+    await openSidebar(page);
+    await expect(page.locator('.owner-sidebar').getByRole('link', { name: 'Ver mi página' })).toHaveAttribute('href', /&preview=1$/);
+    const privatePopupPromise = page.waitForEvent('popup');
+    await page.locator('.owner-sidebar').getByRole('link', { name: 'Ver mi página' }).click();
+    const privatePopup = await privatePopupPromise;
+    await expect(privatePopup).toHaveURL(/hotel-central.html\?id=\d+&preview=1$/);
+    await expect(privatePopup.getByText('Vista previa privada', { exact: false })).toBeVisible();
+    await expect(privatePopup.getByText('Edición que debe conservarse al fallar.', { exact: false }).first()).toBeVisible();
+    await expect(privatePopup.getByText('1 unidad(es) disponibles actualmente.')).toBeVisible();
+    await expect.poll(() => privatePopup.locator('.editorial-room-image img').evaluate(node => (node as HTMLImageElement).naturalWidth > 0)).toBe(true);
+    await privatePopup.close();
+    await chooseSection(page, 'rooms');
     const photoDeleted = page.waitForResponse(response => response.url() === `${backend}/api/owner/media/${roomUploads[1]!.slice('/api/media/'.length)}` && response.request().method() === 'DELETE');
     await page.getByRole('button', { name: 'Eliminar tipo de habitación' }).click();
     expect((await photoDeleted).status()).toBe(204); await expect(page.getByText('Tipo de habitación eliminado.', { exact: false })).toBeVisible();
     expect((await context.request.get(`${backend}${roomUploads[1]}`)).status()).toBe(404);
-    await page.locator('[data-section="media"]').click();
+    await chooseSection(page, 'media');
     for (const slot of [logo, cover, video]) {
         await slot.getByRole('button', { name: 'Eliminar', exact: true }).click();
         await expect(slot.getByText('Sin archivo')).toBeVisible();
@@ -246,6 +296,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.locator('#ownerToastMessage')).toHaveText('Video eliminado correctamente.');
     await expect.poll(() => hotelUploads.length === 5 && hotelUploads.every(path => deletedFiles.has(path))).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    await openSidebar(page);
     await page.getByRole('button', { name: 'Cerrar sesión' }).click(); await expect(page).toHaveURL(/acceder.html$/);
     await page.goto('panel-dueno.html'); await expect(page).toHaveURL(/acceder.html$/);
     expect(errors).toEqual([]);

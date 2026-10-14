@@ -1,4 +1,5 @@
 import '../styles/owner.css';
+import Offcanvas from 'bootstrap/js/dist/offcanvas';
 import { toast } from '../ui/toast';
 import { roomRates } from '../ui/room-rates';
 import { element, requiredElement } from '../ui/dom';
@@ -20,6 +21,17 @@ let roomEditor: HTMLElement;
 let roomList: HTMLElement;
 let serial = 0;
 let settingsPending = false;
+const sidebar = document.getElementById('ownerSidebar')!;
+const sidebarToggle = requiredElement('sidebarToggle', 'button');
+const mobileSidebar = window.matchMedia('(max-width: 760px)');
+function closeSidebar(): void {
+    if (mobileSidebar.matches) Offcanvas.getInstance(sidebar)?.hide();
+}
+sidebar.addEventListener('show.bs.offcanvas', () => sidebarToggle.setAttribute('aria-expanded', 'true'));
+sidebar.addEventListener('hidden.bs.offcanvas', () => sidebarToggle.setAttribute('aria-expanded', 'false'));
+sidebar.addEventListener('click', event => {
+    if ((event.target as HTMLElement).closest('[data-section], #publicHotelLink')) closeSidebar();
+});
 protectChanges();
 window.addEventListener('pagehide', () => previews.forEach(url => URL.revokeObjectURL(url)));
 function button(text: string, action?: () => void, className = 'secondary'): HTMLButtonElement {
@@ -64,8 +76,8 @@ function header(): void {
 function updateHeading(): void {
     const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia', content: 'Contenido' };
     requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
-    const link = requiredElement('publicHotelLink', 'a'); link.hidden = active !== 'dashboard' || !current?.published;
-    if (current) link.href = `hotel-central.html?id=${current.detail.id}`;
+    const link = requiredElement('publicHotelLink', 'a'); link.hidden = !current;
+    if (current) link.href = `hotel-central.html?id=${current.detail.id}${current.published ? '' : '&preview=1'}`;
 }
 function hotelBody(form: HTMLFormElement): HotelWrite {
     const data = new FormData(form);
