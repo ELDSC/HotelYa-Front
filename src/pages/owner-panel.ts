@@ -1,4 +1,5 @@
 import '../styles/owner.css';
+import { toast } from '../ui/toast';
 import { element, requiredElement } from '../ui/dom';
 import { HttpError } from '../api/client';
 import { restoreSession, signOut } from '../features/auth';
@@ -8,7 +9,7 @@ import type { RoomTypeDetail, Photo, RoomDetail, RateInfo, StayCard, DetailKind,
 import { asset } from '../utils/assets';
 import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
 const content = requiredElement('panelContent', 'div');
-const globalMessage = requiredElement('panelMessage', 'div');
+const globalError = requiredElement('panelError', 'div');
 const sections = new Map<string, HTMLElement>();
 const previews = new Map<string, string>();
 let current: OwnerHotel | null = null;
@@ -20,6 +21,7 @@ let roomList: HTMLElement;
 let mediaGallery: HTMLElement;
 let hotelMediaForm: HTMLFormElement | null = null;
 let serial = 0;
+let settingsPending = false;
 protectChanges();
 window.addEventListener('pagehide', () => previews.forEach(url => URL.revokeObjectURL(url)));
 function button(text: string, action?: () => void, className = 'secondary'): HTMLButtonElement {
@@ -65,6 +67,8 @@ function header(): void {
 function updateHeading(): void {
     const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia', content: 'Contenido' };
     requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
+    const link = requiredElement('publicHotelLink', 'a'); link.hidden = active !== 'dashboard' || !current?.published;
+    if (current) link.href = `hotel-central.html?id=${current.detail.id}`;
 }
 function hotelBody(form: HTMLFormElement): HotelWrite {
     const data = new FormData(form);
@@ -97,8 +101,8 @@ function renderHotel(section: HTMLElement): void {
         event.preventDefault(); void busy(submit, async () => {
             try {
                 const creating = !current; current = await api.saveHotel(hotelBody(form), creating); markSaved(form);
-                if (creating) { render(); notify(globalMessage, 'Tu hotel está creado en borrador. Añade habitaciones y archivos antes de publicarlo.'); }
-                else { header(); notify(status, 'Información guardada.'); }
+                if (creating) { render(); toast('Hotel creado en borrador.'); }
+                else { header(); status.replaceChildren(); toast('Información guardada.'); }
             } catch (error) { showFailure(form, status, error); }
         });
     });
@@ -166,7 +170,7 @@ function editRoom(room?: RoomTypeDetail): void {
     upload.addEventListener('change', () => {
         const file = upload.files?.[0]; if (!file) return; upload.disabled = true; submit.disabled = true;
         const indicator = loader('Subiendo imagen'); status.replaceChildren(indicator);
-        void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); notify(status, 'Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
+        void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); status.replaceChildren(); toast('Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
             .catch(error => showFailure(form, status, error)).finally(() => { indicator.remove(); upload.disabled = false; submit.disabled = false; upload.value = ''; });
     });
     const detailSection = element('div', 'editor-subsection'); const detailRows = element('div'); detailSection.append(element('h3', '', 'Características y condiciones'), detailRows);
@@ -200,7 +204,7 @@ function editRoom(room?: RoomTypeDetail): void {
         const remove = button('Eliminar tipo de habitación', () => {
             if (!confirm(`¿Eliminar ${room.name} y sus fotos asociadas, detalles y tarifas?`)) return;
             void busy(remove, async () => {
-                try { current = await api.deleteRoom(room.id); markSaved(form); renderRoomList(); editRoom(); header(); notify(globalMessage, 'Tipo de habitación eliminado. Los archivos siguen disponibles en Multimedia.'); }
+                try { current = await api.deleteRoom(room.id); markSaved(form); renderRoomList(); editRoom(); header(); toast('Tipo de habitación eliminado.'); }
                 catch (error) { showFailure(form, status, error); }
             });
         }, 'danger'); form.append(remove);
@@ -211,7 +215,7 @@ function editRoom(room?: RoomTypeDetail): void {
             try {
                 current = await api.saveRoom(body, room?.id); markSaved(form); renderRoomList(); header();
                 const updated = room ? current.detail.roomTypes.find(r => r.id === room.id) : current.detail.roomTypes.find(r => !(roomIdsAtOpen.includes(r.id)));
-                editRoom(updated); notify(roomEditor.querySelector('[aria-live]') as HTMLElement, 'Tipo de habitación guardado.');
+                editRoom(updated); toast('Tipo de habitación guardado.');
             } catch (error) { showFailure(form, status, error); }
         });
     });
@@ -245,8 +249,8 @@ function renderMediaGallery(): void {
         const remove = button('Eliminar archivo', () => {
             if (!confirm(`¿Eliminar definitivamente ${file.originalName}? Primero debe estar retirado de la ficha y de las habitaciones.`)) return;
             void busy(remove, async () => {
-                try { await api.deleteMedia(file.id); files = files.filter(item => item.id !== file.id); const url = previews.get(file.path); if (url) URL.revokeObjectURL(url); previews.delete(file.path); renderMediaGallery(); notify(globalMessage, 'Archivo eliminado.'); }
-                catch (error) { showFailure(card, globalMessage, error); }
+                try { await api.deleteMedia(file.id); files = files.filter(item => item.id !== file.id); const url = previews.get(file.path); if (url) URL.revokeObjectURL(url); previews.delete(file.path); renderMediaGallery(); toast('Archivo eliminado.'); }
+                catch (error) { showFailure(card, globalError, error); }
             });
         }, 'danger-link'); card.append(remove); mediaGallery.append(card);
     }
@@ -261,7 +265,7 @@ function renderMedia(section: HTMLElement): void {
         const indicator = loader('Subiendo archivos'); status.replaceChildren(indicator);
         void (async () => {
             let added = 0;
-            try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } notify(status, `${added} archivo(s) subido(s). Selecciónalos para usarlos en la ficha.`); }
+            try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } status.replaceChildren(); toast(`${added} archivo(s) subido(s).`); }
             catch (error) { showFailure(uploadCard, status, error); }
             finally { indicator.remove(); input.disabled = false; input.value = ''; }
         })();
@@ -281,7 +285,7 @@ function renderMedia(section: HTMLElement): void {
             try {
                 const data = new FormData(editor.form); const body = current!.detail;
                 current = await api.saveHotel({ ...body, logoPath: String(data.get('logoPath') || '') || null, facadePath: String(data.get('facadePath') || '') || null, videoPath: String(data.get('videoPath') || '') || null }, false);
-                markSaved(editor.form); header(); notify(editor.status, 'Logo, portada y video guardados.');
+                markSaved(editor.form); header(); editor.status.replaceChildren(); toast('Logo, portada y video guardados.');
             } catch (error) { showFailure(editor.form, editor.status, error); }
         });
     }); section.append(editor.form); renderMediaGallery();
@@ -306,44 +310,47 @@ function renderCards(section: HTMLElement): void {
     form.insertBefore(button('+ Añadir tarjeta', () => { cards.push({ title: '', description: '' }); markDirty(form); draw(); }), status);
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
-            try { current = await api.saveCards(cards); markSaved(form); header(); notify(status, 'Contenido guardado.'); }
+            try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Contenido guardado.'); }
             catch (error) { showFailure(form, status, error); }
         });
     }); section.append(form);
 }
+function settingRow(label: string, checked: boolean, save: (next: boolean) => Promise<OwnerHotel>, publication = false): HTMLElement {
+    const row = element('div', 'setting-row'); const copy = element('div', 'setting-copy');
+    copy.append(element('span', 'setting-label', label));
+    const status = element('div'); status.id = `setting-status-${++serial}`; status.setAttribute('aria-live', 'polite'); copy.append(status);
+    const controls = element('div', 'setting-controls'); controls.append(element('span', 'setting-value', checked ? 'Sí' : 'No'));
+    const toggle = button('', () => {
+        if (settingsPending) return;
+        if (publication && hasChanges()) { notify(status, 'Guarda los cambios pendientes antes de cambiar la publicación.', true); return; }
+        void busy(toggle, async () => {
+            settingsPending = true;
+            document.querySelectorAll<HTMLButtonElement>('.setting-switch').forEach(node => { node.disabled = true; });
+            status.replaceChildren();
+            try { current = await save(!checked); header(); toast(); }
+            catch (error) { showFailure(row, status, error); toggle.setAttribute('aria-describedby', status.id); }
+            finally {
+                settingsPending = false;
+                document.querySelectorAll<HTMLButtonElement>('.setting-switch').forEach(node => { node.disabled = false; });
+            }
+        });
+    }, 'setting-switch');
+    toggle.setAttribute('role', 'switch'); toggle.setAttribute('aria-label', label); toggle.setAttribute('aria-checked', String(checked)); toggle.disabled = settingsPending;
+    const track = element('span', 'switch-track'); track.setAttribute('aria-hidden', 'true'); track.append(element('span', 'switch-thumb')); toggle.append(track);
+    controls.append(toggle); row.append(copy, controls); return row;
+}
 function renderDashboard(): void {
     const section = sections.get('dashboard'); if (!section) return;
-    if (section.querySelector('form[data-dirty="true"]')) return;
     section.replaceChildren();
     if (!current) {
         section.append(button('Configurar mi hotel', () => activate('hotel'), 'primary')); return;
     }
-    const actions = element('div', 'dashboard-actions'); const status = element('div'); status.setAttribute('aria-live', 'polite');
-    const change = button(current.published ? 'Ocultar hotel' : 'Publicar hotel', () => {
-        if (hasChanges()) { notify(status, 'Guarda los cambios pendientes antes de cambiar la publicación.', true); return; }
-        if (current!.published && !confirm('¿Ocultar el hotel del catálogo público?')) return;
-        void busy(change, async () => {
-            try { current = await api.setPublication(!current!.published); header(); notify(globalMessage, current.published ? 'Hotel publicado.' : 'Hotel oculto.'); }
-            catch (error) { showFailure(section, status, error); }
-        });
-    }, current.published ? 'secondary' : 'primary');
-    actions.append(change);
-    if (current.published) {
-        const publicLink = element('a', 'secondary', 'Ver ficha pública'); publicLink.href = `hotel-central.html?id=${current.detail.id}`;
-        publicLink.target = '_blank'; publicLink.rel = 'noopener'; actions.append(publicLink);
-    }
-    const parking = formCard('Estacionamiento');
-    const choice = select(parking.grid, 'hasParking', '¿Tiene estacionamiento?', String(current.detail.hasParking ?? false), [['true', 'Sí'], ['false', 'No']]);
-    parking.submit.textContent = 'Guardar estacionamiento';
-    parking.form.addEventListener('submit', event => {
-        event.preventDefault(); void busy(parking.submit, async () => {
-            try {
-                current = await api.saveHotel({ ...current!.detail, hasParking: choice.value === 'true' }, false);
-                markSaved(parking.form); notify(parking.status, 'Estacionamiento guardado.');
-            } catch (error) { showFailure(parking.form, parking.status, error); }
-        });
-    });
-    section.append(actions, status, parking.form);
+    const settings = element('div', 'settings-list');
+    settings.append(
+        settingRow('Hotel publicado', current.published, next => api.setPublication(next), true),
+        settingRow('Estacionamiento', current.detail.hasParking === true, next => api.saveHotel({ ...current!.detail, hasParking: next }, false)),
+    );
+    section.append(settings);
 }
 function render(): void {
     content.replaceChildren(); sections.clear(); roomForm = null; hotelMediaForm = null;
@@ -367,13 +374,13 @@ async function load(): Promise<void> {
         catch (error) { if (error instanceof HttpError && error.status === 404) current = null; else throw error; }
         render();
     } catch (error) {
-        content.replaceChildren(); const retry = button('Reintentar', () => { void load(); }); content.append(retry); showFailure(content, globalMessage, error); content.setAttribute('aria-busy', 'false');
+        content.replaceChildren(); const retry = button('Reintentar', () => { void load(); }); content.append(retry); showFailure(content, globalError, error); content.setAttribute('aria-busy', 'false');
     }
 }
 requiredElement('panelNav', 'nav').addEventListener('click', event => { const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-section]'); if (target?.dataset.section) activate(target.dataset.section); });
 requiredElement('logout', 'button').addEventListener('click', () => {
     if (hasChanges() && !confirm('Hay cambios sin guardar. ¿Deseas cerrar sesión y descartarlos?')) return;
     const logout = requiredElement('logout', 'button');
-    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = 'acceder.html'; } catch (error) { showFailure(content, globalMessage, error); } });
+    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = 'acceder.html'; } catch (error) { showFailure(content, globalError, error); } });
 });
 void load();
