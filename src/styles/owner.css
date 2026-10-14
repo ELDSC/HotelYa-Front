@@ -76,7 +76,22 @@
 .photo-row .media-preview img { height:110px; }
 .identity-preview .media-preview { max-width:240px; }
 .identity-preview img { object-fit:contain; }
-.content-card-editor { display:flex; flex-direction:column; gap:18px; padding:24px 0; border-bottom:1px solid var(--color-border); }
+.presentation-heading { display:flex; align-items:start; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.presentation-heading h2 { margin:0 0 8px; }
+.presentation-heading p { margin:0; line-height:1.5; }
+.presentation-count { flex-shrink:0; padding:6px 10px; border:1px solid var(--color-border); border-radius:4px; color:var(--color-text-muted); font-size:.78rem; }
+.presentation-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:16px; }
+.presentation-card { display:flex; flex-direction:column; gap:14px; min-width:0; margin:0; padding:16px; border:1px solid var(--color-border); border-radius:5px; }
+.presentation-card legend { float:none; width:auto; margin:0; padding:0 6px; font-size:.82rem; font-weight:500; }
+.presentation-card textarea { min-height:112px; }
+.presentation-card-actions { display:flex; align-items:center; gap:4px; margin-top:auto; }
+.presentation-card-actions .danger-link { margin-left:auto; }
+.presentation-empty { grid-column:1/-1; margin:0; padding:20px; border:1px dashed var(--color-border); border-radius:4px; }
+.presentation-editor .form-actions { padding-top:0; margin-top:20px; }
+@media(max-width:760px) {
+ .presentation-grid { grid-template-columns:minmax(0,1fr); }
+ .presentation-card input,.presentation-card textarea { font-size:16px; }
+}
 .auth-page { min-height:100vh; }
 .access-header { background:var(--color-primary); color:white; padding:22px max(24px,calc((100vw - 1280px)/2)); }
 .auth-shell { width:100%; max-width:470px; margin:auto; padding:56px 24px; }

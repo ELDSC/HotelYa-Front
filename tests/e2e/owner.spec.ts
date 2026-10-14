@@ -218,12 +218,12 @@ test('owner manages a hotel from registration through publication, editing and d
     expect(saveBounds.x).toBeGreaterThan(deleteBounds.x);
     expect(saveBounds.x >= deleteBounds.x + deleteBounds.width + 12 || saveBounds.y >= deleteBounds.y + deleteBounds.height + 12).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('habitaciones.png'), fullPage: true });
-    await chooseSection(page, 'content');
-    await page.getByRole('button', { name: '+ Añadir tarjeta' }).click();
+    await chooseSection(page, 'hotel');
+    await page.getByRole('button', { name: 'Añadir tarjeta' }).click();
     await page.locator('[name="stayCards.0.title"]').fill('Descansa en Lima');
     await page.locator('[name="stayCards.0.description"]').fill('Una estadía a tu ritmo.');
-    await page.locator('#section-content').getByRole('button', { name: 'Guardar cambios' }).click();
-    await expect(page.getByText('Contenido guardado.')).toBeVisible();
+    await page.getByRole('button', { name: 'Guardar presentación' }).click();
+    await expect(page.getByText('Presentación guardada.')).toBeVisible();
     await chooseSection(page, 'dashboard');
     await publicationSwitch.click();
     await expect(page.locator('#publicationBadge')).toHaveCount(0);
@@ -263,7 +263,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(editor.locator('.room-photo')).toHaveCount(1);
     expect((await context.request.get(`${backend}${roomUploads[0]}`)).status()).toBe(404);
     await chooseSection(page, 'hotel');
-    const hotelForm = page.locator('#section-hotel form'); await hotelForm.getByLabel('Descripción *', { exact: true }).fill('Edición que debe conservarse al fallar.');
+    const hotelForm = page.locator('#section-hotel form').filter({ has: page.getByRole('button', { name: 'Guardar cambios', exact: true }) }); await hotelForm.getByLabel('Descripción *', { exact: true }).fill('Edición que debe conservarse al fallar.');
     await page.route(`${backend}/api/owner/hotel`, async route => { if (route.request().method() === 'PUT') await route.fulfill({ status: 503, json: { message: 'Error de prueba recuperable.', fields: {} } }); else await route.continue(); });
     await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(hotelForm.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
