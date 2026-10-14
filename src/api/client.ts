@@ -1,8 +1,8 @@
 import { getApiBaseUrl } from '../config/env';
 
 export class HttpError extends Error {
-    constructor(public readonly status: number) {
-        super(status === 404 ? 'Hotel no encontrado.' : 'No pudimos cargar los datos.');
+    constructor(public readonly status: number, message?: string, public readonly fields: Record<string, string> = {}) {
+        super(message ?? (status === 404 ? 'Hotel no encontrado.' : 'No pudimos cargar los datos.'));
         this.name = 'HttpError';
     }
 }

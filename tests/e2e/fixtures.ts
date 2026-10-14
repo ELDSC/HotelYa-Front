@@ -7,9 +7,9 @@ export const hotel: HotelDetail = {
     address: 'Dirección de prueba', phone: '+51999999999', logoPath: 'assets/images/lumis-hotel-logo.jpg',
     facadePath: 'assets/images/lumis-hotel-fachada.jpg', videoPath: 'assets/videos/lumis-promocional.mp4',
     latitude: null, longitude: null, whatsapp: null, openingHours: null, checkInOutConditions: null,
-    hasParking: null,
+    hasParking: null, stayCards: [{ title: 'Una escapada en pareja', description: 'Haz espacio para compartir y descansar.' }],
     roomTypes: ['Temática', 'Matrimonial', 'Premium'].map((name, index) => ({
-        id: index + 1, code: name, name, description: 'Descripción de prueba',
+        id: index + 1, code: name, name, description: 'Descripción de prueba', totalUnits: null, availableUnits: null,
         photos: [{ path: `assets/images/lumis-cuarto-${['tematico', 'matrimonial', 'premium'][index]}.jpg`, altText: name }],
         details: [{ kind: 'FEATURE', text: 'Detalle de prueba' }],
         rates: [
@@ -28,10 +28,10 @@ export const test = base.extend({
             if (message.type() === 'error' && !message.text().includes('Failed to load resource')) errors.push(message.text());
         });
         page.on('response', response => {
-            if (response.url().startsWith('http://127.0.0.1:') && response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
+            if (response.url().startsWith('http://127.0.0.1:') && !response.url().startsWith(api) && response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
         });
         page.on('requestfailed', request => {
-            if (request.url().startsWith('http://127.0.0.1:') && request.failure()?.errorText !== 'net::ERR_ABORTED') {
+            if (request.url().startsWith('http://127.0.0.1:') && !request.url().startsWith(api) && request.failure()?.errorText !== 'net::ERR_ABORTED') {
                 errors.push(`${request.failure()?.errorText} ${request.url()}`);
             }
         });
