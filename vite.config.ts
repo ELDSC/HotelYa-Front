@@ -5,7 +5,7 @@ export default defineConfig(({ mode, isPreview }) => {
     if (!isPreview) validateApiOrigin(loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASE_URL);
     return {
         appType: 'mpa',
-        input: ['index.html', 'hotel-central.html', 'acceder.html', 'panel-dueno.html'],
+        input: ['index.html', 'hotel-central.html', 'acceder.html', 'panel/index.html', 'panel/informacion/index.html', 'panel/habitaciones/index.html', 'panel/multimedia/index.html'],
         server: { host: '127.0.0.1', port: 5173, strictPort: true },
         preview: { host: '127.0.0.1', port: 4173, strictPort: true },
         build: { outDir: 'dist' },

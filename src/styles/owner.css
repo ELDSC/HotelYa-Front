@@ -16,9 +16,9 @@
 .owner-layout { display:grid; grid-template-columns:230px minmax(0,1fr); min-height:100vh; }
 .owner-sidebar { background:var(--color-primary); color:white; padding:30px 22px; display:flex; flex-direction:column; gap:42px; position:sticky; top:0; height:100vh; }
 .owner-sidebar nav { display:flex; flex-direction:column; gap:6px; }
-.owner-sidebar nav button { text-align:left; background:none; color:#c4ccc8; padding:12px 14px; border-radius:4px; font-size:.85rem; }
-.owner-sidebar nav button:hover { background:#ffffff0a; }
-.owner-sidebar nav button.selected { color:white; background:#ffffff12; box-shadow:inset 2px 0 white; }
+.owner-sidebar nav a { display:block; text-align:left; background:none; color:#c4ccc8; padding:12px 14px; border-radius:4px; font-size:.85rem; text-decoration:none; }
+.owner-sidebar nav a:hover { background:#ffffff0a; }
+.owner-sidebar nav a.selected { color:white; background:#ffffff12; box-shadow:inset 2px 0 white; }
 .owner-account { margin-top:24px; display:flex; flex-direction:column; gap:14px; border-top:1px solid #ffffff24; padding-top:24px; font-size:.8rem; }
 .owner-account span { color:#c4ccc8; overflow-wrap:anywhere; }
 .owner-account button { background:none; color:white; text-align:left; padding:0; }

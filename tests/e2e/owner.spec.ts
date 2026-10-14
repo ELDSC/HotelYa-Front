@@ -39,7 +39,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.getByLabel('Contraseña *', { exact: true }).fill('browser-password123');
     await page.getByLabel('Confirmar contraseña').fill('browser-password123');
     await page.locator('#accessSubmit').click();
-    await expect(page).toHaveURL(/panel-dueno.html$/);
+    await expect(page).toHaveURL(/panel\/informacion\/$/);
     await expect(page.getByRole('button', { name: 'Crear mi hotel en borrador' })).toBeDisabled();
     await page.getByLabel('Nombre del hotel *', { exact: true }).fill('Hotel del navegador');
     await page.getByLabel('Zona o distrito *', { exact: true }).fill('Lima');
@@ -298,7 +298,7 @@ test('owner manages a hotel from registration through publication, editing and d
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await openSidebar(page);
     await page.getByRole('button', { name: 'Cerrar sesión' }).click(); await expect(page).toHaveURL(/acceder.html$/);
-    await page.goto('panel-dueno.html'); await expect(page).toHaveURL(/acceder.html$/);
+    await page.goto('panel/'); await expect(page).toHaveURL(/acceder.html$/);
     expect(errors).toEqual([]);
 });
 
