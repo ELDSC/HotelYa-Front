@@ -15,7 +15,6 @@ for (const id of ['loginTab', 'registerTab']) {
         requiredElement('loginTab', 'button').setAttribute('aria-selected', String(!register));
         requiredElement('registerTab', 'button').setAttribute('aria-selected', String(register));
         requiredElement('formTitle', 'h2').textContent = register ? 'Crea tu cuenta de dueño' : 'Bienvenido de nuevo';
-        requiredElement('formHint', 'p').textContent = register ? 'Después podrás configurar y publicar tu hotel.' : 'Ingresa con la cuenta asociada a tu hotel.';
         requiredElement('confirmationField', 'label').hidden = !register;
         confirmation.required = register; password.minLength = register ? 8 : 1;
         password.autocomplete = register ? 'new-password' : 'current-password';
