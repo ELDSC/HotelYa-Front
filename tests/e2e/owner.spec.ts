@@ -8,9 +8,14 @@ test.beforeAll(() => { execFileSync('../HotelYa-Back/scripts/clean-browser-test-
 test.afterAll(() => { execFileSync('../HotelYa-Back/scripts/clean-browser-test-data.sh'); });
 test('owner manages a hotel from registration through publication, editing and deletion', async ({ page, context }, testInfo) => {
     const roomUploads: string[] = [];
+    const hotelUploads: string[] = []; const deletedFiles = new Set<string>();
     page.on('response', response => {
-        if (response.url() === `${backend}/api/owner/media` && response.request().method() === 'POST' && response.request().postData()?.includes('roomScope')) {
-            void response.json().then((body: { path?: string }) => { if (body.path) roomUploads.push(body.path); });
+        if (response.url() === `${backend}/api/owner/media` && response.request().method() === 'POST' && response.ok()) {
+            const uploads = response.request().postData()?.includes('roomScope') ? roomUploads : hotelUploads;
+            void response.json().then((body: { path?: string }) => { if (body.path) uploads.push(body.path); });
+        }
+        if (response.request().method() === 'DELETE' && response.status() === 204 && response.url().startsWith(`${backend}/api/owner/media/`)) {
+            deletedFiles.add(`/api/media/${response.url().split('/').pop()}`);
         }
     });
     const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
@@ -32,7 +37,7 @@ test('owner manages a hotel from registration through publication, editing and d
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await page.getByRole('button', { name: 'Crear mi hotel en borrador' }).click();
     await expect(page.getByText('Hotel creado en borrador.', { exact: true })).toBeVisible();
-    await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
+    await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Información', exact: true })).toBeVisible();
     expect(await (await context.request.get(`${backend}/api/hotels`)).json()).toEqual([]);
     await expect(page.locator('#section-hotel').getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
@@ -77,12 +82,58 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.locator('[data-section="publication"]')).toHaveCount(0);
     await expect(page.locator('.panel-stats')).toHaveCount(0);
     await page.locator('[data-section="media"]').click();
-    await page.locator('input[name="file"]').setInputFiles([{ name: 'prueba.jpg', mimeType: 'image/jpeg', buffer: image }]);
-    await expect(page.getByText('1 archivo(s) subido(s).', { exact: false })).toBeVisible();
-    await expect.poll(() => page.locator('.media-card img').evaluateAll(nodes => nodes.length === 1 && nodes.every(node => (node as HTMLImageElement).naturalWidth > 0))).toBe(true);
-    await page.locator('[name="logoPath"]').selectOption({ label: 'prueba.jpg' });
-    await page.locator('#section-media form').getByRole('button', { name: 'Guardar cambios' }).click();
-    await expect(page.getByText('Logo, portada y video guardados.')).toBeVisible();
+    const media = page.locator('#section-media');
+    const logo = media.locator('[data-media="logoPath"]');
+    const cover = media.locator('[data-media="facadePath"]');
+    const video = media.locator('[data-media="videoPath"]');
+    await expect(media.getByText('Biblioteca de archivos')).toHaveCount(0);
+    await expect(media.locator('select')).toHaveCount(0);
+    await expect(media.getByRole('button', { name: 'Guardar cambios' })).toHaveCount(0);
+    let releaseUpload!: () => void;
+    const uploadGate = new Promise<void>(resolve => { releaseUpload = resolve; });
+    await page.route(`${backend}/api/owner/media`, async route => {
+        if (route.request().method() === 'POST') await uploadGate;
+        await route.continue();
+    });
+    await logo.locator('input').setInputFiles([{ name: 'logo.jpg', mimeType: 'image/jpeg', buffer: image }]);
+    await expect(logo.locator('.spinner')).toBeVisible();
+    await expect(media.locator('form')).toHaveAttribute('aria-busy', 'true');
+    releaseUpload();
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Logo guardado correctamente.');
+    await page.unroute(`${backend}/api/owner/media`);
+    await expect.poll(() => logo.locator('img').evaluateAll(nodes => nodes.length === 1 && nodes.every(node => (node as HTMLImageElement).naturalWidth > 0))).toBe(true);
+    await page.route(`${backend}/api/owner/hotel`, async route => {
+        if (route.request().method() === 'PUT') await route.fulfill({ status: 503, json: { message: 'No pudimos guardar el archivo.', fields: {} } });
+        else await route.continue();
+    });
+    await logo.locator('input').setInputFiles([{ name: 'replacement.jpg', mimeType: 'image/jpeg', buffer: image }]);
+    await expect(logo.getByRole('alert')).toHaveText('No pudimos guardar el archivo.');
+    await expect.poll(() => hotelUploads.length).toBe(2);
+    await expect.poll(() => deletedFiles.has(hotelUploads[1]!)).toBe(true);
+    await expect(logo.locator('img')).toHaveCount(1);
+    await page.unroute(`${backend}/api/owner/hotel`);
+    await logo.getByRole('button', { name: 'Reintentar' }).click();
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Logo guardado correctamente.');
+    await expect(logo.getByRole('alert')).toHaveCount(0);
+    await expect.poll(() => deletedFiles.has(hotelUploads[0]!)).toBe(true);
+    await cover.locator('input').setInputFiles([{ name: 'cover.jpg', mimeType: 'image/jpeg', buffer: image }]);
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Portada guardada correctamente.');
+    const videoFile = readFileSync('public/assets/videos/lumis-promocional.mp4');
+    let releaseVideo!: () => void;
+    const videoGate = new Promise<void>(resolve => { releaseVideo = resolve; });
+    await page.route(`${backend}/api/owner/media`, async route => {
+        if (route.request().method() === 'POST') await videoGate;
+        await route.continue();
+    });
+    await video.locator('input').setInputFiles([{ name: 'video.mp4', mimeType: 'video/mp4', buffer: videoFile }]);
+    await expect(video.locator('.spinner')).toBeVisible(); releaseVideo();
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Video guardado correctamente.');
+    await page.unroute(`${backend}/api/owner/media`);
+    await expect(video.locator('video')).toHaveCount(1);
+    await page.screenshot({ path: testInfo.outputPath('multimedia.png'), fullPage: true });
+    await page.reload(); await page.locator('[data-section="media"]').click();
+    await expect(logo.locator('img')).toHaveCount(1); await expect(cover.locator('img')).toHaveCount(1);
+    await expect(video.locator('video')).toHaveCount(1);
     await page.locator('[data-section="rooms"]').click();
     const editor = page.locator('#section-rooms form');
     await editor.getByLabel('Nombre *', { exact: true }).fill('Matrimonial');
@@ -138,7 +189,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.getByText('Contenido guardado.')).toBeVisible();
     await page.locator('[data-section="dashboard"]').click();
     await publicationSwitch.click();
-    await expect(page.locator('#publicationBadge')).toHaveText('Publicado');
+    await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(page.locator('#ownerToastMessage')).toHaveText('Guardado correctamente.');
     await expect(page.locator('#ownerToast')).toBeVisible();
     await expect(page.locator('#panelError')).toBeEmpty();
@@ -160,7 +211,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(popup.locator('#informacion')).toContainText('20:00 – 06:00 (día siguiente)');
     await expect(popup.locator('#informacion')).toContainText('Estacionamiento: Sí');
     await popup.close();
-    await page.reload(); await expect(page.locator('#publicationBadge')).toHaveText('Publicado');
+    await page.reload(); await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await expect(parkingSwitch).toHaveAttribute('aria-checked', 'true');
     await expect(publicationSwitch).toHaveAttribute('aria-checked', 'true');
     await page.locator('[data-section="rooms"]').click(); await page.getByRole('button', { name: 'Matrimonial', exact: false }).click();
@@ -180,14 +231,20 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(hotelForm.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
     await expect(hotelForm.getByText('Error de prueba recuperable.')).toBeVisible(); await expect(hotelForm.getByLabel('Descripción *', { exact: true })).toHaveValue('Edición que debe conservarse al fallar.');
     await page.unroute(`${backend}/api/owner/hotel`); await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.locator('#ownerToast').getByText('Información guardada.')).toBeVisible();
-    await page.locator('[data-section="dashboard"]').click(); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
+    await page.locator('[data-section="dashboard"]').click(); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveCount(0);
     await page.locator('[data-section="rooms"]').click();
     const photoDeleted = page.waitForResponse(response => response.url() === `${backend}/api/owner/media/${roomUploads[1]!.slice('/api/media/'.length)}` && response.request().method() === 'DELETE');
     await page.getByRole('button', { name: 'Eliminar tipo de habitación' }).click();
     expect((await photoDeleted).status()).toBe(204); await expect(page.getByText('Tipo de habitación eliminado.', { exact: false })).toBeVisible();
     expect((await context.request.get(`${backend}${roomUploads[1]}`)).status()).toBe(404);
-    await page.locator('[data-section="media"]').click(); await page.locator('[name="logoPath"]').selectOption(''); await page.locator('#section-media form').getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.getByText('Logo, portada y video guardados.')).toBeVisible();
-    await page.getByRole('button', { name: 'Eliminar archivo' }).click(); await expect(page.locator('.media-card')).toHaveCount(0);
+    await page.locator('[data-section="media"]').click();
+    for (const slot of [logo, cover, video]) {
+        await slot.getByRole('button', { name: 'Eliminar', exact: true }).click();
+        await expect(slot.getByText('Sin archivo')).toBeVisible();
+        await expect(slot.getByRole('button', { name: 'Eliminar', exact: true })).toBeHidden();
+    }
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Video eliminado correctamente.');
+    await expect.poll(() => hotelUploads.length === 5 && hotelUploads.every(path => deletedFiles.has(path))).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await page.getByRole('button', { name: 'Cerrar sesión' }).click(); await expect(page).toHaveURL(/acceder.html$/);
     await page.goto('panel-dueno.html'); await expect(page).toHaveURL(/acceder.html$/);

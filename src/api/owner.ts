@@ -18,7 +18,6 @@ export const saveRoom = (body: RoomWrite, id?: number): Promise<OwnerHotel> => j
 export const deleteRoom = (id: number): Promise<OwnerHotel> => json(`/owner/hotel/room-types/${id}`, 'DELETE');
 export const setPublication = (published: boolean): Promise<OwnerHotel> => json('/owner/hotel/publication', 'PUT', { published });
 export const saveCards = (cards: StayCard[]): Promise<OwnerHotel> => json('/owner/hotel/stay-cards', 'PUT', cards);
-export const getMedia = (): Promise<MediaInfo[]> => json('/owner/media');
 export const deleteMedia = (id: string): Promise<void> => json(`/owner/media/${id}`, 'DELETE');
 export async function uploadMedia(file: File, roomScope?: string): Promise<MediaInfo> {
     const body = new FormData(); body.set('file', file); if (roomScope) body.set('roomScope', roomScope);
