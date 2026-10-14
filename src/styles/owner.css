@@ -53,8 +53,7 @@
 .secondary:hover { background:#101f1a06; }
 .danger { background:transparent; color:#a13229; border-color:#d8c5bd; }
 .danger-link { position:relative; background:none; color:#a13229; padding:9px 0; font-size:.8rem!important; min-height:36px; text-align:left; }
-.form-actions,.compact-actions,.dashboard-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:24px; }
-.dashboard-actions { margin:0 0 40px; }
+.form-actions,.compact-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:24px; }
 .compact-actions { margin-top:10px; gap:10px; }
 .compact-actions .secondary { padding:6px 12px; min-height:36px; }
 .notice { padding:12px 0; font-size:.84rem; line-height:1.5; margin:12px 0; }
@@ -127,3 +126,27 @@
  .photo-row .media-preview img { height:80px; }
  .auth-shell { padding:40px 20px; }
 }
+
+.panel-heading-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:16px; }
+.settings-list { max-width:780px; }
+.setting-row { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:24px 0; border-bottom:1px solid var(--color-border); }
+.setting-copy { min-width:0; }
+.setting-label { font-size:.9rem; font-weight:500; }
+.setting-copy .notice { margin:8px 0 0; padding:0; }
+.setting-controls { display:flex; align-items:center; gap:16px; flex-shrink:0; }
+.setting-value { min-width:24px; color:var(--color-text-muted); font-size:.82rem; }
+.setting-switch { position:relative; flex-shrink:0; width:54px; height:44px; padding:0; background:transparent; border:0; color:var(--color-primary); }
+.switch-track { position:absolute; inset:8px 0; background:#c8cec9; border-radius:20px; }
+.switch-thumb { position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:white; transition:transform .15s; }
+.setting-switch[aria-checked=true] .switch-track { background:var(--color-primary); }
+.setting-switch[aria-checked=true] .switch-thumb { transform:translateX(26px); }
+.setting-switch.is-loading .button-label { visibility:visible; }
+.setting-switch.is-loading .switch-thumb { visibility:hidden; }
+.setting-switch .spinner { width:16px; height:16px; }
+.setting-switch[aria-checked=true] .spinner { color:white; }
+@media(max-width:760px) {
+ .panel-heading { flex-wrap:wrap; }
+ .panel-heading-actions { justify-content:flex-start; }
+ .setting-row { gap:16px; }
+}
+@media(prefers-reduced-motion:reduce) { .switch-thumb { transition:none; } }
