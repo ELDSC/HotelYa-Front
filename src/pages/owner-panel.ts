@@ -1,4 +1,5 @@
 import '../styles/owner.css';
+import { toast } from '../ui/toast';
 import { element, requiredElement } from '../ui/dom';
 import { HttpError } from '../api/client';
 import { restoreSession, signOut } from '../features/auth';
@@ -8,7 +9,7 @@ import type { RoomTypeDetail, Photo, RoomDetail, RateInfo, StayCard, DetailKind,
 import { asset } from '../utils/assets';
 import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
 const content = requiredElement('panelContent', 'div');
-const globalMessage = requiredElement('panelMessage', 'div');
+const globalError = requiredElement('panelError', 'div');
 const sections = new Map<string, HTMLElement>();
 const previews = new Map<string, string>();
 let current: OwnerHotel | null = null;
@@ -100,8 +101,8 @@ function renderHotel(section: HTMLElement): void {
         event.preventDefault(); void busy(submit, async () => {
             try {
                 const creating = !current; current = await api.saveHotel(hotelBody(form), creating); markSaved(form);
-                if (creating) { render(); notify(globalMessage, 'Tu hotel está creado en borrador. Añade habitaciones y archivos antes de publicarlo.'); }
-                else { header(); notify(status, 'Información guardada.'); }
+                if (creating) { render(); toast('Hotel creado en borrador.'); }
+                else { header(); status.replaceChildren(); toast('Información guardada.'); }
             } catch (error) { showFailure(form, status, error); }
         });
     });
@@ -169,7 +170,7 @@ function editRoom(room?: RoomTypeDetail): void {
     upload.addEventListener('change', () => {
         const file = upload.files?.[0]; if (!file) return; upload.disabled = true; submit.disabled = true;
         const indicator = loader('Subiendo imagen'); status.replaceChildren(indicator);
-        void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); notify(status, 'Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
+        void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); status.replaceChildren(); toast('Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
             .catch(error => showFailure(form, status, error)).finally(() => { indicator.remove(); upload.disabled = false; submit.disabled = false; upload.value = ''; });
     });
     const detailSection = element('div', 'editor-subsection'); const detailRows = element('div'); detailSection.append(element('h3', '', 'Características y condiciones'), detailRows);
@@ -203,7 +204,7 @@ function editRoom(room?: RoomTypeDetail): void {
         const remove = button('Eliminar tipo de habitación', () => {
             if (!confirm(`¿Eliminar ${room.name} y sus fotos asociadas, detalles y tarifas?`)) return;
             void busy(remove, async () => {
-                try { current = await api.deleteRoom(room.id); markSaved(form); renderRoomList(); editRoom(); header(); notify(globalMessage, 'Tipo de habitación eliminado. Los archivos siguen disponibles en Multimedia.'); }
+                try { current = await api.deleteRoom(room.id); markSaved(form); renderRoomList(); editRoom(); header(); toast('Tipo de habitación eliminado.'); }
                 catch (error) { showFailure(form, status, error); }
             });
         }, 'danger'); form.append(remove);
@@ -214,7 +215,7 @@ function editRoom(room?: RoomTypeDetail): void {
             try {
                 current = await api.saveRoom(body, room?.id); markSaved(form); renderRoomList(); header();
                 const updated = room ? current.detail.roomTypes.find(r => r.id === room.id) : current.detail.roomTypes.find(r => !(roomIdsAtOpen.includes(r.id)));
-                editRoom(updated); notify(roomEditor.querySelector('[aria-live]') as HTMLElement, 'Tipo de habitación guardado.');
+                editRoom(updated); toast('Tipo de habitación guardado.');
             } catch (error) { showFailure(form, status, error); }
         });
     });
@@ -248,8 +249,8 @@ function renderMediaGallery(): void {
         const remove = button('Eliminar archivo', () => {
             if (!confirm(`¿Eliminar definitivamente ${file.originalName}? Primero debe estar retirado de la ficha y de las habitaciones.`)) return;
             void busy(remove, async () => {
-                try { await api.deleteMedia(file.id); files = files.filter(item => item.id !== file.id); const url = previews.get(file.path); if (url) URL.revokeObjectURL(url); previews.delete(file.path); renderMediaGallery(); notify(globalMessage, 'Archivo eliminado.'); }
-                catch (error) { showFailure(card, globalMessage, error); }
+                try { await api.deleteMedia(file.id); files = files.filter(item => item.id !== file.id); const url = previews.get(file.path); if (url) URL.revokeObjectURL(url); previews.delete(file.path); renderMediaGallery(); toast('Archivo eliminado.'); }
+                catch (error) { showFailure(card, globalError, error); }
             });
         }, 'danger-link'); card.append(remove); mediaGallery.append(card);
     }
@@ -264,7 +265,7 @@ function renderMedia(section: HTMLElement): void {
         const indicator = loader('Subiendo archivos'); status.replaceChildren(indicator);
         void (async () => {
             let added = 0;
-            try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } notify(status, `${added} archivo(s) subido(s). Selecciónalos para usarlos en la ficha.`); }
+            try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } status.replaceChildren(); toast(`${added} archivo(s) subido(s).`); }
             catch (error) { showFailure(uploadCard, status, error); }
             finally { indicator.remove(); input.disabled = false; input.value = ''; }
         })();
@@ -284,7 +285,7 @@ function renderMedia(section: HTMLElement): void {
             try {
                 const data = new FormData(editor.form); const body = current!.detail;
                 current = await api.saveHotel({ ...body, logoPath: String(data.get('logoPath') || '') || null, facadePath: String(data.get('facadePath') || '') || null, videoPath: String(data.get('videoPath') || '') || null }, false);
-                markSaved(editor.form); header(); notify(editor.status, 'Logo, portada y video guardados.');
+                markSaved(editor.form); header(); editor.status.replaceChildren(); toast('Logo, portada y video guardados.');
             } catch (error) { showFailure(editor.form, editor.status, error); }
         });
     }); section.append(editor.form); renderMediaGallery();
@@ -309,12 +310,12 @@ function renderCards(section: HTMLElement): void {
     form.insertBefore(button('+ Añadir tarjeta', () => { cards.push({ title: '', description: '' }); markDirty(form); draw(); }), status);
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
-            try { current = await api.saveCards(cards); markSaved(form); header(); notify(status, 'Contenido guardado.'); }
+            try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Contenido guardado.'); }
             catch (error) { showFailure(form, status, error); }
         });
     }); section.append(form);
 }
-function settingRow(label: string, checked: boolean, save: (next: boolean) => Promise<OwnerHotel>, message: string, publication = false): HTMLElement {
+function settingRow(label: string, checked: boolean, save: (next: boolean) => Promise<OwnerHotel>, publication = false): HTMLElement {
     const row = element('div', 'setting-row'); const copy = element('div', 'setting-copy');
     copy.append(element('span', 'setting-label', label));
     const status = element('div'); status.id = `setting-status-${++serial}`; status.setAttribute('aria-live', 'polite'); copy.append(status);
@@ -326,7 +327,7 @@ function settingRow(label: string, checked: boolean, save: (next: boolean) => Pr
             settingsPending = true;
             document.querySelectorAll<HTMLButtonElement>('.setting-switch').forEach(node => { node.disabled = true; });
             status.replaceChildren();
-            try { current = await save(!checked); header(); notify(globalMessage, message); }
+            try { current = await save(!checked); header(); toast(); }
             catch (error) { showFailure(row, status, error); toggle.setAttribute('aria-describedby', status.id); }
             finally {
                 settingsPending = false;
@@ -346,8 +347,8 @@ function renderDashboard(): void {
     }
     const settings = element('div', 'settings-list');
     settings.append(
-        settingRow('Hotel publicado', current.published, next => api.setPublication(next), current.published ? 'Hotel oculto.' : 'Hotel publicado.', true),
-        settingRow('Estacionamiento', current.detail.hasParking === true, next => api.saveHotel({ ...current!.detail, hasParking: next }, false), 'Estacionamiento actualizado.'),
+        settingRow('Hotel publicado', current.published, next => api.setPublication(next), true),
+        settingRow('Estacionamiento', current.detail.hasParking === true, next => api.saveHotel({ ...current!.detail, hasParking: next }, false)),
     );
     section.append(settings);
 }
@@ -373,13 +374,13 @@ async function load(): Promise<void> {
         catch (error) { if (error instanceof HttpError && error.status === 404) current = null; else throw error; }
         render();
     } catch (error) {
-        content.replaceChildren(); const retry = button('Reintentar', () => { void load(); }); content.append(retry); showFailure(content, globalMessage, error); content.setAttribute('aria-busy', 'false');
+        content.replaceChildren(); const retry = button('Reintentar', () => { void load(); }); content.append(retry); showFailure(content, globalError, error); content.setAttribute('aria-busy', 'false');
     }
 }
 requiredElement('panelNav', 'nav').addEventListener('click', event => { const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-section]'); if (target?.dataset.section) activate(target.dataset.section); });
 requiredElement('logout', 'button').addEventListener('click', () => {
     if (hasChanges() && !confirm('Hay cambios sin guardar. ¿Deseas cerrar sesión y descartarlos?')) return;
     const logout = requiredElement('logout', 'button');
-    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = 'acceder.html'; } catch (error) { showFailure(content, globalMessage, error); } });
+    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = 'acceder.html'; } catch (error) { showFailure(content, globalError, error); } });
 });
 void load();

@@ -150,3 +150,12 @@
  .setting-row { gap:16px; }
 }
 @media(prefers-reduced-motion:reduce) { .switch-thumb { transition:none; } }
+
+.owner-toast-container { position:fixed; inset:auto 16px max(16px,env(safe-area-inset-bottom)) auto; z-index:1080; width:min(360px,calc(100vw - 32px)); pointer-events:none; }
+.owner-toast { display:flex; align-items:center; width:100%; color:white; background:var(--color-primary); border:1px solid #ffffff18; border-radius:6px; box-shadow:0 4px 18px #101f1a26; font-size:.84rem; pointer-events:auto; }
+.owner-toast:not(.show) { display:none; }
+.owner-toast.fade { transition:opacity .15s linear; }
+.owner-toast.showing { opacity:0; }
+.owner-toast .toast-body { padding:14px 16px; flex:1; line-height:1.5; }
+.owner-toast .toast-close { padding:10px 14px; color:white; background:transparent; font-size:1.3rem; line-height:1; }
+@media(prefers-reduced-motion:reduce) { .owner-toast.fade { transition:none; } }

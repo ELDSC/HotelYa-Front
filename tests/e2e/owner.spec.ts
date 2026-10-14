@@ -24,7 +24,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.getByLabel('Descripción *', { exact: true }).fill('Hotel creado en las pruebas aisladas.');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await page.getByRole('button', { name: 'Crear mi hotel en borrador' }).click();
-    await expect(page.getByText('Tu hotel está creado en borrador.', { exact: false })).toBeVisible();
+    await expect(page.getByText('Hotel creado en borrador.', { exact: true })).toBeVisible();
     await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
     await expect(page.getByRole('heading', { name: 'Información', exact: true })).toBeVisible();
     expect(await (await context.request.get(`${backend}/api/hotels`)).json()).toEqual([]);
@@ -57,7 +57,10 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.unroute(`${backend}/api/owner/hotel`);
     await parkingSwitch.click();
     await expect(parkingSwitch).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByText('Estacionamiento actualizado.')).toBeVisible();
+    await expect(page.locator('#ownerToast')).toHaveText('Guardado correctamente.×');
+    await expect(page.locator('#panelError')).toBeEmpty();
+    await page.getByRole('button', { name: 'Cerrar notificación' }).click();
+    await expect(page.locator('#ownerToast')).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'Guardar estacionamiento' })).toHaveCount(0);
     await publicationSwitch.click();
     await expect(page.getByRole('alert')).toContainText('En Habitaciones, completa');
@@ -101,7 +104,11 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.locator('[data-section="dashboard"]').click();
     await publicationSwitch.click();
     await expect(page.locator('#publicationBadge')).toHaveText('Publicado');
+    await expect(page.locator('#ownerToastMessage')).toHaveText('Guardado correctamente.');
+    await expect(page.locator('#ownerToast')).toBeVisible();
+    await expect(page.locator('#panelError')).toBeEmpty();
     await page.screenshot({ path: testInfo.outputPath('publicacion.png'), fullPage: true });
+    await expect(page.locator('#ownerToast')).not.toBeVisible({ timeout: 6500 });
     const catalog = await (await context.request.get(`${backend}/api/hotels`)).json() as { id: number }[];
     expect(catalog).toHaveLength(1);
     await expect(page.locator('.panel-heading').getByRole('link', { name: 'Ver ficha pública' })).toBeVisible();
@@ -124,7 +131,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.route(`${backend}/api/owner/hotel`, async route => { if (route.request().method() === 'PUT') await route.fulfill({ status: 503, json: { message: 'Error de prueba recuperable.', fields: {} } }); else await route.continue(); });
     await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(hotelForm.getByText('Error de prueba recuperable.')).toBeVisible(); await expect(hotelForm.getByLabel('Descripción *', { exact: true })).toHaveValue('Edición que debe conservarse al fallar.');
-    await page.unroute(`${backend}/api/owner/hotel`); await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click(); await expect(hotelForm.getByText('Información guardada.')).toBeVisible();
+    await page.unroute(`${backend}/api/owner/hotel`); await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.locator('#ownerToast').getByText('Información guardada.')).toBeVisible();
     await page.locator('[data-section="dashboard"]').click(); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
     await page.locator('[data-section="rooms"]').click(); await page.getByRole('button', { name: 'Eliminar tipo de habitación' }).click(); await expect(page.getByText('Tipo de habitación eliminado.', { exact: false })).toBeVisible();
     await page.locator('[data-section="media"]').click(); await page.locator('[name="logoPath"]').selectOption(''); await page.locator('#section-media form').getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.getByText('Logo, portada y video guardados.')).toBeVisible();
