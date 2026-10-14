@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test --project=dev",
     "test:e2e:build": "playwright test --project=preview",
-    "test:e2e:live": "playwright test --project=live-dev --project=live-preview"
+    "test:e2e:live": "playwright test --project=live-dev --project=live-preview",
+    "test:e2e:owner": "playwright test --project=owner-desktop --project=owner-mobile"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
