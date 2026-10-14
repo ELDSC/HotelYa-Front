@@ -18,11 +18,23 @@ test('real Spring Boot catalog and detail', async ({ page, request }, testInfo) 
     await expect(page.locator('.hero-title')).toHaveText(detail.name);
     await expect(page.locator('.editorial-room-card')).toHaveCount(detail.roomTypes.length);
     await expect(page.locator('.catalog-rates li')).toHaveCount(detail.roomTypes.reduce((total, room) => total + room.rates.length, 0));
+    const map = page.locator('#ubicacion a');
+    if (detail.mapUrl) await expect(map).toHaveAttribute('href', detail.mapUrl);
+    else await expect(map).toHaveCount(0);
     await page.locator('#productos').scrollIntoViewIfNeeded();
     await expect.poll(() => page.locator('main img').evaluateAll(nodes => nodes.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth > 0))).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('live-detail-desktop.png'), fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('live-detail-mobile.png'), fullPage: true });
+    const firstRate = page.locator('.catalog-rate-option').first();
+    if (await firstRate.count()) {
+        await expect(page.locator('#productos')).not.toContainText('Recomendación:');
+        await firstRate.click();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toContainText(detail.roomTypes.find(room => room.rates.length)!.name);
+        if (!detail.whatsapp) await expect(dialog.getByRole('button', { name: 'Consultar por WhatsApp' })).toBeDisabled();
+        await page.screenshot({ path: testInfo.outputPath('live-inquiry-mobile.png') });
+    }
     expect(errors).toEqual([]);
 });

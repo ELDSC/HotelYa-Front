@@ -424,3 +424,82 @@ body.hotel-theme {
 
 .catalog-availability { color:#356341; font-weight:600; margin:16px 0; }
 .catalog-preview-banner { background:#fff2db; color:#684f24; padding:16px; text-align:center; font-weight:600; }
+
+.hotel-theme .editorial-room-card { min-width: 0; display: flex; flex-direction: column; }
+.hotel-theme .editorial-room-content { text-align: left; display: flex; flex-direction: column; flex: 1; }
+.hotel-theme .catalog-rate-title { margin: auto 0 0.25rem; padding-top: 1.5rem; color: var(--hotel-navy); font-size: 1.1rem; }
+.hotel-theme .catalog-rate-hint { color: #555b68; font-size: 0.85rem; margin-bottom: 1rem; }
+.hotel-theme .catalog-rates { list-style: none; padding: 0; display: grid; gap: 0.65rem; }
+.hotel-theme .catalog-rate-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--hotel-cream-dark);
+    border-radius: 8px;
+    background: var(--hotel-white);
+    color: var(--hotel-navy);
+    text-align: left;
+    cursor: pointer;
+}
+.hotel-theme .catalog-rate-option:hover { border-color: var(--hotel-navy); background: #f2f4fa; }
+.hotel-theme .catalog-rate-caption { display: grid; gap: 0.2rem; }
+.hotel-theme .catalog-rate-mode { font-size: 0.9rem; color: #555b68; }
+.hotel-theme .catalog-rate-price { font-size: 1.4rem; font-weight: 600; }
+.hotel-theme .catalog-rate-arrow { font-size: 1.4rem; }
+.hotel-theme .section-audience .audience-card-title { color: var(--hotel-gold-light) !important; margin-top: 0; }
+.hotel-theme .section-audience .section-subtitle { opacity: 1; }
+.hotel-theme #ubicacion .container { text-align: center; }
+.hotel-theme #ubicacion .section-header { margin-bottom: 1.5rem; }
+.hotel-theme #ubicacion .section-subtitle { margin-bottom: 0; }
+.hotel-theme .audience-card-desc, .hotel-theme .catalog-details, .hotel-theme .editorial-room-desc { overflow-wrap: anywhere; }
+
+body.inquiry-open { overflow: hidden; }
+.hotel-theme .stay-inquiry {
+    position: fixed;
+    inset: 0;
+    width: min(620px, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    background: var(--hotel-white);
+    color: var(--hotel-charcoal);
+    box-shadow: 0 24px 80px #050b2c40;
+    overflow-y: auto;
+}
+.stay-inquiry::backdrop { background: #050b2cb3; }
+.hotel-theme .inquiry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid var(--hotel-cream-dark); }
+.hotel-theme .inquiry-header h2 { margin: 0; font-size: 1.75rem; }
+.inquiry-eyebrow { margin: 0 0 0.3rem; color: #555b68; font-size: 0.85rem; }
+.inquiry-close { flex-shrink: 0; border: 0; border-radius: 6px; width: 44px; height: 44px; background: #f0f1f5; color: #08134c; font-size: 1.8rem; line-height: 1; cursor: pointer; }
+.inquiry-body { padding: 1.5rem; }
+.hotel-theme .inquiry-room-name { font-size: 1.35rem; margin: 0 0 1.25rem; overflow-wrap: anywhere; }
+.inquiry-fields { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; }
+.inquiry-fields > div { min-width: 0; }
+.inquiry-fields label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; }
+.inquiry-fields select, .inquiry-fields input { width: 100%; min-height: 48px; padding: 0.65rem; border: 1px solid #b7bdca; border-radius: 6px; background: #fff; color: #2c2c2c; font: inherit; }
+.inquiry-summary { padding: 1rem; margin: 1.25rem 0; border-radius: 8px; background: #f2f4fa; }
+.inquiry-summary p { margin: 0 0 0.4rem; }
+.inquiry-summary p:last-child { margin-bottom: 0; }
+.inquiry-unit-price { font-size: 0.85rem; color: #555b68; }
+.inquiry-total { font-size: 1.15rem; font-weight: 600; color: #08134c; }
+.inquiry-guidance { margin: 1.25rem 0; }
+.inquiry-guidance h4 { font-size: 1rem; color: #08134c; }
+.inquiry-guidance ul { padding-left: 1.25rem; margin: 0; }
+.inquiry-guidance li, .inquiry-guidance p { overflow-wrap: anywhere; white-space: pre-line; }
+.inquiry-disclaimer, .inquiry-contact-note { font-size: 0.85rem; color: #555b68; }
+.inquiry-contact-note:empty { display: none; }
+.inquiry-actions { border-top: 1px solid #e6e2d6; padding-top: 1.25rem; }
+.inquiry-actions .btn { width: 100%; }
+.hotel-theme .inquiry-actions .btn:disabled { opacity: 1; background: #e5e7eb; color: #555b68; cursor: not-allowed; }
+@media (min-width: 768px) and (max-width: 1100px) {
+    .hotel-theme .hotel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
+}
+@media (max-width: 600px) {
+    .inquiry-fields { grid-template-columns: 1fr; }
+    .inquiry-body, .hotel-theme .inquiry-header { padding: 1.25rem; }
+}
