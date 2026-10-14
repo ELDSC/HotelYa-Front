@@ -1,11 +1,12 @@
 import '../styles/owner.css';
 import { toast } from '../ui/toast';
+import { roomRates } from '../ui/room-rates';
 import { element, requiredElement } from '../ui/dom';
 import { HttpError } from '../api/client';
 import { restoreSession, signOut } from '../features/auth';
 import * as api from '../api/owner';
 import type { OwnerHotel, HotelWrite, RoomWrite, MediaInfo } from '../api/owner';
-import type { RoomTypeDetail, Photo, RoomDetail, RateInfo, StayCard, DetailKind, RateMode } from '../types/catalog';
+import type { RoomTypeDetail, Photo, RoomDetail, StayCard, DetailKind } from '../types/catalog';
 import { asset } from '../utils/assets';
 import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
 const content = requiredElement('panelContent', 'div');
@@ -48,7 +49,7 @@ function formCard(title: string): { form: HTMLFormElement; grid: HTMLDivElement;
     const grid = element('div', 'form-grid'); const status = element('div'); status.setAttribute('aria-live', 'polite');
     const submit = button('Guardar cambios', undefined, 'primary'); submit.type = 'submit';
     const actions = element('div', 'form-actions'); actions.append(submit);
-    form.append(grid, status, actions); watchForm(form); return { form, grid, status, submit };
+    form.append(grid, status, actions); return { form, grid, status, submit };
 }
 function view(name: string): HTMLElement {
     const section = element('section', 'panel-section'); section.id = `section-${name}`; sections.set(name, section); content.append(section); return section;
@@ -106,7 +107,7 @@ function renderHotel(section: HTMLElement): void {
             } catch (error) { showFailure(form, status, error); }
         });
     });
-    section.append(form);
+    watchForm(form); section.append(form);
 }
 async function preview(path: string): Promise<string | null> {
     if (!path.startsWith('/api/media/')) return asset(path);
@@ -123,7 +124,15 @@ function previewNode(path: string, video: boolean, alt: string): HTMLElement {
     }).catch(() => { box.textContent = 'No pudimos cargar la imagen.'; });
     return box;
 }
-function discardRoom(): boolean { return !roomForm?.dataset.dirty || confirm('Hay cambios sin guardar en esta habitación. ¿Deseas descartarlos?'); }
+async function removeRoomFiles(photos: Photo[]): Promise<boolean> {
+    const paths = [...new Set(photos.map(photo => photo.path).filter(path => path.startsWith('/api/media/')))];
+    const results = await Promise.allSettled(paths.map(async path => {
+        await api.deleteMedia(path.slice('/api/media/'.length));
+        const url = previews.get(path); if (url) URL.revokeObjectURL(url); previews.delete(path);
+    }));
+    return results.every(result => result.status === 'fulfilled');
+}
+function discardRoom(): boolean { if (roomForm?.dataset.uploading) return false; return !roomForm?.dataset.dirty || confirm('Hay cambios sin guardar en esta habitación. ¿Deseas descartarlos?'); }
 function renderRoomList(): void {
     roomList.replaceChildren();
     for (const room of current?.detail.roomTypes ?? []) {
@@ -149,77 +158,79 @@ function editRoom(room?: RoomTypeDetail): void {
     const counts = () => { available.max = total.value; unavailable.textContent = total.value && available.value ? `No disponibles: ${Number(total.value) - Number(available.value)}` : ''; }; counts(); total.addEventListener('input', counts); available.addEventListener('input', counts);
     const photos: Photo[] = structuredClone(room?.photos ?? []);
     const details: RoomDetail[] = structuredClone(room?.details ?? []);
-    const rates: RateInfo[] = structuredClone(room?.rates ?? []);
-    const photoSection = element('div', 'editor-subsection'); const photoRows = element('div', 'photo-editor');
-    photoSection.append(element('h3', '', 'Fotografías'), photoRows);
+    const photoScope = room?.code ?? `room-${crypto.randomUUID()}`;
+    const photoSection = element('div', 'editor-subsection'); const photoRows = element('div', 'room-photo-grid');
+    photoSection.append(element('h3', '', 'Fotografías'));
+    const upload = element('input', 'form-control sr-only'); upload.type = 'file'; upload.name = 'photoUpload'; upload.tabIndex = -1; upload.setAttribute('aria-label', 'Subir fotografías');
+    upload.accept = 'image/jpeg,image/png,image/webp'; upload.multiple = true;
+    const pickPhotos = button('Subir fotografías', () => upload.click(), 'secondary'); photoSection.append(pickPhotos, upload);
+    const uploadStatus = element('div'); uploadStatus.setAttribute('aria-live', 'polite'); photoSection.append(uploadStatus, photoRows);
     const drawPhotos = () => {
         photoRows.replaceChildren();
         photos.forEach((photo, index) => {
-            const row = element('div', 'photo-row'); row.append(previewNode(photo.path, false, photo.altText));
-            const controls = element('div'); const input = field(controls, `photos.${index}.altText`, 'Texto alternativo *', photo.altText); input.required = true; input.maxLength = 300; input.addEventListener('input', () => { photo.altText = input.value; });
-            const actions = element('div', 'compact-actions');
-            const up = button('↑', () => { [photos[index - 1], photos[index]] = [photos[index]!, photos[index - 1]!]; markDirty(form); drawPhotos(); }); up.disabled = index === 0; up.setAttribute('aria-label', 'Mover foto arriba');
-            const down = button('↓', () => { [photos[index + 1], photos[index]] = [photos[index]!, photos[index + 1]!]; markDirty(form); drawPhotos(); }); down.disabled = index === photos.length - 1; down.setAttribute('aria-label', 'Mover foto abajo');
-            actions.append(up, down, button('Quitar foto', () => { photos.splice(index, 1); markDirty(form); drawPhotos(); }, 'danger-link')); controls.append(actions); row.append(controls); photoRows.append(row);
+            const tile = element('figure', 'room-photo'); tile.append(previewNode(photo.path, false, photo.altText));
+            const caption = element('figcaption', 'photo-caption', index === 0 ? 'Portada' : `Foto ${index + 1}`);
+            const actions = element('div', 'photo-actions');
+            const up = button('←', () => { [photos[index - 1], photos[index]] = [photos[index]!, photos[index - 1]!]; markDirty(form); drawPhotos(); }, 'icon-button'); up.disabled = index === 0; up.setAttribute('aria-label', 'Mover foto arriba'); up.title = 'Mover antes';
+            const down = button('→', () => { [photos[index + 1], photos[index]] = [photos[index]!, photos[index + 1]!]; markDirty(form); drawPhotos(); }, 'icon-button'); down.disabled = index === photos.length - 1; down.setAttribute('aria-label', 'Mover foto abajo'); down.title = 'Mover después';
+            const remove = button('×', () => { photos.splice(index, 1); markDirty(form); drawPhotos(); }, 'icon-button remove-icon'); remove.setAttribute('aria-label', `Eliminar fotografía ${index + 1}`); remove.title = 'Eliminar fotografía';
+            actions.append(up, down, remove); tile.append(caption, actions); photoRows.append(tile);
         });
     };
     drawPhotos();
-    const photoSelect = select(photoSection, 'photoPicker', 'Añadir desde mis archivos', '', [['', 'Selecciona una imagen'], ...files.filter(file => file.contentType.startsWith('image/')).map(file => [file.path, file.originalName] as [string, string])]);
-    photoSection.append(button('Añadir fotografía', () => { if (!photoSelect.value) return; photos.push({ path: photoSelect.value, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); }));
-    const upload = field(photoSection, 'photoUpload', 'O subir una imagen nueva', '', 'file') as HTMLInputElement; upload.accept = 'image/jpeg,image/png,image/webp';
     upload.addEventListener('change', () => {
-        const file = upload.files?.[0]; if (!file) return; upload.disabled = true; submit.disabled = true;
-        const indicator = loader('Subiendo imagen'); status.replaceChildren(indicator);
-        void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); status.replaceChildren(); toast('Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
-            .catch(error => showFailure(form, status, error)).finally(() => { indicator.remove(); upload.disabled = false; submit.disabled = false; upload.value = ''; });
+        const selected = [...upload.files ?? []]; if (!selected.length) return;
+        void busy(pickPhotos, async () => {
+            form.dataset.uploading = 'true'; submit.disabled = true;
+            try {
+                for (const file of selected) {
+                    const saved = await api.uploadMedia(file, photoScope);
+                    photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos();
+                }
+                uploadStatus.replaceChildren(); toast('Fotografías subidas. Guarda la habitación para confirmar.');
+            } catch (error) { showFailure(form, uploadStatus, error); }
+            finally { delete form.dataset.uploading; upload.value = ''; }
+        });
     });
-    const detailSection = element('div', 'editor-subsection'); const detailRows = element('div'); detailSection.append(element('h3', '', 'Características y condiciones'), detailRows);
+    const detailSection = element('div', 'editor-subsection'); const detailRows = element('div', 'detail-list'); const detailHeading = element('div', 'subsection-heading'); detailHeading.append(element('h3', '', 'Características y condiciones')); detailSection.append(detailHeading, detailRows);
     const kinds: [string, string][] = [['FEATURE', 'Característica'], ['SERVICE', 'Servicio'], ['RECOMMENDATION', 'Recomendación'], ['PROHIBITION', 'Prohibición']];
     const drawDetails = () => {
         detailRows.replaceChildren(); details.forEach((detail, i) => {
             const row = element('div', 'inline-editor'); const kind = select(row, `details.${i}.kind`, 'Categoría', detail.kind, kinds); kind.addEventListener('change', () => { detail.kind = kind.value as DetailKind; });
             const text = field(row, `details.${i}.text`, 'Descripción *', detail.text, 'textarea'); text.required = true; text.maxLength = 5000; text.addEventListener('input', () => { detail.text = text.value; });
-            row.append(button('Quitar', () => { details.splice(i, 1); markDirty(form); drawDetails(); }, 'danger-link')); detailRows.append(row);
+            const remove = button('×', () => { details.splice(i, 1); markDirty(form); drawDetails(); }, 'icon-button remove-icon'); remove.setAttribute('aria-label', 'Eliminar detalle'); remove.title = 'Eliminar detalle'; row.append(remove); detailRows.append(row);
         });
     };
-    drawDetails(); detailSection.append(button('Añadir detalle', () => { details.push({ kind: 'FEATURE', text: '' }); markDirty(form); drawDetails(); }));
-    const rateSection = element('div', 'editor-subsection'); const rateRows = element('div'); rateSection.append(element('h3', '', 'Tarifas'), rateRows);
-    const drawRates = () => {
-        rateRows.replaceChildren(); rates.forEach((rate, i) => {
-            const row = element('div', 'rate-editor'); const mode = select(row, `rates.${i}.mode`, 'Modalidad', rate.mode, [['HOUR', 'Por hora'], ['PACKAGE', 'Paquete de horas'], ['NIGHT', 'Por noche']]);
-            mode.addEventListener('change', () => { rate.mode = mode.value as RateMode; rate.packageHours = rate.mode === 'PACKAGE' ? 3 : null; rate.additionalHourAmount = rate.mode === 'PACKAGE' ? 0 : null; drawRates(); });
-            const amount = field(row, `rates.${i}.amount`, 'Importe *', rate.amount, 'number') as HTMLInputElement; amount.required = true; amount.min = '0.01'; amount.step = '0.01'; amount.addEventListener('input', () => { rate.amount = Number(amount.value); });
-            const currency = field(row, `rates.${i}.currency`, 'Moneda *', rate.currency) as HTMLInputElement; currency.required = true; currency.maxLength = 3; currency.pattern = '[A-Z]{3}'; currency.addEventListener('input', () => { rate.currency = currency.value; });
-            if (rate.mode === 'PACKAGE') {
-                const hours = field(row, `rates.${i}.packageHours`, 'Duración (horas) *', rate.packageHours, 'number') as HTMLInputElement; hours.required = true; hours.min = '1'; hours.step = '1'; hours.addEventListener('input', () => { rate.packageHours = Number(hours.value); });
-                const extra = field(row, `rates.${i}.additionalHourAmount`, 'Hora adicional *', rate.additionalHourAmount, 'number') as HTMLInputElement; extra.required = true; extra.min = '0'; extra.step = '0.01'; extra.addEventListener('input', () => { rate.additionalHourAmount = Number(extra.value); });
-            }
-            const simulated = select(row, `rates.${i}.simulated`, 'Tipo de tarifa', String(rate.simulated), [['false', 'Tarifa del hotel'], ['true', 'Tarifa de demostración']]); simulated.addEventListener('change', () => { rate.simulated = simulated.value === 'true'; });
-            row.append(button('Quitar tarifa', () => { rates.splice(i, 1); markDirty(form); drawRates(); }, 'danger-link')); rateRows.append(row);
-        });
-    };
-    drawRates(); rateSection.append(button('Añadir tarifa', () => { rates.push({ mode: 'HOUR', amount: 0, currency: 'PEN', packageHours: null, additionalHourAmount: null, simulated: false }); markDirty(form); drawRates(); }));
+    drawDetails(); detailHeading.append(button('Añadir detalle', () => { details.push({ kind: 'FEATURE', text: '' }); markDirty(form); drawDetails(); }));
+    const rateSection = element('div', 'editor-subsection'); rateSection.append(element('h3', '', 'Tarifas'));
+    const rates = roomRates(room?.rates ?? [], () => markDirty(form)); rateSection.append(rates.table);
     form.insertBefore(photoSection, status); form.insertBefore(detailSection, status); form.insertBefore(rateSection, status);
     if (room) {
         const remove = button('Eliminar tipo de habitación', () => {
             if (!confirm(`¿Eliminar ${room.name} y sus fotos asociadas, detalles y tarifas?`)) return;
             void busy(remove, async () => {
-                try { current = await api.deleteRoom(room.id); markSaved(form); renderRoomList(); editRoom(); header(); toast('Tipo de habitación eliminado.'); }
+                try { current = await api.deleteRoom(room.id); markSaved(form); const cleaned = await removeRoomFiles([...room.photos, ...photos]); renderRoomList(); editRoom(); header(); toast(cleaned ? 'Tipo de habitación eliminado.' : 'Tipo de habitación eliminado. No pudimos eliminar algún archivo asociado.'); }
                 catch (error) { showFailure(form, status, error); }
             });
-        }, 'danger'); form.append(remove);
+        }, 'danger'); form.querySelector('.form-actions')!.prepend(remove);
     }
+    const roomBody = (): RoomWrite => ({ name: name.value.trim(), description: desc.value.trim(), displayOrder: Number(order.value),
+        totalUnits: total.value === '' ? null : Number(total.value), availableUnits: available.value === '' ? null : Number(available.value),
+        photoScope, photos: photos.map(photo => ({ path: photo.path })), details: details.map(detail => ({ kind: detail.kind, text: detail.text.trim() })), rates: rates.value() });
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
-            const body: RoomWrite = { name: name.value, description: desc.value, displayOrder: Number(order.value), totalUnits: total.value === '' ? null : Number(total.value), availableUnits: available.value === '' ? null : Number(available.value), photos, details, rates };
+            const body = roomBody();
             try {
                 current = await api.saveRoom(body, room?.id); markSaved(form); renderRoomList(); header();
                 const updated = room ? current.detail.roomTypes.find(r => r.id === room.id) : current.detail.roomTypes.find(r => !(roomIdsAtOpen.includes(r.id)));
-                editRoom(updated); toast('Tipo de habitación guardado.');
+                const removed = (room?.photos ?? []).filter(photo => photo.path.startsWith('/api/media/') && !photos.some(item => item.path === photo.path));
+                const cleaned = await removeRoomFiles(removed);
+                editRoom(updated); if (!cleaned) toast('Habitación guardada. No pudimos eliminar algún archivo retirado.'); else toast('Tipo de habitación guardado.');
             } catch (error) { showFailure(form, status, error); }
         });
     });
     const roomIdsAtOpen = current!.detail.roomTypes.map(r => r.id);
+    watchForm(form, roomBody);
 }
 function renderRooms(section: HTMLElement): void {
     const layout = element('div', 'rooms-layout'); const aside = element('div', 'room-list'); roomList = element('div'); roomEditor = element('div');
@@ -234,15 +245,10 @@ function mediaSelectors(form: HTMLFormElement): void {
         }
         input.value = value;
     }
+    markDirty(form);
 }
 function renderMediaGallery(): void {
     if (!mediaGallery) return;
-    document.querySelectorAll<HTMLSelectElement>('[name="photoPicker"]').forEach(input => {
-        const selected = input.value; input.replaceChildren();
-        const empty = element('option', '', 'Selecciona una imagen'); empty.value = ''; input.append(empty);
-        for (const file of files.filter(item => item.contentType.startsWith('image/'))) { const option = element('option', '', file.originalName); option.value = file.path; input.append(option); }
-        input.value = selected;
-    });
     mediaGallery.replaceChildren(); if (hotelMediaForm) mediaSelectors(hotelMediaForm);
     for (const file of files) {
         const card = element('article', 'media-card'); card.append(previewNode(file.path, file.contentType.startsWith('video/'), file.originalName), element('strong', '', file.originalName), element('span', 'muted', `${(file.byteSize / 1024 / 1024).toFixed(1)} MB`));
@@ -288,7 +294,7 @@ function renderMedia(section: HTMLElement): void {
                 markSaved(editor.form); header(); editor.status.replaceChildren(); toast('Logo, portada y video guardados.');
             } catch (error) { showFailure(editor.form, editor.status, error); }
         });
-    }); section.append(editor.form); renderMediaGallery();
+    }); watchForm(editor.form); section.append(editor.form); renderMediaGallery();
 }
 function mediaSelectorsForInitial(input: HTMLSelectElement, key: string): void {
     for (const file of files.filter(file => file.contentType.startsWith(key === 'videoPath' ? 'video/' : 'image/'))) { const option = element('option', '', file.originalName); option.value = file.path; option.dataset.uploaded = 'true'; input.append(option); }
@@ -313,7 +319,7 @@ function renderCards(section: HTMLElement): void {
             try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Contenido guardado.'); }
             catch (error) { showFailure(form, status, error); }
         });
-    }); section.append(form);
+    }); watchForm(form, () => cards.map(card => ({ title: card.title.trim(), description: card.description.trim() }))); section.append(form);
 }
 function settingRow(label: string, checked: boolean, save: (next: boolean) => Promise<OwnerHotel>, publication = false): HTMLElement {
     const row = element('div', 'setting-row'); const copy = element('div', 'setting-copy');

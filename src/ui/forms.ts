@@ -19,15 +19,34 @@ export function showFailure(form: HTMLFormElement | HTMLElement, target: HTMLEle
         form.querySelector<HTMLElement>('[aria-invalid]')?.focus();
     }
 }
-export function watchForm(form: HTMLFormElement): void {
-    const dirty = () => { form.dataset.dirty = 'true'; };
-    form.addEventListener('input', dirty); form.addEventListener('change', dirty);
+interface FormSnapshot { read: () => unknown; saved: string }
+const snapshots = new WeakMap<HTMLFormElement, FormSnapshot>();
+function formValues(form: HTMLFormElement): unknown {
+    return [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[name]')]
+        .filter(input => !input.disabled && !(input instanceof HTMLInputElement && input.type === 'file'))
+        .map(input => [input.name, input instanceof HTMLInputElement && ['checkbox', 'radio'].includes(input.type) ? input.checked
+            : input instanceof HTMLInputElement && input.type === 'number' && input.value !== '' ? Number(input.value) : input.value.trim()]);
 }
-export function markDirty(form: HTMLFormElement): void { form.dataset.dirty = 'true'; }
+function refreshChanges(form: HTMLFormElement): void {
+    const snapshot = snapshots.get(form); if (!snapshot) return;
+    const changed = JSON.stringify(snapshot.read()) !== snapshot.saved;
+    if (changed) form.dataset.dirty = 'true'; else delete form.dataset.dirty;
+    form.querySelectorAll<HTMLButtonElement>('button[type="submit"]').forEach(button => {
+        button.disabled = !changed || form.getAttribute('aria-busy') === 'true';
+    });
+}
+export function watchForm(form: HTMLFormElement, read: () => unknown = () => formValues(form)): void {
+    snapshots.set(form, { read, saved: JSON.stringify(read()) });
+    form.addEventListener('input', () => refreshChanges(form)); form.addEventListener('change', () => refreshChanges(form));
+    refreshChanges(form);
+}
+export function markDirty(form: HTMLFormElement): void { refreshChanges(form); }
 export function markSaved(form: HTMLFormElement): void {
+    const snapshot = snapshots.get(form); if (snapshot) snapshot.saved = JSON.stringify(snapshot.read());
     delete form.dataset.dirty;
     form.querySelectorAll('.field-error').forEach(node => node.remove());
     form.querySelectorAll('[aria-invalid]').forEach(node => { node.removeAttribute('aria-invalid'); node.removeAttribute('aria-describedby'); });
+    refreshChanges(form);
 }
 export function loader(label = 'Cargando'): HTMLElement {
     const node = element('span', 'loading-indicator'); node.setAttribute('role', 'status'); node.setAttribute('aria-label', label);
@@ -46,6 +65,6 @@ export async function busy(button: HTMLButtonElement, task: () => Promise<void>)
     if (form) { form.inert = true; form.setAttribute('aria-busy', 'true'); }
     try { await task(); } finally {
         button.disabled = false; button.replaceChildren(...children); button.classList.remove('is-loading'); button.removeAttribute('aria-busy');
-        if (form) { form.inert = false; form.removeAttribute('aria-busy'); }
+        if (form) { form.inert = false; form.removeAttribute('aria-busy'); refreshChanges(form); }
     }
 }
