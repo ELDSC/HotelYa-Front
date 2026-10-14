@@ -128,3 +128,5 @@ npm run test:e2e:owner
 ```
 
 Requiere Supabase HotelYa activo, Docker y el `.env` del backend configurado. Playwright levanta servidores propios en `127.0.0.1:5174` y `127.0.0.1:8081`, usa únicamente `hotelya_test`, prueba escritorio y móvil y limpia sus registros al terminar. No ejecutarlo simultáneamente con las pruebas de integración Java. No reutiliza ni detiene los servidores habituales de 5173/8080. Las capturas de habitaciones y publicación quedan en `test-results/`.
+
+El panel comparte tipografía, paleta y botones con el catálogo. Inicio agrupa publicar/ocultar, el enlace a la ficha pública y el estacionamiento (Sí/No). Información guarda la ficha independientemente de las cantidades de habitaciones e incluye URL HTTPS del lugar y horas diarias de apertura/cierre. Los botones muestran un spinner centrado conservando su tamaño durante las peticiones.
