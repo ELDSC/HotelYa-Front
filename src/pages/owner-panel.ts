@@ -49,7 +49,7 @@ function formCard(title: string): { form: HTMLFormElement; grid: HTMLDivElement;
     const grid = element('div', 'form-grid'); const status = element('div'); status.setAttribute('aria-live', 'polite');
     const submit = button('Guardar cambios', undefined, 'primary'); submit.type = 'submit';
     const actions = element('div', 'form-actions'); actions.append(submit);
-    form.append(grid, status, actions); watchForm(form); return { form, grid, status, submit };
+    form.append(grid, status, actions); return { form, grid, status, submit };
 }
 function view(name: string): HTMLElement {
     const section = element('section', 'panel-section'); section.id = `section-${name}`; sections.set(name, section); content.append(section); return section;
@@ -107,7 +107,7 @@ function renderHotel(section: HTMLElement): void {
             } catch (error) { showFailure(form, status, error); }
         });
     });
-    section.append(form);
+    watchForm(form); section.append(form);
 }
 async function preview(path: string): Promise<string | null> {
     if (!path.startsWith('/api/media/')) return asset(path);
@@ -189,7 +189,7 @@ function editRoom(room?: RoomTypeDetail): void {
                 }
                 uploadStatus.replaceChildren(); toast('Fotografías subidas. Guarda la habitación para confirmar.');
             } catch (error) { showFailure(form, uploadStatus, error); }
-            finally { delete form.dataset.uploading; submit.disabled = false; upload.value = ''; }
+            finally { delete form.dataset.uploading; upload.value = ''; }
         });
     });
     const detailSection = element('div', 'editor-subsection'); const detailRows = element('div', 'detail-list'); const detailHeading = element('div', 'subsection-heading'); detailHeading.append(element('h3', '', 'Características y condiciones')); detailSection.append(detailHeading, detailRows);
@@ -212,11 +212,14 @@ function editRoom(room?: RoomTypeDetail): void {
                 try { current = await api.deleteRoom(room.id); markSaved(form); const cleaned = await removeRoomFiles([...room.photos, ...photos]); renderRoomList(); editRoom(); header(); toast(cleaned ? 'Tipo de habitación eliminado.' : 'Tipo de habitación eliminado. No pudimos eliminar algún archivo asociado.'); }
                 catch (error) { showFailure(form, status, error); }
             });
-        }, 'danger'); form.append(remove);
+        }, 'danger'); form.querySelector('.form-actions')!.prepend(remove);
     }
+    const roomBody = (): RoomWrite => ({ name: name.value.trim(), description: desc.value.trim(), displayOrder: Number(order.value),
+        totalUnits: total.value === '' ? null : Number(total.value), availableUnits: available.value === '' ? null : Number(available.value),
+        photoScope, photos: photos.map(photo => ({ path: photo.path })), details: details.map(detail => ({ kind: detail.kind, text: detail.text.trim() })), rates: rates.value() });
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
-            const body: RoomWrite = { name: name.value, description: desc.value, displayOrder: Number(order.value), totalUnits: total.value === '' ? null : Number(total.value), availableUnits: available.value === '' ? null : Number(available.value), photoScope, photos: photos.map(photo => ({ path: photo.path })), details, rates: rates.value() };
+            const body = roomBody();
             try {
                 current = await api.saveRoom(body, room?.id); markSaved(form); renderRoomList(); header();
                 const updated = room ? current.detail.roomTypes.find(r => r.id === room.id) : current.detail.roomTypes.find(r => !(roomIdsAtOpen.includes(r.id)));
@@ -227,6 +230,7 @@ function editRoom(room?: RoomTypeDetail): void {
         });
     });
     const roomIdsAtOpen = current!.detail.roomTypes.map(r => r.id);
+    watchForm(form, roomBody);
 }
 function renderRooms(section: HTMLElement): void {
     const layout = element('div', 'rooms-layout'); const aside = element('div', 'room-list'); roomList = element('div'); roomEditor = element('div');
@@ -241,6 +245,7 @@ function mediaSelectors(form: HTMLFormElement): void {
         }
         input.value = value;
     }
+    markDirty(form);
 }
 function renderMediaGallery(): void {
     if (!mediaGallery) return;
@@ -289,7 +294,7 @@ function renderMedia(section: HTMLElement): void {
                 markSaved(editor.form); header(); editor.status.replaceChildren(); toast('Logo, portada y video guardados.');
             } catch (error) { showFailure(editor.form, editor.status, error); }
         });
-    }); section.append(editor.form); renderMediaGallery();
+    }); watchForm(editor.form); section.append(editor.form); renderMediaGallery();
 }
 function mediaSelectorsForInitial(input: HTMLSelectElement, key: string): void {
     for (const file of files.filter(file => file.contentType.startsWith(key === 'videoPath' ? 'video/' : 'image/'))) { const option = element('option', '', file.originalName); option.value = file.path; option.dataset.uploaded = 'true'; input.append(option); }
@@ -314,7 +319,7 @@ function renderCards(section: HTMLElement): void {
             try { current = await api.saveCards(cards); markSaved(form); header(); status.replaceChildren(); toast('Contenido guardado.'); }
             catch (error) { showFailure(form, status, error); }
         });
-    }); section.append(form);
+    }); watchForm(form, () => cards.map(card => ({ title: card.title.trim(), description: card.description.trim() }))); section.append(form);
 }
 function settingRow(label: string, checked: boolean, save: (next: boolean) => Promise<OwnerHotel>, publication = false): HTMLElement {
     const row = element('div', 'setting-row'); const copy = element('div', 'setting-copy');

@@ -24,6 +24,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await page.getByLabel('Confirmar contraseña').fill('browser-password123');
     await page.locator('#accessSubmit').click();
     await expect(page).toHaveURL(/panel-dueno.html$/);
+    await expect(page.getByRole('button', { name: 'Crear mi hotel en borrador' })).toBeDisabled();
     await page.getByLabel('Nombre del hotel *', { exact: true }).fill('Hotel del navegador');
     await page.getByLabel('Zona o distrito *', { exact: true }).fill('Lima');
     await page.getByLabel('Dirección *', { exact: true }).fill('Av. Prueba 123');
@@ -34,6 +35,7 @@ test('owner manages a hotel from registration through publication, editing and d
     await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
     await expect(page.getByRole('heading', { name: 'Información', exact: true })).toBeVisible();
     expect(await (await context.request.get(`${backend}/api/hotels`)).json()).toEqual([]);
+    await expect(page.locator('#section-hotel').getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
     await page.getByLabel('URL del lugar').fill('https://maps.app.goo.gl/example');
     await page.getByLabel('Hora de apertura').fill('20:00');
     await page.getByLabel('Hora de cierre').fill('06:00');
@@ -111,6 +113,22 @@ test('owner manages a hotel from registration through publication, editing and d
     await editor.locator('[name="details.0.text"]').fill('Baño privado');
     await editor.getByRole('button', { name: 'Guardar cambios' }).click();
     await expect(page.getByText('Tipo de habitación guardado.', { exact: true })).toBeVisible();
+    const saveRoom = editor.getByRole('button', { name: 'Guardar cambios' });
+    const deleteRoom = editor.getByRole('button', { name: 'Eliminar tipo de habitación' });
+    await expect(saveRoom).toBeDisabled(); await expect(deleteRoom).toBeEnabled();
+    await editor.getByLabel('Nombre *', { exact: true }).fill('Nombre temporal'); await expect(saveRoom).toBeEnabled();
+    await editor.getByLabel('Nombre *', { exact: true }).fill('Matrimonial'); await expect(saveRoom).toBeDisabled();
+    await editor.getByLabel('Precio por hora').fill('40.00'); await expect(saveRoom).toBeDisabled();
+    await editor.getByRole('switch', { name: 'Activar tarifa por noche' }).uncheck(); await expect(saveRoom).toBeEnabled();
+    await editor.getByRole('switch', { name: 'Activar tarifa por noche' }).check(); await expect(saveRoom).toBeDisabled();
+    await editor.getByRole('button', { name: 'Mover foto arriba' }).nth(1).click(); await expect(saveRoom).toBeEnabled();
+    await editor.getByRole('button', { name: 'Mover foto arriba' }).nth(1).click(); await expect(saveRoom).toBeDisabled();
+    await editor.getByRole('button', { name: 'Añadir detalle' }).click(); await expect(saveRoom).toBeEnabled();
+    await editor.getByRole('button', { name: 'Eliminar detalle' }).last().click(); await expect(saveRoom).toBeDisabled();
+    await saveRoom.scrollIntoViewIfNeeded();
+    const saveBounds = (await saveRoom.boundingBox())!; const deleteBounds = (await deleteRoom.boundingBox())!;
+    expect(saveBounds.x).toBeGreaterThan(deleteBounds.x);
+    expect(saveBounds.x >= deleteBounds.x + deleteBounds.width + 12 || saveBounds.y >= deleteBounds.y + deleteBounds.height + 12).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('habitaciones.png'), fullPage: true });
     await page.locator('[data-section="content"]').click();
     await page.getByRole('button', { name: '+ Añadir tarjeta' }).click();
@@ -159,6 +177,7 @@ test('owner manages a hotel from registration through publication, editing and d
     const hotelForm = page.locator('#section-hotel form'); await hotelForm.getByLabel('Descripción *', { exact: true }).fill('Edición que debe conservarse al fallar.');
     await page.route(`${backend}/api/owner/hotel`, async route => { if (route.request().method() === 'PUT') await route.fulfill({ status: 503, json: { message: 'Error de prueba recuperable.', fields: {} } }); else await route.continue(); });
     await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click();
+    await expect(hotelForm.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
     await expect(hotelForm.getByText('Error de prueba recuperable.')).toBeVisible(); await expect(hotelForm.getByLabel('Descripción *', { exact: true })).toHaveValue('Edición que debe conservarse al fallar.');
     await page.unroute(`${backend}/api/owner/hotel`); await hotelForm.getByRole('button', { name: 'Guardar cambios' }).click(); await expect(page.locator('#ownerToast').getByText('Información guardada.')).toBeVisible();
     await page.locator('[data-section="dashboard"]').click(); await publicationSwitch.click(); await expect(page.locator('#publicationBadge')).toHaveText('Borrador');
