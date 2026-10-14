@@ -220,3 +220,6 @@
  .hotel-media-row>.compact-actions { justify-content:flex-start; }
  .hotel-media-row .identity-preview .media-preview { max-width:100%; }
 }
+
+.owner-page-link { display:block; margin-top:24px; padding:12px 14px; border:1px solid #ffffff38; border-radius:4px; color:inherit; font-size:.86rem; text-align:center; text-decoration:none; }
+.owner-page-link:hover { background:#ffffff0d; }

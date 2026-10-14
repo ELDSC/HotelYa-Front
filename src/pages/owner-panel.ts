@@ -64,8 +64,8 @@ function header(): void {
 function updateHeading(): void {
     const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia', content: 'Contenido' };
     requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
-    const link = requiredElement('publicHotelLink', 'a'); link.hidden = active !== 'dashboard' || !current?.published;
-    if (current) link.href = `hotel-central.html?id=${current.detail.id}`;
+    const link = requiredElement('publicHotelLink', 'a'); link.hidden = !current;
+    if (current) link.href = `hotel-central.html?id=${current.detail.id}${current.published ? '' : '&preview=1'}`;
 }
 function hotelBody(form: HTMLFormElement): HotelWrite {
     const data = new FormData(form);
