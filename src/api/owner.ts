@@ -1,10 +1,11 @@
 import { ownerFetch } from '../features/auth';
-import type { HotelDetail, Photo, RoomDetail, RateInfo, StayCard } from '../types/catalog';
+import type { HotelDetail, RoomDetail, RateMode, StayCard } from '../types/catalog';
 export interface OwnerHotel { detail: HotelDetail; published: boolean }
 export type HotelWrite = Omit<HotelDetail, 'id' | 'roomTypes' | 'stayCards'>;
+export interface RoomRateWrite { mode: RateMode; amount: number; packageHours: number | null }
 export interface RoomWrite {
     name: string; description: string; displayOrder: number; totalUnits: number | null; availableUnits: number | null;
-    photos: Photo[]; details: RoomDetail[]; rates: RateInfo[];
+    photoScope: string; photos: { path: string }[]; details: RoomDetail[]; rates: RoomRateWrite[];
 }
 export interface MediaInfo { id: string; path: string; contentType: string; originalName: string; byteSize: number }
 async function json<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
@@ -19,8 +20,8 @@ export const setPublication = (published: boolean): Promise<OwnerHotel> => json(
 export const saveCards = (cards: StayCard[]): Promise<OwnerHotel> => json('/owner/hotel/stay-cards', 'PUT', cards);
 export const getMedia = (): Promise<MediaInfo[]> => json('/owner/media');
 export const deleteMedia = (id: string): Promise<void> => json(`/owner/media/${id}`, 'DELETE');
-export async function uploadMedia(file: File): Promise<MediaInfo> {
-    const body = new FormData(); body.set('file', file);
+export async function uploadMedia(file: File, roomScope?: string): Promise<MediaInfo> {
+    const body = new FormData(); body.set('file', file); if (roomScope) body.set('roomScope', roomScope);
     return await (await ownerFetch('/owner/media', { method: 'POST', body })).json() as MediaInfo;
 }
 export async function mediaPreview(path: string): Promise<string> {

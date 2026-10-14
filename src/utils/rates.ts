@@ -4,6 +4,6 @@ export function rateLabel(rate: RateInfo): string {
         style: 'currency', currency: rate.currency,
     }).format(value);
     if (rate.mode === 'HOUR') return `${money(rate.amount)} por hora`;
-    if (rate.mode === 'PACKAGE') return `${money(rate.amount)} por paquete de ${rate.packageHours} horas · Hora adicional: ${money(rate.additionalHourAmount)}`;
+    if (rate.mode === 'PACKAGE') return `${money(rate.amount)} por paquete de ${rate.packageHours} horas${rate.additionalHourAmount === null ? '' : ` · Hora adicional: ${money(rate.additionalHourAmount)}`}`;
     return `${money(rate.amount)} por noche`;
 }

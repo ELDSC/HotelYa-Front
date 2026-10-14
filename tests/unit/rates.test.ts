@@ -8,3 +8,8 @@ it('formats hourly, package, and nightly reference prices', () => {
         .toMatch(/60.00 por paquete de 3 horas.*20.00/);
     expect(rateLabel({ ...rate, mode: 'NIGHT', amount: 120 })).toContain('120.00 por noche');
 });
+
+it('omits an additional hourly charge when the owner only configures a package price', () => {
+    expect(rateLabel({ ...rate, mode: 'PACKAGE', amount: 70, packageHours: 3 })).toContain('70.00 por paquete de 3 horas');
+    expect(rateLabel({ ...rate, mode: 'PACKAGE', amount: 70, packageHours: 3 })).not.toContain('Hora adicional');
+});
