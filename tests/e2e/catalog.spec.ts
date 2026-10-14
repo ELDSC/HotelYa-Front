@@ -11,7 +11,8 @@ test('catalog, detail, stable media, prices, return, and mobile layout', async (
     await expect(page).toHaveURL(/hotel-central.html\?id=1$/);
     await expect(page.locator('.editorial-room-card')).toHaveCount(3);
     await expect(page.locator('.catalog-rates li')).toHaveCount(9);
-    await expect(page.locator('.catalog-rates').first()).toContainText('60.00 por paquete de 3 horas');
+    await expect(page.locator('.catalog-rates').first()).toContainText('Paquete de 3 horas');
+    await expect(page.locator('.catalog-rates').first()).toContainText('60.00');
     await expect(page.locator('#informacion')).toContainText('Estacionamiento: Por confirmar');
     await expect(page.locator('video')).toHaveAttribute('src', /assets\/videos\/lumis-promocional.mp4$/);
     await page.locator('#productos').scrollIntoViewIfNeeded();
@@ -25,15 +26,17 @@ test('catalog, detail, stable media, prices, return, and mobile layout', async (
     expect(dataRequests.every(url => url.startsWith(`${api}/api/hotels`))).toBe(true);
 });
 
-test('direct and legacy detail entries only request the needed data', async ({ page }) => {
+test('detail requires an explicit id and never selects a hotel automatically', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', request => { if (request.resourceType() === 'fetch' && request.url().startsWith(`${api}/api/hotels`)) requests.push(request.url()); });
     await page.goto('hotel-central.html?id=1');
     await expect(page.locator('.editorial-room-card')).toHaveCount(3);
     expect(requests).toEqual([`${api}/api/hotels/1`]);
     await page.goto('hotel-central.html');
-    await expect(page.locator('.editorial-room-card')).toHaveCount(3);
-    expect(requests.slice(1)).toEqual([`${api}/api/hotels`, `${api}/api/hotels/1`]);
+    await expect(page.getByRole('status')).toHaveText('No se ha seleccionado un hotel.');
+    await expect(page.locator('#hotelDetailContainer')).toHaveAttribute('aria-busy', 'false');
+    await expect(page.locator('.hero-title, .editorial-room-card, .stay-inquiry')).toHaveCount(0);
+    expect(requests).toEqual([`${api}/api/hotels/1`]);
 });
 
 test('invalid id and missing hotel', async ({ page }) => {
@@ -43,7 +46,7 @@ test('invalid id and missing hotel', async ({ page }) => {
     }
 });
 
-test('loading, empty list and legacy empty detail', async ({ page }) => {
+test('loading and empty list', async ({ page }) => {
     let release: () => void = () => {};
     const gate = new Promise<void>(resolve => { release = resolve; });
     await page.route(`${api}/api/hotels`, async route => { await gate; await route.fulfill({ json: [] }); });
@@ -53,8 +56,6 @@ test('loading, empty list and legacy empty detail', async ({ page }) => {
     release();
     await expect(page.getByRole('status')).toContainText('No hay hoteles registrados.');
     await expect(page.locator('#hotelListContainer')).toHaveAttribute('aria-busy', 'false');
-    await page.goto('hotel-central.html');
-    await expect(page.getByRole('status')).toContainText('No hay hoteles registrados.');
 });
 
 test('list and detail errors can be retried', async ({ page }) => {

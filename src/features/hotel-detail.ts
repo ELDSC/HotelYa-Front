@@ -1,10 +1,12 @@
-import { getHotels, getHotel } from '../api/catalog';
+import { getHotel } from '../api/catalog';
 import { HttpError } from '../api/client';
 import type { HotelDetail } from '../types/catalog';
 import { element, requiredElement } from '../ui/dom';
 import { state } from '../ui/catalog-state';
+import { createStayInquiry } from '../ui/stay-inquiry';
 import { asset } from '../utils/assets';
-import { rateLabel } from '../utils/rates';
+import { formatMoney, rateModeLabel } from '../utils/rates';
+import { formatPhone } from '../utils/phone';
 
 export function initHotelDetail(): void {
     const container = requiredElement('hotelDetailContainer', 'div');
@@ -33,7 +35,7 @@ export function initHotelDetail(): void {
         return node;
     }
     function phoneLink(phone: string | null, label: string, className: string) {
-        if (!phone || !/^\+[0-9]{7,15}$/.test(phone)) return null;
+        if (!phone || !/^\+51[0-9]{9}$/.test(phone)) return null;
         const link = element('a', className, label);
         link.href = `tel:${phone}`;
         return link;
@@ -45,6 +47,7 @@ export function initHotelDetail(): void {
         list.append(item);
     }
     function render(hotel: HotelDetail) {
+        const inquiry = createStayInquiry(hotel);
         document.title = `${hotel.name} | HoteleriasYa`;
         document.querySelector<HTMLMetaElement>('meta[name="description"]')!.content = hotel.description;
         document.querySelectorAll('[data-hotel-name]').forEach(node => { node.textContent = hotel.name; });
@@ -75,9 +78,9 @@ export function initHotelDetail(): void {
         const text = element('div', 'editorial-info-text');
         const details = element('ul', 'editorial-list');
         row(details, 'Dirección', hotel.address);
-        row(details, 'Teléfono', hotel.phone);
-        row(details, 'WhatsApp', hotel.whatsapp);
-        row(details, 'Horarios', hotel.openingHours);
+        row(details, 'Teléfono y WhatsApp', formatPhone(hotel.phone));
+        row(details, 'Horarios', hotel.openingTime && hotel.closingTime
+            ? `${hotel.openingTime.slice(0, 5)} a ${hotel.closingTime.slice(0, 5)}` : hotel.openingHours);
         row(details, 'Entrada y salida', hotel.checkInOutConditions);
         row(details, 'Estacionamiento', hotel.hasParking === null ? 'Por confirmar' : hotel.hasParking ? 'Sí' : 'No');
         text.append(element('p', 'editorial-paragraph', hotel.description), details);
@@ -111,30 +114,46 @@ export function initHotelDetail(): void {
             }
             const detailList = element('ul', 'catalog-details');
             const labels = { FEATURE: 'Característica', SERVICE: 'Servicio', RECOMMENDATION: 'Recomendación', PROHIBITION: 'Prohibición' };
-            type.details.forEach(d => row(detailList, labels[d.kind] || 'Detalle', d.text));
+            type.details.filter(d => d.kind === 'FEATURE' || d.kind === 'SERVICE')
+                .forEach(d => row(detailList, labels[d.kind], d.text));
             content.append(detailList);
             const available = type.availableUnits;
             content.append(element('p', 'catalog-availability', available === null || available === undefined
                 ? 'Disponibilidad por confirmar con el hotel.'
                 : available === 0 ? 'Sin unidades disponibles actualmente.' : `${available} unidad(es) disponibles actualmente.`));
             if (type.rates.length) {
-                content.append(element('h4', 'catalog-rate-title', 'Tarifas de referencia'));
+                content.append(element('h4', 'catalog-rate-title', 'Elige tu estadía'),
+                    element('p', 'catalog-rate-hint', 'Selecciona una tarifa para consultar.'));
                 const rates = element('ul', 'catalog-rates');
                 type.rates.forEach(rate => {
-                    const item = element('li', '', `${rateLabel(rate)}${rate.simulated ? ' · Tarifa de demostración' : ''}`);
+                    const item = element('li');
+                    const button = element('button', 'catalog-rate-option'); button.type = 'button';
+                    button.setAttribute('aria-haspopup', 'dialog');
+                    button.setAttribute('aria-label', `Consultar ${type.name}: ${rateModeLabel(rate)}, ${formatMoney(rate.amount, rate.currency)}`);
+                    const caption = element('span', 'catalog-rate-caption');
+                    caption.append(element('span', 'catalog-rate-mode', rateModeLabel(rate)),
+                        element('span', 'catalog-rate-price', formatMoney(rate.amount, rate.currency)));
+                    const arrow = element('span', 'catalog-rate-arrow', '→'); arrow.setAttribute('aria-hidden', 'true');
+                    button.append(caption, arrow);
+                    button.addEventListener('click', () => inquiry.open(type, rate));
+                    item.append(button);
                     rates.append(item);
                 });
                 content.append(rates);
             } else {
                 content.append(element('p', 'editorial-room-desc', 'Consulta tarifas directamente con el hotel.'));
             }
-            const contact = phoneLink(hotel.phone, 'Consultar', 'editorial-room-action');
-            if (contact) { contact.setAttribute('aria-label', `Consultar ${type.name}`); content.append(contact); }
+            if (!type.rates.length) {
+                const contact = element('button', 'btn btn-primary', 'Consultar estadía'); contact.type = 'button';
+                contact.setAttribute('aria-label', `Consultar ${type.name}`); contact.setAttribute('aria-haspopup', 'dialog');
+                contact.addEventListener('click', () => inquiry.open(type)); content.append(contact);
+            }
             card.append(photoBox, content);
             grid.append(card);
         });
         rooms.inner.append(grid);
         const stay = section('clientes', 'Tu próxima estadía', 'Coordina tu visita directamente con el hotel.');
+        stay.wrapper.classList.add('section-audience');
         const audience = element('div', 'audience-grid');
         for (const cardInfo of hotel.stayCards ?? []) {
             const card = element('div', 'audience-card');
@@ -142,7 +161,8 @@ export function initHotelDetail(): void {
             audience.append(card);
         }
         stay.inner.append(audience);
-        const sections = [hero, info.wrapper, rooms.wrapper, stay.wrapper];
+        const sections: HTMLElement[] = [hero, info.wrapper, rooms.wrapper];
+        if (audience.childElementCount) sections.push(stay.wrapper);
         const videoUrl = resolveMedia(hotel.videoPath);
         if (videoUrl) {
             const videoSection = section('video', 'Video del hotel', hotel.name);
@@ -159,18 +179,21 @@ export function initHotelDetail(): void {
         }
         const location = section('ubicacion', 'Cómo llegar', hotel.address);
         const map = element('a', 'btn btn-primary', 'Ver ubicación en el mapa');
-        const mapUrl = new URL('https://www.google.com/maps/search/');
-        mapUrl.searchParams.set('api', '1');
-        mapUrl.searchParams.set('query', hotel.latitude !== null && hotel.longitude !== null ? `${hotel.latitude},${hotel.longitude}` : `${hotel.name} ${hotel.address}`);
-        map.href = hotel.mapUrl?.startsWith('https://') ? hotel.mapUrl : mapUrl.href;
-        map.target = '_blank';
-        map.rel = 'noopener noreferrer';
-        location.inner.append(map);
+        if (hotel.mapUrl?.startsWith('https://')) {
+            map.href = hotel.mapUrl;
+            map.target = '_blank';
+            map.rel = 'noopener noreferrer';
+            location.inner.append(map);
+        }
         sections.push(location.wrapper);
+        sections.push(inquiry.dialog);
         container.replaceChildren(...sections);
+        document.querySelectorAll<HTMLAnchorElement>('a[href="#clientes"], a[href="#video"]').forEach(link => {
+            link.hidden = !container.querySelector(link.hash);
+        });
         const footer = requiredElement('hotelFooterContact', 'div');
         footer.replaceChildren(element('p', 'footer-text', hotel.address));
-        const phone = phoneLink(hotel.phone, hotel.phone ?? '', 'contact-value');
+        const phone = phoneLink(hotel.phone, formatPhone(hotel.phone), 'contact-value');
         if (phone) footer.append(phone);
     }
     async function loadHotel() {
@@ -190,12 +213,10 @@ export function initHotelDetail(): void {
                 container.prepend(banner);
                 return;
             }
-            let id = params.get('id');
-            // Preserve old bookmarks to hotel-central.html without hardcoding a database ID.
+            const id = params.get('id');
             if (id === null) {
-                const hotels = await getHotels();
-                if (!hotels.length) { state(container, 'No hay hoteles registrados.'); return; }
-                id = String(hotels[0]!.id);
+                state(container, 'No se ha seleccionado un hotel.');
+                return;
             }
             if (!/^[1-9][0-9]*$/.test(id)) { state(container, 'Hotel no encontrado.', loadHotel, true); return; }
             render(await getHotel(id));
