@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+afterEach(() => vi.unstubAllEnvs());
 import { asset } from '../../src/utils/assets';
 describe('catalog media', () => {
     it.each(['/', '/hotelya/'])('resolves stable API paths under %s', base => {
@@ -13,4 +14,13 @@ describe('catalog media', () => {
         '/src/assets/a.jpg', 'assets/images//a.jpg', 'assets/images/\n../x.js'])('rejects %s', path => {
         expect(asset(path, '/', 'https://example.com/index.html')).toBeNull();
     });
+});
+
+it('resolves uploaded media only against the configured backend origin', () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://127.0.0.1:8080');
+    expect(asset('/api/media/12345678-1234-1234-1234-123456789abc', '/hotelya/', 'https://example.com/hotelya/index.html'))
+        .toBe('http://127.0.0.1:8080/api/media/12345678-1234-1234-1234-123456789abc');
+    for (const path of ['/api/media/1-1-1-1-1', '/api/media/../../.env', '/api/media/12345678-1234-1234-1234-123456789abc?token=x']) {
+        expect(asset(path, '/', 'https://example.com/index.html')).toBeNull();
+    }
 });

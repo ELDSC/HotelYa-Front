@@ -1,6 +1,6 @@
 # HoteleriasYa · Vite + TypeScript
 
-Aplicación multipágina para el catálogo de hoteles y sus tipos de habitación. Usa Vite 8.3.4, TypeScript estricto y módulos ES. El listado y la ficha consultan Spring Boot; la configuración y los datos del backend no dependen de variables globales en `window`.
+Aplicación multipágina para el catálogo y el panel de administración de dueños. Usa Vite 8.3.4, TypeScript estricto y módulos ES. El listado y la ficha consultan Spring Boot; la configuración y los datos del backend no dependen de variables globales en `window`.
 
 ## Instalar y ejecutar
 
@@ -20,7 +20,7 @@ Vite usa un puerto fijo: si 5173 está ocupado, informa del conflicto. Detenerlo
 El archivo `.env` contiene la configuración explícita de la aplicación y de las pruebas:
 
 ```dotenv
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://127.0.0.1:8080
 HOTELYA_E2E_BASE=/
 HOTELYA_E2E_REUSE_SERVER=0
 ```
@@ -44,7 +44,7 @@ npm run preview
 
 Abrir <http://127.0.0.1:4173>. El build utiliza la URL configurada en `.env`. Preview sirve el build existente: cambiar la variable al ejecutar preview no cambia su API.
 
-Publicar **solo el contenido de `dist`** en un hosting estático. Incluye `index.html`, `hotel-central.html`, los recursos compilados y los archivos públicos del catálogo. Preview es una herramienta de comprobación local. El hosting debe servir ambas páginas como archivos y permitir el acceso directo a la ficha; no se requiere un fallback de SPA. En producción, configurar el dominio del frontend en CORS del backend.
+Publicar **solo el contenido de `dist`** en un hosting estático. Incluye `index.html`, `hotel-central.html`, `acceder.html`, `panel-dueno.html`, los recursos compilados y los archivos públicos del catálogo. Preview es una herramienta de comprobación local. El hosting debe servir las cuatro páginas como archivos y permitir el acceso directo a la ficha y al panel; no se requiere un fallback de SPA. En producción, configurar el dominio del frontend en CORS del backend.
 
 Para montar el sitio bajo `/hotelya/`:
 
@@ -54,14 +54,14 @@ npm run build -- --base=/hotelya/
 
 Para comprobar ese montaje localmente, ejecutar `npm run preview -- --base=/hotelya/` y abrir `http://127.0.0.1:4173/hotelya/`. La base de preview debe coincidir con la del build.
 
-El hosting debe montar el contenido de `dist` en esa subruta. Vite adapta los recursos procesados; el resolvedor de medios del catálogo utiliza `import.meta.env.BASE_URL`. Los enlaces entre las dos páginas conservan la subruta.
+El hosting debe montar el contenido de `dist` en esa subruta. Vite adapta los recursos procesados; el resolvedor de medios del catálogo utiliza `import.meta.env.BASE_URL`. Los enlaces entre las páginas conservan la subruta.
 
 ## Organización y contratos
 
 - `src/pages`: una entrada por HTML; importa CSS e inicializa únicamente las funciones de esa página.
 - `src/api`: transporte HTTP con timeout de diez segundos y operaciones `getHotels()` / `getHotel(id)`.
 - `src/types`: tipos que reflejan los DTO de Spring Boot, sus valores enumerados y campos anulables. El tipado no sustituye la validación del servidor.
-- `src/features`: listado, ficha y sesión de demostración.
+- `src/features`: listado, ficha y autenticación real del dueño.
 - `src/ui`: DOM tipado, estados de carga/error y controles compartidos.
 - `src/utils`: referencias multimedia seguras y formato de tarifas.
 - `src/styles`: estilos importados por las entradas, procesados por Vite.
@@ -72,9 +72,9 @@ Los módulos exportan funciones explícitas y no registran eventos ni realizan c
 
 `index.html` consulta `GET /api/hotels`. «Ver hotel» abre `hotel-central.html?id=<id>` y consulta `GET /api/hotels/{id}`. Una ficha sin identificador consulta el listado y usa el primer hotel. Ambos flujos tienen carga, vacío, error y reintento, sin datos mock de respaldo.
 
-Los textos recibidos se insertan con `textContent`. Los medios de la API solo admiten referencias locales bajo `assets/images/` y `assets/videos/`; se rechazan rutas externas, traversal y referencias codificadas. Las referencias del catálogo quedan en `public` porque su nombre es parte del contrato HTTP, no por compatibilidad con el servidor anterior.
+Los textos recibidos se insertan con `textContent`. Los medios admiten los recursos originales bajo `assets/images/` y `assets/videos/` y los UUID de medios del backend; se rechazan enlaces externos arbitrarios, traversal y referencias codificadas. Las referencias originales del catálogo permanecen en `public`; los medios subidos usan rutas `/api/media/{uuid}` resueltas exclusivamente contra el origen de API configurado.
 
-El hotel inicial es **Lumi’s Hotel**, con tipos **Temática, Matrimonial y Premium**, tratados como productos. Las tarifas son de referencia. No hay habitaciones físicas identificadas, stock, disponibilidad, reservas en línea, calificaciones ni reseñas. El login conserva su demostración en `localStorage` y no representa autenticación del backend.
+El hotel inicial es **Lumi’s Hotel**, con tipos **Temática, Matrimonial y Premium**, tratados como productos. Las tarifas son de referencia. El dueño configura cantidades totales y disponibles por tipo. No hay habitaciones físicas identificadas, reservas en línea, calificaciones ni reseñas. El login usa JWT real con renovación por cookie HttpOnly; los valores antiguos de demostración en localStorage se descartan.
 
 ## Calidad y pruebas
 
@@ -110,3 +110,21 @@ Las capturas de escritorio y móvil, trazas de fallos y evidencias quedan en `te
 ## Fuente de los datos de Lumi’s
 
 Dirección y teléfono proceden de las referencias conservadas en el proyecto: https://yandex.com/maps/org/lumi_hotel/132122445572/; la dirección fue contrastada con https://monjitasclub.com/hospedajes/ el 18/09/2026. No se verificó contacto telefónico. Fotografías, video y nombres de tipos de habitación fueron proporcionados para el proyecto. Las descripciones se basan en las imágenes. Los importes actuales son datos de demostración, no tarifas confirmadas del hotel. WhatsApp, horarios, coordenadas y estacionamiento quedan sin confirmar.
+
+## Acceso y administración del dueño
+
+«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `panel-dueno.html` permite crear el único hotel de su cuenta como borrador y administrar **Mi hotel, Habitaciones, Multimedia, Contenido y Publicación**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
+
+Usar `127.0.0.1` tanto para la web como para `VITE_API_BASE_URL` en desarrollo. Las llamadas de autenticación llevan credenciales y CSRF; las operaciones privadas llevan Authorization Bearer. Los errores se muestran por campo y conservan los datos para reintentar. El guardado es explícito por sección y el navegador advierte antes de abandonar formularios modificados.
+
+El backend define las reglas de publicación y propiedad. La ficha muestra disponibilidad actual, tarifas del hotel o de demostración y tarjetas editables de estadía. «Vista previa privada» abre `hotel-central.html?preview=1`, obtiene la ficha del dueño y descarga sus medios protegidos como blobs. El catálogo público nunca utiliza ese acceso privado.
+
+Las subidas requieren haber guardado primero el hotel. Se pueden ordenar y quitar fotos del tipo, reemplazar o retirar logo/portada/video y eliminar archivos no utilizados desde Multimedia. Quitar una asociación no elimina el archivo de la biblioteca. Los archivos originales siguen disponibles y no son borrados por el panel.
+
+### Verificación del panel con backend real
+
+```bash
+npm run test:e2e:owner
+```
+
+Requiere Supabase HotelYa activo, Docker y el `.env` del backend configurado. Playwright levanta servidores propios en `127.0.0.1:5174` y `127.0.0.1:8081`, usa únicamente `hotelya_test`, prueba escritorio y móvil y limpia sus registros al terminar. No ejecutarlo simultáneamente con las pruebas de integración Java. No reutiliza ni detiene los servidores habituales de 5173/8080. Las capturas de habitaciones y publicación quedan en `test-results/`.

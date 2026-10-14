@@ -44,6 +44,8 @@ export const test = base.extend({
             const id = new URL(route.request().url()).pathname.split('/').at(-1);
             return id === '1' ? route.fulfill({ json: hotel }) : route.fulfill({ status: 404, json: {} });
         });
+        await page.route(`${api}/api/auth/csrf`, route => route.fulfill({ json: { token: 'csrf-test', headerName: 'X-XSRF-TOKEN' } }));
+        await page.route(`${api}/api/auth/refresh`, route => route.fulfill({ status: 401, json: { message: 'Sin sesión', fields: {} } }));
         await use(page);
         expect(errors).toEqual([]);
     },

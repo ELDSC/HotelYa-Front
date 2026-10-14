@@ -1,8 +1,8 @@
 import '../styles/main.css';
 import '../styles/hotel-central.css';
 import { initHeader } from '../ui/header';
-import { initDemoAuth } from '../features/demo-auth';
+import { initAuthHeader } from '../features/auth';
 import { initHotelDetail } from '../features/hotel-detail';
 initHeader();
-initDemoAuth();
+void initAuthHeader();
 initHotelDetail();
