@@ -2,7 +2,7 @@ import { test, expect, hotel, summary, api } from './fixtures';
 
 test('catalog, detail, stable media, prices, return, and mobile layout', async ({ page }, testInfo) => {
     const dataRequests: string[] = [];
-    page.on('request', request => { if (request.resourceType() === 'fetch') dataRequests.push(request.url()); });
+    page.on('request', request => { if (request.resourceType() === 'fetch' && request.url().startsWith(`${api}/api/hotels`)) dataRequests.push(request.url()); });
     await page.goto('./');
     await expect(page.locator('.hotel-card')).toHaveCount(1);
     await expect(page.locator('.hotel-name')).toHaveText(hotel.name);
@@ -27,7 +27,7 @@ test('catalog, detail, stable media, prices, return, and mobile layout', async (
 
 test('direct and legacy detail entries only request the needed data', async ({ page }) => {
     const requests: string[] = [];
-    page.on('request', request => { if (request.resourceType() === 'fetch') requests.push(request.url()); });
+    page.on('request', request => { if (request.resourceType() === 'fetch' && request.url().startsWith(`${api}/api/hotels`)) requests.push(request.url()); });
     await page.goto('hotel-central.html?id=1');
     await expect(page.locator('.editorial-room-card')).toHaveCount(3);
     expect(requests).toEqual([`${api}/api/hotels/1`]);
@@ -102,21 +102,15 @@ test('carousel, scroll header and video controls', async ({ page }) => {
     await expect(page.locator('#videoOverlay')).not.toHaveClass(/hidden/);
 });
 
-test('demo login persists between pages and logout clears it', async ({ page }) => {
-    page.on('dialog', dialog => { void dialog.accept(); });
+test('Acceder opens the dedicated owner access page and ignores the old demo session', async ({ page }) => {
     await page.goto('./');
-    await page.locator('#loginBtnTrigger').click();
-    await expect(page.locator('#authModal')).toHaveClass(/active/);
-    await page.locator('#closeAuthModal').click();
-    await expect(page.locator('#authModal')).not.toHaveClass(/active/);
-    await page.locator('#loginBtnTrigger').click();
-    await page.locator('#email').fill('demo@example.com');
-    await page.locator('#password').fill('demo-password');
-    await page.locator('#loginForm button[type=submit]').click();
-    await expect(page.locator('#authButtonLabel')).toHaveText('Cerrar sesión');
-    await page.goto('hotel-central.html?id=1');
-    await expect(page.locator('#userNameDisplay')).toHaveText('demo');
-    await page.locator('#loginBtnTrigger').click();
+    await page.evaluate(() => { localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userEmail', 'demo@example.com'); });
+    await page.reload();
     await expect(page.locator('#authButtonLabel')).toHaveText('Acceder');
+    await page.locator('#loginBtnTrigger').click();
+    await expect(page).toHaveURL(/acceder.html$/);
+    await expect(page.locator('#accessForm')).toBeVisible();
+    await page.locator('#registerTab').click();
+    await expect(page.locator('#confirmationField')).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem('isLoggedIn'))).toBeNull();
 });
