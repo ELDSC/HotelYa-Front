@@ -5,11 +5,11 @@ export interface HotelDetail extends HotelSummary {
     address: string; phone: string | null; facadePath: string | null; videoPath: string | null;
     latitude: number | null; longitude: number | null; whatsapp: string | null;
     openingHours: string | null; checkInOutConditions: string | null;
-    hasParking: boolean | null; roomTypes: RoomTypeDetail[];
+    hasParking: boolean | null; roomTypes: RoomTypeDetail[]; stayCards: StayCard[];
 }
 export interface RoomTypeDetail {
     id: number; code: string; name: string; description: string;
-    photos: Photo[]; details: RoomDetail[]; rates: RateInfo[];
+    photos: Photo[]; details: RoomDetail[]; rates: RateInfo[]; totalUnits: number | null; availableUnits: number | null;
 }
 export interface Photo { path: string; altText: string; }
 export type DetailKind = 'FEATURE' | 'SERVICE' | 'RECOMMENDATION' | 'PROHIBITION';
@@ -19,3 +19,5 @@ export interface RateInfo {
     mode: RateMode; amount: number; currency: string; packageHours: number | null;
     additionalHourAmount: number | null; simulated: boolean;
 }
+
+export interface StayCard { title: string; description: string }
