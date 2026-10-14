@@ -8,6 +8,9 @@ import { rateLabel } from '../utils/rates';
 
 export function initHotelDetail(): void {
     const container = requiredElement('hotelDetailContainer', 'div');
+    const mediaUrls = new Map<string, string>();
+    const resolveMedia = (path: string | null) => path ? mediaUrls.get(path) ?? asset(path) : null;
+    window.addEventListener('pagehide', () => mediaUrls.forEach(url => URL.revokeObjectURL(url)));
 
     function section(id: string, title: string, subtitle: string) {
         const wrapper = element('section', 'section-info');
@@ -21,7 +24,7 @@ export function initHotelDetail(): void {
         return { wrapper, inner };
     }
     function image(path: string | null, alt: string, className = '') {
-        const url = asset(path);
+        const url = resolveMedia(path);
         if (!url) return null;
         const node = element('img', className);
         node.src = url;
@@ -46,7 +49,7 @@ export function initHotelDetail(): void {
         document.querySelector<HTMLMetaElement>('meta[name="description"]')!.content = hotel.description;
         document.querySelectorAll('[data-hotel-name]').forEach(node => { node.textContent = hotel.name; });
         document.querySelectorAll<HTMLImageElement>('[data-hotel-logo]').forEach(node => {
-            const url = asset(hotel.logoPath);
+            const url = resolveMedia(hotel.logoPath);
             node.hidden = !url;
             if (url) { node.src = url; node.alt = `Logo de ${hotel.name}`; }
         });
@@ -110,11 +113,15 @@ export function initHotelDetail(): void {
             const labels = { FEATURE: 'Característica', SERVICE: 'Servicio', RECOMMENDATION: 'Recomendación', PROHIBITION: 'Prohibición' };
             type.details.forEach(d => row(detailList, labels[d.kind] || 'Detalle', d.text));
             content.append(detailList);
+            const available = type.availableUnits;
+            content.append(element('p', 'catalog-availability', available === null || available === undefined
+                ? 'Disponibilidad por confirmar con el hotel.'
+                : available === 0 ? 'Sin unidades disponibles actualmente.' : `${available} unidad(es) disponibles actualmente.`));
             if (type.rates.length) {
                 content.append(element('h4', 'catalog-rate-title', 'Tarifas de referencia'));
                 const rates = element('ul', 'catalog-rates');
                 type.rates.forEach(rate => {
-                    const item = element('li', '', rateLabel(rate));
+                    const item = element('li', '', `${rateLabel(rate)}${rate.simulated ? ' · Tarifa de demostración' : ''}`);
                     rates.append(item);
                 });
                 content.append(rates);
@@ -129,18 +136,14 @@ export function initHotelDetail(): void {
         rooms.inner.append(grid);
         const stay = section('clientes', 'Tu próxima estadía', 'Coordina tu visita directamente con el hotel.');
         const audience = element('div', 'audience-grid');
-        for (const [title, description] of [
-            ['Una escapada en pareja', 'Haz espacio para compartir y descansar a tu ritmo.'],
-            ['Una visita a la ciudad', 'Consulta las condiciones y servicios para tu estadía.'],
-            ['Un descanso en el camino', 'Organiza tu llegada directamente con el hotel.']
-        ]) {
+        for (const cardInfo of hotel.stayCards ?? []) {
             const card = element('div', 'audience-card');
-            card.append(element('h3', 'audience-card-title', title), element('p', 'audience-card-desc', description));
+            card.append(element('h3', 'audience-card-title', cardInfo.title), element('p', 'audience-card-desc', cardInfo.description));
             audience.append(card);
         }
         stay.inner.append(audience);
         const sections = [hero, info.wrapper, rooms.wrapper, stay.wrapper];
-        const videoUrl = asset(hotel.videoPath);
+        const videoUrl = resolveMedia(hotel.videoPath);
         if (videoUrl) {
             const videoSection = section('video', 'Video del hotel', hotel.name);
             const box = element('div', 'video-player-box');
@@ -158,7 +161,7 @@ export function initHotelDetail(): void {
         const map = element('a', 'btn btn-primary', 'Ver ubicación en el mapa');
         const mapUrl = new URL('https://www.google.com/maps/search/');
         mapUrl.searchParams.set('api', '1');
-        mapUrl.searchParams.set('query', `${hotel.name} ${hotel.address}`);
+        mapUrl.searchParams.set('query', hotel.latitude !== null && hotel.longitude !== null ? `${hotel.latitude},${hotel.longitude}` : `${hotel.name} ${hotel.address}`);
         map.href = mapUrl.href;
         map.target = '_blank';
         map.rel = 'noopener noreferrer';
@@ -174,7 +177,20 @@ export function initHotelDetail(): void {
         state(container, 'Cargando hotel…');
         container.setAttribute('aria-busy', 'true');
         try {
-            let id = new URLSearchParams(window.location.search).get('id');
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('preview') === '1') {
+                const { getOwnerHotel, mediaPreview } = await import('../api/owner');
+                const hotel = (await getOwnerHotel()).detail;
+                const paths = new Set([hotel.logoPath, hotel.facadePath, hotel.videoPath,
+                    ...hotel.roomTypes.flatMap(room => room.photos.map(photo => photo.path))]);
+                await Promise.all([...paths].filter((path): path is string => Boolean(path?.startsWith('/api/media/')))
+                    .map(async path => { mediaUrls.set(path, await mediaPreview(path)); }));
+                render(hotel);
+                const banner = element('div', 'catalog-preview-banner', 'Vista previa privada · Estos datos pueden no estar publicados.');
+                container.prepend(banner);
+                return;
+            }
+            let id = params.get('id');
             // Preserve old bookmarks to hotel-central.html without hardcoding a database ID.
             if (id === null) {
                 const hotels = await getHotels();
@@ -184,6 +200,7 @@ export function initHotelDetail(): void {
             if (!/^[1-9][0-9]*$/.test(id)) { state(container, 'Hotel no encontrado.', loadHotel, true); return; }
             render(await getHotel(id));
         } catch (error) {
+            if (error instanceof HttpError && error.status === 401 && new URLSearchParams(window.location.search).get('preview') === '1') { window.location.replace('acceder.html'); return; }
             state(container, error instanceof HttpError && error.status === 404 ? 'Hotel no encontrado.' : 'No pudimos cargar el hotel. Inténtalo de nuevo.', loadHotel, true);
         } finally {
             container.setAttribute('aria-busy', 'false');

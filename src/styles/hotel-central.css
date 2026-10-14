@@ -421,3 +421,6 @@ body.hotel-theme {
     padding-top: calc(var(--header-height) + 6rem);
     padding-bottom: 4rem;
 }
+
+.catalog-availability { color:#356341; font-weight:600; margin:16px 0; }
+.catalog-preview-banner { background:#fff2db; color:#684f24; padding:16px; text-align:center; font-weight:600; }
