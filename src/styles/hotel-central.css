@@ -416,3 +416,8 @@ body.hotel-theme {
     text-decoration: none;
 }
 .hotel-theme .hotel-back-button:hover { background: var(--hotel-navy-light); }
+
+.hotel-theme #hotelDetailContainer > .catalog-state {
+    padding-top: calc(var(--header-height) + 6rem);
+    padding-bottom: 4rem;
+}

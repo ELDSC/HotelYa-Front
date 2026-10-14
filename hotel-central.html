@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lumi's Hotel | San Juan de Miraflores, Lima</title>
-    <meta name="description" content="Conoce Lumi's Hotel en Av. Lizardo Montero 161, San Juan de Miraflores, Lima. Consulta habitaciones y planifica tu estadía.">
-    <link rel="icon" type="image/jpeg" href="assets/images/lumis-hotel-logo.jpg">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/hotel-central.css">
+    <title>Ficha del hotel | HoteleriasYa</title>
+    <meta name="description" content="Consulta la información del hotel y sus tipos de habitación.">
+    <link rel="icon" type="image/png" href="/src/assets/images/logoHoteleriasYa.png">
 </head>
 <body class="hotel-theme">
 
     <!-- Encabezado principal y navegación -->
     <header class="header" id="mainHeader">
         <div class="container header-container">
-            <a href="#" class="logo-area" aria-label="Lumi's Hotel">
-                <img class="lumis-header-logo" src="assets/images/lumis-hotel-logo.jpg" alt="" width="56" height="56">
-                <span>Lumi's Hotel</span>
+            <a href="#" class="logo-area" aria-label="Hotel">
+                <img class="lumis-header-logo" data-hotel-logo alt="" width="56" height="56" hidden>
+                <span data-hotel-name>Hotel</span>
             </a>
             
             <nav class="nav-links">
@@ -42,145 +40,14 @@
         </div>
     </header>
 
-    <!-- Slider principal (3 a 5 imágenes) -->
-    <section class="hero-section">
+    <main>
         <div class="container hotel-back-row">
-            <a href="index.html#productos" class="hotel-back-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>
-                Volver a HoteleriasYa
-            </a>
+            <a href="index.html#productos" class="hotel-back-button">Volver a HoteleriasYa</a>
         </div>
-        <div class="carousel" id="heroCarousel">
-            <div class="carousel-slide active">
-                <img src="assets/images/lumis-hotel-fachada.jpg" alt="Fachada y entrada de Lumi's Hotel" class="carousel-img">
-            </div>
+        <div id="hotelDetailContainer" aria-busy="true">
+            <div class="container catalog-state" role="status">Cargando hotel…</div>
         </div>
-
-        <div class="container hero-content">
-            <div class="hero-text-area animate-fade-up">
-                <span class="hero-tagline">Lima &middot; San Juan de Miraflores</span>
-                <h1 class="hero-title">Lumi's Hotel<br><span>Una pausa para ti, al sur de Lima</span></h1>
-                <p class="hero-subtitle-text">Encuéntranos en Av. Lizardo Montero 161 y consulta tu próxima estadía.</p>
-            </div>
-        </div>
-
-    </section>
-
-    <!-- Barra de búsqueda eliminada para la vista dedicada -->
-
-    <!-- 1. Sección Información -->
-    <section class="section-info" id="informacion">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Información</h2>
-                <p class="section-subtitle">Lumi's Hotel: tu punto de descanso en Lima</p>
-            </div>
-
-            <div class="editorial-info-split">
-                <div class="editorial-info-text animate-fade-up">
-                    <h3 class="editorial-heading">Descubre San Juan de Miraflores a tu ritmo</h3>
-                    <p class="editorial-paragraph has-dropcap">
-                        Te damos la bienvenida a <strong>Lumi's Hotel</strong>, ubicado en Av. Lizardo Montero 161, en San Juan de Miraflores, Lima. Un punto de partida para una visita al sur de la ciudad o una pausa en tu día.
-                    </p>
-                    <p class="editorial-paragraph">
-                        Elige la estancia que tienes en mente y comunícate con el hotel para conocer las habitaciones, tarifas y disponibilidad para tus fechas.
-                    </p>
-                    
-                    <ul class="editorial-list">
-                        <li><span class="editorial-list-title">Dirección:</span> Av. Lizardo Montero 161, San Juan de Miraflores, Lima.</li>
-                        <li><span class="editorial-list-title">Consultas:</span> Llama al (01) 755 7324 para coordinar tu visita.</li>
-                        <li><span class="editorial-list-title">Tu estadía:</span> Consulta las modalidades y servicios disponibles directamente con el hotel.</li>
-                    </ul>
-                </div>
-
-                <div class="editorial-info-image animate-fade-in">
-                    <img src="assets/images/lumis-hotel-logo.jpg" alt="Logo de Lumi's Hotel: edificio dorado sobre fondo azul">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 2. Sección Productos (3 Habitaciones) -->
-    <section class="section-hotels" id="productos">
-        <div class="container">
-            <div class="hotel-list-header">
-                <h2 class="hotel-list-title">Nuestras Habitaciones</h2>
-                <p class="section-subtitle">Conoce nuestras habitaciones temática, matrimonial y premium. Consulta tarifas y disponibilidad directamente con el hotel.</p>
-            </div>
-            <div class="hotel-grid animate-fade-up">
-                <article class="editorial-room-card">
-                    <div class="editorial-room-image">
-                        <img src="assets/images/lumis-cuarto-tematico.jpg" alt="Habitación Temática">
-                    </div>
-                    <div class="editorial-room-content">
-                        <h3 class="editorial-room-title">Temática</h3>
-                        <p class="editorial-room-desc">Un ambiente especial para celebrar en pareja, con detalles románticos. Consulta las opciones de decoración para tu ocasión.</p>
-                        <a href="tel:+5117557324" class="editorial-room-action" aria-label="Consultar Habitación Temática">Consultar</a>
-                    </div>
-                </article>
-                <article class="editorial-room-card">
-                    <div class="editorial-room-image">
-                        <img src="assets/images/lumis-cuarto-matrimonial.jpg" alt="Habitación Matrimonial">
-                    </div>
-                    <div class="editorial-room-content">
-                        <h3 class="editorial-room-title">Matrimonial</h3>
-                        <p class="editorial-room-desc">Un espacio acogedor con cama matrimonial, iluminación cálida y televisión para disfrutar de una estadía en pareja.</p>
-                        <a href="tel:+5117557324" class="editorial-room-action" aria-label="Consultar Habitación Matrimonial">Consultar</a>
-                    </div>
-                </article>
-                <article class="editorial-room-card">
-                    <div class="editorial-room-image">
-                        <img src="assets/images/lumis-cuarto-premium.jpg" alt="Habitación Premium">
-                    </div>
-                    <div class="editorial-room-content">
-                        <h3 class="editorial-room-title">Premium</h3>
-                        <p class="editorial-room-desc">Disfruta de una habitación con jacuzzi y un rincón para relajarte, ideal para una escapada especial.</p>
-                        <a href="tel:+5117557324" class="editorial-room-action" aria-label="Consultar Habitación Premium">Consultar</a>
-                    </div>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-audience" id="clientes">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Tu próxima pausa en Lumi's Hotel</h2>
-                <p class="section-subtitle">Planifica tu visita y encuentra una opción para tu estadía.</p>
-            </div>
-            <div class="audience-grid animate-fade-up">
-                <div class="audience-card"><h3 class="audience-card-title">Una escapada en pareja</h3><p class="audience-card-desc">Haz espacio para compartir y descansar a tu ritmo.</p></div>
-                <div class="audience-card"><h3 class="audience-card-title">Una visita a Lima</h3><p class="audience-card-desc">Ten San Juan de Miraflores como punto de partida para tus planes.</p></div>
-                <div class="audience-card"><h3 class="audience-card-title">Un descanso en el camino</h3><p class="audience-card-desc">Consulta una habitación y organiza tu llegada directamente con el hotel.</p></div>
-            </div>
-        </div>
-    </section>
-    <section class="section-video" id="video">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Video representativo</h2>
-                <p class="section-subtitle">Conoce Lumi's Hotel y descubre nuestros espacios para tu próxima estadía.</p>
-            </div>
-            <div class="video-container-wide">
-                <div class="video-player-box">
-                    <video id="hotelVideo" class="main-video-element" controls playsinline preload="metadata" aria-label="Video promocional de Lumi's Hotel">
-                        <source src="assets/videos/lumis-promocional.mp4" type="video/mp4">
-                        Tu navegador no soporta video HTML5. <a href="assets/videos/lumis-promocional.mp4">Descargar video de Lumi's Hotel</a>.
-                    </video>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-info" id="ubicacion">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Cómo llegar</h2>
-                <p class="section-subtitle">Av. Lizardo Montero 161, San Juan de Miraflores, Lima, Perú.</p>
-                <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Lumi%27s+Hotel+Av.+Lizardo+Montero+161+San+Juan+de+Miraflores+Lima" target="_blank" rel="noopener noreferrer">Ver ubicación en el mapa</a>
-            </div>
-        </div>
-    </section>
+    </main>
 
     <!-- Footer estructurado en 3 columnas -->
     <footer class="footer">
@@ -188,14 +55,14 @@
             <div class="footer-grid">
                 <!-- Columna 1: Identidad del hotel -->
                 <div class="footer-col footer-col-brand">
-                    <h4 class="footer-title">Lumi's Hotel</h4>
-                    <img class="lumis-footer-logo" src="assets/images/lumis-hotel-logo.jpg" alt="Lumi's Hotel" width="160" height="160">
-                    <p class="footer-text">Tu punto de descanso en San Juan de Miraflores.</p>
+                    <h4 class="footer-title" data-hotel-name>Hotel</h4>
+                    <img class="lumis-footer-logo" data-hotel-logo alt="Logo del hotel" width="160" height="160" hidden>
+                    <p class="footer-text">Consulta los tipos de habitación y coordina tu visita.</p>
                     <a href="index.html#productos" class="social-text-link">Volver a HoteleriasYa</a>
                     <div class="utp-logo-container">
                         <span class="utp-label">Proyecto académico:</span>
                         <a href="https://www.utp.edu.pe" target="_blank" rel="noopener noreferrer" class="utp-link" title="Universidad Tecnológica del Perú">
-                            <img src="assets/images/Utplogonuevo.svg.webp" alt="Logo Universidad Tecnológica del Perú" class="utp-logo-img" loading="lazy">
+                            <img src="/src/assets/images/Utplogonuevo.svg.webp" alt="Logo Universidad Tecnológica del Perú" class="utp-logo-img" loading="lazy">
                         </a>
                     </div>
                 </div>
@@ -205,20 +72,7 @@
                     <h4 class="footer-title">Contacto</h4>
                     <p class="footer-text">Comunícate con nuestro equipo para consultar habitaciones, tarifas y disponibilidad.</p>
                     
-                    <div class="contact-details">
-                        <div class="contact-entry">
-                            <span class="contact-tag">Teléfono:</span>
-                            <a href="tel:+5117557324" class="contact-value">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                (01) 755 7324
-                            </a>
-                        </div>
-
-                        <div class="contact-entry">
-                            <span class="contact-tag">Dirección:</span>
-                            <span class="contact-info-text">Av. Lizardo Montero 161, San Juan de Miraflores, Lima.</span>
-                        </div>
-                    </div>
+                    <div class="contact-details" id="hotelFooterContact"></div>
                 </div>
 
                 <!-- Columna 3: 3 Rubros Relacionados -->
@@ -229,7 +83,7 @@
                     <ul class="rubros-list">
                         <li class="rubro-item">
                             <a href="https://www.instagram.com/hotel.smart.love/?hl=es" target="_blank" rel="noopener noreferrer" class="rubro-link">
-                                <img class="rubro-logo" src="assets/images/hotel-smart-love-logo.jpg" alt="" width="72" height="72" loading="lazy">
+                                <img class="rubro-logo" src="/src/assets/images/hotel-smart-love-logo.jpg" alt="" width="72" height="72" loading="lazy">
                                 <div>
                                     <strong>Hotel Smart Love</strong>
                                     <span>Instagram Oficial</span>
@@ -238,7 +92,7 @@
                         </li>
                         <li class="rubro-item">
                             <a href="https://www.facebook.com/p/Selva-Hotel-61560415207378/" target="_blank" rel="noopener noreferrer" class="rubro-link">
-                                <img class="rubro-logo" src="assets/images/hotel-selva-suite-logo.jpg" alt="" width="72" height="72" loading="lazy">
+                                <img class="rubro-logo" src="/src/assets/images/hotel-selva-suite-logo.jpg" alt="" width="72" height="72" loading="lazy">
                                 <div>
                                     <strong>Hotel Selva Suite</strong>
                                     <span>Página en Facebook</span>
@@ -247,7 +101,7 @@
                         </li>
                         <li class="rubro-item">
                             <a href="https://www.instagram.com/hoteldakmarlin/" target="_blank" rel="noopener noreferrer" class="rubro-link">
-                                <img class="rubro-logo" src="assets/images/hotel-dak-marlin-logo.jpg" alt="" width="72" height="72" loading="lazy">
+                                <img class="rubro-logo" src="/src/assets/images/hotel-dak-marlin-logo.jpg" alt="" width="72" height="72" loading="lazy">
                                 <div>
                                     <strong>Hotel Dak Marlin</strong>
                                     <span>Instagram Oficial</span>
@@ -260,7 +114,7 @@
 
             <!-- Créditos y derechos -->
             <div class="footer-bottom">
-                <p>&copy; 2026 Lumi's Hotel - Todos los derechos reservados.</p>
+                <p>&copy; 2026 HoteleriasYa - Todos los derechos reservados.</p>
                 <div class="legal-links">
                     <a href="#informacion">Información</a>
                     <a href="#productos">Habitaciones</a>
@@ -299,8 +153,6 @@
     </div>
 
     <!-- Scripts JS -->
-    <script src="js/data.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/hotel-central.js"></script>
+    <script type="module" src="/src/pages/hotel-detail.ts"></script>
 </body>
 </html>

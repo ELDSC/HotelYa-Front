@@ -1,0 +1,11 @@
+import '../styles/main.css';
+import { initHeader } from '../ui/header';
+import { initCarousel } from '../ui/carousel';
+import { initVideoPlayer } from '../ui/video-player';
+import { initDemoAuth } from '../features/demo-auth';
+import { initHotelList } from '../features/hotel-list';
+initHeader();
+initDemoAuth();
+initCarousel();
+initVideoPlayer();
+initHotelList();
