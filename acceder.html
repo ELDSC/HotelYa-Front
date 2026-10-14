@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Acceso de dueños | HoteleriasYa</title><link rel="icon" href="/src/assets/images/logoHoteleriasYa.png"></head>
-<body class="owner-app auth-page"><main class="auth-shell">
-<a class="owner-brand" href="index.html"><img src="/src/assets/images/logoHoteleriasYa.png" alt="" width="48" height="48"> HoteleriasYa</a>
-<div class="auth-intro"><span class="eyebrow">PARA DUEÑOS DE HOTELES</span><h1>Tu hotel, en tus manos.</h1><p>Actualiza tus habitaciones, fotos y tarifas desde un solo lugar.</p></div>
+<body class="owner-app auth-page"><header class="access-header">
+<a class="owner-brand" href="index.html"><img src="/src/assets/images/logoHoteleriasYa.png" alt="" width="48" height="48"> HoteleriasYa</a></header><main class="auth-shell">
+<div class="auth-intro"><h1>Accede a tu hotel</h1></div>
 <div class="auth-box"><div class="auth-tabs" role="tablist" aria-label="Acceso"><button id="loginTab" role="tab" aria-selected="true" aria-controls="accessForm" type="button">Iniciar sesión</button><button id="registerTab" role="tab" aria-selected="false" aria-controls="accessForm" type="button">Crear cuenta</button></div>
-<h2 id="formTitle">Bienvenido de nuevo</h2><p id="formHint">Ingresa con la cuenta asociada a tu hotel.</p>
-<form id="accessForm"><label>Correo electrónico<input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></label><label>Contraseña<input id="password" name="password" type="password" autocomplete="current-password" required></label><label id="confirmationField" hidden>Confirmar contraseña<input id="confirmation" name="confirmation" type="password" autocomplete="new-password"></label><div id="accessMessage" aria-live="polite"></div><button class="primary" id="accessSubmit" type="submit">Ingresar al panel</button></form>
+<h2 id="formTitle" class="sr-only">Iniciar sesión</h2>
+<form id="accessForm"><label>Correo electrónico <span class="required-mark">*</span><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></label><label>Contraseña <span class="required-mark">*</span><input id="password" name="password" type="password" autocomplete="current-password" required></label><label id="confirmationField" hidden>Confirmar contraseña <span class="required-mark">*</span><input id="confirmation" name="confirmation" type="password" autocomplete="new-password"></label><div id="accessMessage" aria-live="polite"></div><button class="primary" id="accessSubmit" type="submit">Ingresar al panel</button></form>
 </div><a class="back-link" href="index.html">← Volver al catálogo</a></main><script type="module" src="/src/pages/access.ts"></script></body></html>

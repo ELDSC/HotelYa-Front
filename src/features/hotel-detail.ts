@@ -162,7 +162,7 @@ export function initHotelDetail(): void {
         const mapUrl = new URL('https://www.google.com/maps/search/');
         mapUrl.searchParams.set('api', '1');
         mapUrl.searchParams.set('query', hotel.latitude !== null && hotel.longitude !== null ? `${hotel.latitude},${hotel.longitude}` : `${hotel.name} ${hotel.address}`);
-        map.href = mapUrl.href;
+        map.href = hotel.mapUrl?.startsWith('https://') ? hotel.mapUrl : mapUrl.href;
         map.target = '_blank';
         map.rel = 'noopener noreferrer';
         location.inner.append(map);

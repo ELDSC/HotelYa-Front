@@ -5,6 +5,7 @@ export interface HotelDetail extends HotelSummary {
     address: string; phone: string | null; facadePath: string | null; videoPath: string | null;
     latitude: number | null; longitude: number | null; whatsapp: string | null;
     openingHours: string | null; checkInOutConditions: string | null;
+    mapUrl?: string | null; openingTime?: string | null; closingTime?: string | null;
     hasParking: boolean | null; roomTypes: RoomTypeDetail[]; stayCards: StayCard[];
 }
 export interface RoomTypeDetail {

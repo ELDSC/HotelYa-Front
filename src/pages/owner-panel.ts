@@ -6,14 +6,14 @@ import * as api from '../api/owner';
 import type { OwnerHotel, HotelWrite, RoomWrite, MediaInfo } from '../api/owner';
 import type { RoomTypeDetail, Photo, RoomDetail, RateInfo, StayCard, DetailKind, RateMode } from '../types/catalog';
 import { asset } from '../utils/assets';
-import { busy, hasChanges, markDirty, markSaved, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
+import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
 const content = requiredElement('panelContent', 'div');
 const globalMessage = requiredElement('panelMessage', 'div');
 const sections = new Map<string, HTMLElement>();
 const previews = new Map<string, string>();
 let current: OwnerHotel | null = null;
 let files: MediaInfo[] = [];
-let active = 'hotel';
+let active = 'dashboard';
 let roomForm: HTMLFormElement | null = null;
 let roomEditor: HTMLElement;
 let roomList: HTMLElement;
@@ -27,7 +27,9 @@ function button(text: string, action?: () => void, className = 'secondary'): HTM
 }
 function field(parent: HTMLElement, name: string, label: string, value: unknown = '', type = 'text'): HTMLInputElement | HTMLTextAreaElement {
     const wrapper = element('label', type === 'textarea' ? 'form-field full-width' : 'form-field');
-    wrapper.append(element('span', '', label));
+    const caption = element('span'); caption.append(label.replace(/ \*$/, ''));
+    if (label.endsWith(' *')) caption.append(' ', element('span', 'required-mark', '*'));
+    wrapper.append(caption);
     const input = type === 'textarea' ? element('textarea') : element('input');
     if (input instanceof HTMLInputElement) input.type = type;
     input.id = `field-${++serial}`; input.name = name; input.value = value === null || value === undefined ? '' : String(value);
@@ -39,8 +41,8 @@ function select(parent: HTMLElement, name: string, label: string, value: string,
     for (const [id, text] of options) { const option = element('option', '', text); option.value = id; input.append(option); }
     input.value = value; wrapper.append(input); parent.append(wrapper); return input;
 }
-function formCard(title: string, description: string): { form: HTMLFormElement; grid: HTMLDivElement; status: HTMLDivElement; submit: HTMLButtonElement } {
-    const form = element('form', 'editor-card'); form.append(element('h2', '', title), element('p', 'muted', description));
+function formCard(title: string): { form: HTMLFormElement; grid: HTMLDivElement; status: HTMLDivElement; submit: HTMLButtonElement } {
+    const form = element('form', 'editor-card'); if (title) form.append(element('h2', '', title));
     const grid = element('div', 'form-grid'); const status = element('div'); status.setAttribute('aria-live', 'polite');
     const submit = button('Guardar cambios', undefined, 'primary'); submit.type = 'submit';
     const actions = element('div', 'form-actions'); actions.append(submit);
@@ -50,42 +52,46 @@ function view(name: string): HTMLElement {
     const section = element('section', 'panel-section'); section.id = `section-${name}`; sections.set(name, section); content.append(section); return section;
 }
 function activate(name: string): void {
-    active = name; sections.forEach((section, key) => { section.hidden = key !== name; });
+    active = name; updateHeading(); sections.forEach((section, key) => { section.hidden = key !== name; });
     document.querySelectorAll<HTMLButtonElement>('[data-section]').forEach(node => {
         const selected = node.dataset.section === name; node.classList.toggle('selected', selected); if (selected) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current');
     });
 }
 function header(): void {
-    requiredElement('hotelHeading', 'h1').textContent = current?.detail.name ?? 'Configura tu primer hotel';
+    updateHeading();
     const badge = requiredElement('publicationBadge', 'span'); badge.textContent = current?.published ? 'Publicado' : 'Borrador'; badge.classList.toggle('published', Boolean(current?.published));
-    renderPublication();
+    renderDashboard();
+}
+function updateHeading(): void {
+    const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia', content: 'Contenido' };
+    requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
 }
 function hotelBody(form: HTMLFormElement): HotelWrite {
     const data = new FormData(form);
     const text = (key: string): string => String(data.get(key) ?? '').trim();
     const optional = (key: string): string | null => text(key) || null;
-    const number = (key: string): number | null => text(key) === '' ? null : Number(text(key));
     return {
         name: text('name'), description: text('description'), address: text('address'), location: text('location'),
-        phone: optional('phone'), whatsapp: optional('whatsapp'), latitude: number('latitude'), longitude: number('longitude'),
-        openingHours: optional('openingHours'), checkInOutConditions: optional('checkInOutConditions'),
-        hasParking: text('hasParking') === '' ? null : text('hasParking') === 'true',
+        phone: optional('phone'), whatsapp: optional('whatsapp'), latitude: current?.detail.latitude ?? null, longitude: current?.detail.longitude ?? null, mapUrl: optional('mapUrl'),
+        openingHours: null, openingTime: optional('openingTime'), closingTime: optional('closingTime'), checkInOutConditions: optional('checkInOutConditions'),
+        hasParking: current?.detail.hasParking ?? null,
         logoPath: current?.detail.logoPath ?? null, facadePath: current?.detail.facadePath ?? null, videoPath: current?.detail.videoPath ?? null,
     };
 }
 function renderHotel(section: HTMLElement): void {
-    const { form, grid, status, submit } = formCard('Información de tu hotel', 'Estos datos se muestran en la ficha pública. Los campos con * son obligatorios.');
+    const { form, grid, status, submit } = formCard('');
     const hotel = current?.detail;
     for (const [key, label] of [['name', 'Nombre del hotel *'], ['location', 'Zona o distrito *'], ['address', 'Dirección *'], ['phone', 'Teléfono (formato +51…)'], ['whatsapp', 'WhatsApp (formato +51…)']] as const) {
         const input = field(grid, key, label, hotel?.[key]); input.required = ['name', 'location', 'address'].includes(key); input.maxLength = key === 'address' ? 500 : key === 'phone' || key === 'whatsapp' ? 40 : 200;
     }
     const desc = field(grid, 'description', 'Descripción *', hotel?.description, 'textarea'); desc.required = true; desc.maxLength = 10000;
-    for (const [key, label, bound] of [['latitude', 'Latitud', 90], ['longitude', 'Longitud', 180]] as const) {
-        const input = field(grid, key, label, hotel?.[key], 'number') as HTMLInputElement; input.min = String(-bound); input.max = String(bound); input.step = '0.000001';
-    }
-    field(grid, 'openingHours', 'Horarios de atención', hotel?.openingHours, 'textarea').maxLength = 5000;
+    const map = field(grid, 'mapUrl', 'URL del lugar', hotel?.mapUrl, 'url'); map.maxLength = 2048;
+    map.placeholder = 'https://maps.app.goo.gl/…';
+    const opening = field(grid, 'openingTime', 'Hora de apertura', hotel?.openingTime?.slice(0, 5), 'time');
+    const closing = field(grid, 'closingTime', 'Hora de cierre', hotel?.closingTime?.slice(0, 5), 'time');
+    const validateHours = () => { opening.required = Boolean(closing.value); closing.required = Boolean(opening.value); };
+    opening.addEventListener('input', validateHours); closing.addEventListener('input', validateHours); validateHours();
     field(grid, 'checkInOutConditions', 'Condiciones de entrada y salida', hotel?.checkInOutConditions, 'textarea').maxLength = 5000;
-    select(grid, 'hasParking', 'Estacionamiento', hotel?.hasParking === null || hotel?.hasParking === undefined ? '' : String(hotel.hasParking), [['', 'Por confirmar'], ['true', 'Sí'], ['false', 'No']]);
     if (!current) submit.textContent = 'Crear mi hotel en borrador';
     form.addEventListener('submit', event => {
         event.preventDefault(); void busy(submit, async () => {
@@ -104,12 +110,13 @@ async function preview(path: string): Promise<string | null> {
     const url = await api.mediaPreview(path); previews.set(path, url); return url;
 }
 function previewNode(path: string, video: boolean, alt: string): HTMLElement {
-    const box = element('div', 'media-preview');
+    const box = element('div', 'media-preview'); const indicator = loader('Cargando archivo'); box.append(indicator);
     void preview(path).then(url => {
         if (!url || !box.isConnected) return;
+        indicator.remove();
         if (video) { const node = element('video'); node.src = url; node.controls = true; node.preload = 'metadata'; node.setAttribute('aria-label', alt); box.append(node); }
         else { const node = element('img'); node.src = url; node.alt = alt; node.loading = 'lazy'; box.append(node); }
-    }).catch(() => { box.textContent = 'No pudimos cargar la vista previa.'; });
+    }).catch(() => { box.textContent = 'No pudimos cargar la imagen.'; });
     return box;
 }
 function discardRoom(): boolean { return !roomForm?.dataset.dirty || confirm('Hay cambios sin guardar en esta habitación. ¿Deseas descartarlos?'); }
@@ -117,13 +124,17 @@ function renderRoomList(): void {
     roomList.replaceChildren();
     for (const room of current?.detail.roomTypes ?? []) {
         const card = button('', () => { if (discardRoom()) editRoom(room); }, 'room-list-item');
+        card.dataset.roomId = String(room.id);
         card.append(element('strong', '', room.name), element('span', '', room.availableUnits === null || room.availableUnits === undefined ? 'Disponibilidad sin configurar' : `${room.availableUnits} disponibles · ${room.totalUnits} en total`)); roomList.append(card);
     }
     if (!current?.detail.roomTypes.length) roomList.append(element('p', 'muted', 'Todavía no hay tipos de habitación. Crea el primero.'));
 }
 function editRoom(room?: RoomTypeDetail): void {
-    const { form, grid, status, submit } = formCard(room ? `Editar ${room.name}` : 'Nuevo tipo de habitación', 'Configura el tipo, sus cantidades actuales y lo que verá el huésped.');
+    const { form, grid, status, submit } = formCard(room ? '' : 'Nuevo tipo de habitación');
     roomForm = form; roomEditor.replaceChildren(form);
+    roomList.querySelectorAll<HTMLButtonElement>('[data-room-id]').forEach(node => {
+        const selected = node.dataset.roomId === String(room?.id); node.classList.toggle('selected', selected); node.setAttribute('aria-pressed', String(selected));
+    });
     const name = field(grid, 'name', 'Nombre *', room?.name); name.required = true; name.maxLength = 200;
     const order = field(grid, 'displayOrder', 'Orden de presentación', room ? current!.detail.roomTypes.findIndex(item => item.id === room.id) : current!.detail.roomTypes.length, 'number') as HTMLInputElement; order.required = true; order.min = '0'; order.step = '1';
     const desc = field(grid, 'description', 'Descripción *', room?.description, 'textarea'); desc.required = true; desc.maxLength = 10000;
@@ -131,12 +142,12 @@ function editRoom(room?: RoomTypeDetail): void {
     const available = field(grid, 'availableUnits', 'Disponibles ahora *', room?.availableUnits, 'number') as HTMLInputElement;
     for (const input of [total, available]) { input.required = true; input.min = '0'; input.step = '1'; }
     const unavailable = element('p', 'muted full-width'); grid.append(unavailable);
-    const counts = () => { available.max = total.value; unavailable.textContent = total.value && available.value ? `No disponibles: ${Number(total.value) - Number(available.value)}` : 'Introduce las cantidades reales. La disponibilidad se actualiza manualmente.'; }; counts(); total.addEventListener('input', counts); available.addEventListener('input', counts);
+    const counts = () => { available.max = total.value; unavailable.textContent = total.value && available.value ? `No disponibles: ${Number(total.value) - Number(available.value)}` : ''; }; counts(); total.addEventListener('input', counts); available.addEventListener('input', counts);
     const photos: Photo[] = structuredClone(room?.photos ?? []);
     const details: RoomDetail[] = structuredClone(room?.details ?? []);
     const rates: RateInfo[] = structuredClone(room?.rates ?? []);
     const photoSection = element('div', 'editor-subsection'); const photoRows = element('div', 'photo-editor');
-    photoSection.append(element('h3', '', 'Fotografías'), element('p', 'muted', 'La primera foto será la portada del tipo de habitación.'), photoRows);
+    photoSection.append(element('h3', '', 'Fotografías'), photoRows);
     const drawPhotos = () => {
         photoRows.replaceChildren();
         photos.forEach((photo, index) => {
@@ -154,8 +165,9 @@ function editRoom(room?: RoomTypeDetail): void {
     const upload = field(photoSection, 'photoUpload', 'O subir una imagen nueva', '', 'file') as HTMLInputElement; upload.accept = 'image/jpeg,image/png,image/webp';
     upload.addEventListener('change', () => {
         const file = upload.files?.[0]; if (!file) return; upload.disabled = true; submit.disabled = true;
+        const indicator = loader('Subiendo imagen'); status.replaceChildren(indicator);
         void api.uploadMedia(file).then(saved => { files.push(saved); photos.push({ path: saved.path, altText: `Habitación ${name.value || 'del hotel'}` }); markDirty(form); drawPhotos(); renderMediaGallery(); notify(status, 'Imagen subida. Guarda la habitación para incorporarla a la ficha.'); })
-            .catch(error => showFailure(form, status, error)).finally(() => { upload.disabled = false; submit.disabled = false; upload.value = ''; });
+            .catch(error => showFailure(form, status, error)).finally(() => { indicator.remove(); upload.disabled = false; submit.disabled = false; upload.value = ''; });
     });
     const detailSection = element('div', 'editor-subsection'); const detailRows = element('div'); detailSection.append(element('h3', '', 'Características y condiciones'), detailRows);
     const kinds: [string, string][] = [['FEATURE', 'Característica'], ['SERVICE', 'Servicio'], ['RECOMMENDATION', 'Recomendación'], ['PROHIBITION', 'Prohibición']];
@@ -206,9 +218,8 @@ function editRoom(room?: RoomTypeDetail): void {
     const roomIdsAtOpen = current!.detail.roomTypes.map(r => r.id);
 }
 function renderRooms(section: HTMLElement): void {
-    section.append(element('h2', '', 'Tipos de habitación'), element('p', 'muted', 'Gestiona los tipos que ofreces y actualiza sus unidades disponibles.'));
     const layout = element('div', 'rooms-layout'); const aside = element('div', 'room-list'); roomList = element('div'); roomEditor = element('div');
-    aside.append(button('+ Nuevo tipo', () => { if (discardRoom()) editRoom(); }, 'primary'), roomList); layout.append(aside, roomEditor); section.append(layout); renderRoomList(); editRoom();
+    aside.append(button('+ Nuevo tipo', () => { if (discardRoom()) editRoom(); }, 'primary'), roomList); layout.append(aside, roomEditor); section.append(layout); renderRoomList(); editRoom(current!.detail.roomTypes[0]);
 }
 function mediaSelectors(form: HTMLFormElement): void {
     for (const key of ['logoPath', 'facadePath', 'videoPath'] as const) {
@@ -246,16 +257,17 @@ function renderMedia(section: HTMLElement): void {
     const input = field(uploadCard, 'file', 'Subir fotos o video', '', 'file') as HTMLInputElement; input.accept = 'image/jpeg,image/png,image/webp,video/mp4'; input.multiple = true;
     const status = element('div'); status.setAttribute('aria-live', 'polite'); uploadCard.append(status);
     input.addEventListener('change', () => {
-        const selected = [...input.files ?? []]; input.disabled = true;
+        const selected = [...input.files ?? []]; if (!selected.length) return; input.disabled = true;
+        const indicator = loader('Subiendo archivos'); status.replaceChildren(indicator);
         void (async () => {
             let added = 0;
             try { for (const file of selected) { files.push(await api.uploadMedia(file)); added++; renderMediaGallery(); } notify(status, `${added} archivo(s) subido(s). Selecciónalos para usarlos en la ficha.`); }
             catch (error) { showFailure(uploadCard, status, error); }
-            finally { input.disabled = false; input.value = ''; }
+            finally { indicator.remove(); input.disabled = false; input.value = ''; }
         })();
     });
     mediaGallery = element('div', 'media-grid'); uploadCard.append(mediaGallery); section.append(uploadCard);
-    const editor = formCard('Identidad y presentación', 'Selecciona los archivos de tu biblioteca o conserva los recursos actuales.'); hotelMediaForm = editor.form;
+    const editor = formCard('Logo, portada y video'); hotelMediaForm = editor.form;
     for (const [key, label] of [['logoPath', 'Logo'], ['facadePath', 'Portada / fachada'], ['videoPath', 'Video del hotel']] as const) {
         const path = current!.detail[key]; const options: [string, string][] = [['', 'Sin archivo']];
         if (path && !path.startsWith('/api/media/')) options.push([path, 'Archivo actual del hotel']);
@@ -278,7 +290,7 @@ function mediaSelectorsForInitial(input: HTMLSelectElement, key: string): void {
     for (const file of files.filter(file => file.contentType.startsWith(key === 'videoPath' ? 'video/' : 'image/'))) { const option = element('option', '', file.originalName); option.value = file.path; option.dataset.uploaded = 'true'; input.append(option); }
 }
 function renderCards(section: HTMLElement): void {
-    const { form, grid, status, submit } = formCard('Tu próxima estadía', 'Personaliza las tarjetas que aparecen en la ficha de tu hotel.'); grid.className = 'card-editor-list';
+    const { form, grid, status, submit } = formCard('Tu próxima estadía'); grid.className = 'card-editor-list';
     const cards: StayCard[] = structuredClone(current!.detail.stayCards ?? []);
     const draw = () => {
         grid.replaceChildren(); cards.forEach((card, i) => {
@@ -299,44 +311,55 @@ function renderCards(section: HTMLElement): void {
         });
     }); section.append(form);
 }
-function renderPublication(): void {
-    const section = sections.get('publication'); if (!section || !current) return;
-    section.replaceChildren(); const card = element('div', 'editor-card');
-    card.append(element('h2', '', current.published ? 'Tu hotel está publicado' : 'Prepara tu hotel para recibir visitas'), element('p', 'muted', current.published ? 'Las ediciones guardadas ya se muestran en el catálogo. Puedes ocultar tu hotel para completar cambios.' : 'El hotel solo es visible para ti hasta que decidas publicarlo.'));
-    const stats = element('div', 'panel-stats');
-    const known = current.detail.roomTypes.filter(room => room.availableUnits !== null && room.availableUnits !== undefined);
-    for (const [number, label] of [[current.detail.roomTypes.length, 'Tipos de habitación'], [known.reduce((sum, room) => sum + (room.totalUnits ?? 0), 0), 'Unidades configuradas'], [known.reduce((sum, room) => sum + (room.availableUnits ?? 0), 0), 'Disponibles ahora']] as const) {
-        const stat = element('div'); stat.append(element('strong', '', number), element('span', '', label)); stats.append(stat);
+function renderDashboard(): void {
+    const section = sections.get('dashboard'); if (!section) return;
+    if (section.querySelector('form[data-dirty="true"]')) return;
+    section.replaceChildren();
+    if (!current) {
+        section.append(button('Configurar mi hotel', () => activate('hotel'), 'primary')); return;
     }
-    card.append(stats);
-    const requirements = element('ul', 'publication-checklist');
-    const complete = current.detail.roomTypes.some(room => room.totalUnits !== null && room.availableUnits !== null && room.photos.length > 0 && room.rates.length > 0);
-    requirements.append(element('li', '', '✓ Información básica del hotel guardada'), element('li', '', `${complete ? '✓' : '○'} Al menos un tipo con cantidades, una tarifa y una foto`)); card.append(requirements);
-    const status = element('div'); status.setAttribute('aria-live', 'polite'); const actions = element('div', 'form-actions');
+    const actions = element('div', 'dashboard-actions'); const status = element('div'); status.setAttribute('aria-live', 'polite');
     const change = button(current.published ? 'Ocultar hotel' : 'Publicar hotel', () => {
         if (hasChanges()) { notify(status, 'Guarda los cambios pendientes antes de cambiar la publicación.', true); return; }
         if (current!.published && !confirm('¿Ocultar el hotel del catálogo público?')) return;
-        void busy(change, async () => { try { current = await api.setPublication(!current!.published); header(); notify(globalMessage, current.published ? 'Hotel publicado.' : 'Hotel oculto. Puedes seguir editándolo en el panel.'); } catch (error) { showFailure(card, status, error); } });
+        void busy(change, async () => {
+            try { current = await api.setPublication(!current!.published); header(); notify(globalMessage, current.published ? 'Hotel publicado.' : 'Hotel oculto.'); }
+            catch (error) { showFailure(section, status, error); }
+        });
     }, current.published ? 'secondary' : 'primary');
-    const previewLink = element('a', 'secondary', 'Vista previa privada'); previewLink.href = 'hotel-central.html?preview=1'; previewLink.target = '_blank'; previewLink.rel = 'noopener';
-    actions.append(change, previewLink);
-    if (current.published) { const publicLink = element('a', 'secondary', 'Ver ficha pública'); publicLink.href = `hotel-central.html?id=${current.detail.id}`; publicLink.target = '_blank'; publicLink.rel = 'noopener'; actions.append(publicLink); }
-    card.append(status, actions); section.append(card);
+    actions.append(change);
+    if (current.published) {
+        const publicLink = element('a', 'secondary', 'Ver ficha pública'); publicLink.href = `hotel-central.html?id=${current.detail.id}`;
+        publicLink.target = '_blank'; publicLink.rel = 'noopener'; actions.append(publicLink);
+    }
+    const parking = formCard('Estacionamiento');
+    const choice = select(parking.grid, 'hasParking', '¿Tiene estacionamiento?', String(current.detail.hasParking ?? false), [['true', 'Sí'], ['false', 'No']]);
+    parking.submit.textContent = 'Guardar estacionamiento';
+    parking.form.addEventListener('submit', event => {
+        event.preventDefault(); void busy(parking.submit, async () => {
+            try {
+                current = await api.saveHotel({ ...current!.detail, hasParking: choice.value === 'true' }, false);
+                markSaved(parking.form); notify(parking.status, 'Estacionamiento guardado.');
+            } catch (error) { showFailure(parking.form, parking.status, error); }
+        });
+    });
+    section.append(actions, status, parking.form);
 }
 function render(): void {
     content.replaceChildren(); sections.clear(); roomForm = null; hotelMediaForm = null;
-    renderHotel(view('hotel'));
-    for (const key of ['rooms', 'media', 'content', 'publication']) {
+    view('dashboard'); renderHotel(view('hotel'));
+    for (const key of ['rooms', 'media', 'content']) {
         const section = view(key);
         if (!current) { section.append(element('div', 'editor-card', 'Primero guarda la información de tu hotel en Mi hotel.')); continue; }
         if (key === 'rooms') renderRooms(section);
         if (key === 'media') renderMedia(section);
         if (key === 'content') renderCards(section);
     }
+    if (!current) active = 'hotel';
     header(); activate(active); content.setAttribute('aria-busy', 'false');
 }
 async function load(): Promise<void> {
-    content.setAttribute('aria-busy', 'true');
+    content.setAttribute('aria-busy', 'true'); content.replaceChildren(loader('Cargando panel'));
     try {
         const user = await restoreSession(); if (!user) { window.location.replace('acceder.html'); return; }
         requiredElement('ownerEmail', 'span').textContent = user.email;
