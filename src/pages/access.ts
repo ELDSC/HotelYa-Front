@@ -2,6 +2,8 @@ import '../styles/owner.css';
 import { restoreSession, signIn } from '../features/auth';
 import { requiredElement } from '../ui/dom';
 import { busy, notify, showFailure } from '../ui/forms';
+import { ownerDestination } from '../config/owner-pages';
+const destination = ownerDestination(new URLSearchParams(window.location.search).get('next'));
 const form = requiredElement('accessForm', 'form');
 const submit = requiredElement('accessSubmit', 'button');
 const message = requiredElement('accessMessage', 'div');
@@ -25,8 +27,8 @@ form.addEventListener('submit', event => {
     event.preventDefault();
     if (register && password.value !== confirmation.value) { notify(message, 'Las contraseñas no coinciden.', true); confirmation.focus(); return; }
     void busy(submit, async () => {
-        try { await signIn(email.value, password.value, register); window.location.href = 'panel-dueno.html'; }
+        try { await signIn(email.value, password.value, register); window.location.href = destination; }
         catch (error) { showFailure(form, message, error); }
     });
 });
-void restoreSession().then(user => { if (user) window.location.replace('panel-dueno.html'); }).catch(() => { /* Login itself reports connectivity errors. */ });
+void restoreSession().then(user => { if (user) window.location.replace(destination); }).catch(() => { /* Login itself reports connectivity errors. */ });

@@ -10,12 +10,17 @@ import type { OwnerHotel, HotelWrite, RoomWrite } from '../api/owner';
 import type { RoomTypeDetail, Photo, RoomDetail, StayCard, DetailKind } from '../types/catalog';
 import { asset } from '../utils/assets';
 import { busy, hasChanges, markDirty, markSaved, loader, notify, protectChanges, showFailure, watchForm } from '../ui/forms';
+import { ownerPages, type OwnerPage } from '../config/owner-pages';
+import { mountOwnerLayout } from '../ui/owner-layout';
+import { appPath } from '../utils/urls';
+const page = document.body.dataset.ownerPage;
+if (!page || !Object.hasOwn(ownerPages, page)) throw new Error('Página del panel desconocida.');
+const active = page as OwnerPage;
+mountOwnerLayout(active);
 const content = requiredElement('panelContent', 'div');
 const globalError = requiredElement('panelError', 'div');
-const sections = new Map<string, HTMLElement>();
 const previews = new Map<string, string>();
 let current: OwnerHotel | null = null;
-let active = 'dashboard';
 let roomForm: HTMLFormElement | null = null;
 let roomEditor: HTMLElement;
 let roomList: HTMLElement;
@@ -61,23 +66,18 @@ function formCard(title: string): { form: HTMLFormElement; grid: HTMLDivElement;
     form.append(grid, status, actions); return { form, grid, status, submit };
 }
 function view(name: string): HTMLElement {
-    const section = element('section', 'panel-section'); section.id = `section-${name}`; sections.set(name, section); content.append(section); return section;
-}
-function activate(name: string): void {
-    active = name; updateHeading(); sections.forEach((section, key) => { section.hidden = key !== name; });
-    document.querySelectorAll<HTMLButtonElement>('[data-section]').forEach(node => {
-        const selected = node.dataset.section === name; node.classList.toggle('selected', selected); if (selected) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current');
-    });
+    const section = element('section', 'panel-section'); section.id = `section-${name}`; content.append(section); return section;
 }
 function header(): void {
     updateHeading();
     renderDashboard();
 }
 function updateHeading(): void {
-    const titles: Record<string, string> = { dashboard: current?.detail.name ?? 'Mi hotel', hotel: 'Información', rooms: 'Habitaciones', media: 'Multimedia' };
-    requiredElement('hotelHeading', 'h1').textContent = titles[active] ?? 'Mi hotel';
+    const title = active === 'dashboard' ? current?.detail.name ?? 'Mi hotel' : ownerPages[active].title;
+    requiredElement('hotelHeading', 'h1').textContent = title;
+    document.title = `${title} | HoteleriasYa`;
     const link = requiredElement('publicHotelLink', 'a'); link.hidden = !current;
-    if (current) link.href = `hotel-central.html?id=${current.detail.id}${current.published ? '' : '&preview=1'}`;
+    if (current) link.href = `${appPath('hotel-central.html')}?id=${current.detail.id}${current.published ? '' : '&preview=1'}`;
 }
 function hotelBody(form: HTMLFormElement): HotelWrite {
     const data = new FormData(form);
@@ -366,10 +366,10 @@ function settingRow(label: string, checked: boolean, save: (next: boolean) => Pr
     controls.append(toggle); row.append(copy, controls); return row;
 }
 function renderDashboard(): void {
-    const section = sections.get('dashboard'); if (!section) return;
+    const section = document.getElementById('section-dashboard'); if (!section) return;
     section.replaceChildren();
     if (!current) {
-        section.append(button('Configurar mi hotel', () => activate('hotel'), 'primary')); return;
+        const link = element('a', 'primary', 'Configurar mi hotel'); link.href = appPath(ownerPages.hotel.path); section.append(link); return;
     }
     const settings = element('div', 'settings-list');
     settings.append(
@@ -379,22 +379,26 @@ function renderDashboard(): void {
     section.append(settings);
 }
 function render(): void {
-    content.replaceChildren(); sections.clear(); roomForm = null;
-    view('dashboard'); const hotel = view('hotel'); renderHotel(hotel);
-    if (current) renderCards(hotel);
-    for (const key of ['rooms', 'media']) {
-        const section = view(key);
-        if (!current) { section.append(element('div', 'editor-card', 'Primero guarda la información de tu hotel en Mi hotel.')); continue; }
-        if (key === 'rooms') renderRooms(section);
-        if (key === 'media') renderMedia(section);
+    content.replaceChildren(); roomForm = null;
+    if (!current && active !== 'hotel') { window.location.replace(appPath(ownerPages.hotel.path)); return; }
+    const section = view(active);
+    if (active === 'hotel') {
+        renderHotel(section);
+        if (current) renderCards(section);
     }
-    if (!current) active = 'hotel';
-    header(); activate(active); content.setAttribute('aria-busy', 'false');
+    if (active === 'rooms') renderRooms(section);
+    if (active === 'media') renderMedia(section);
+    header(); content.setAttribute('aria-busy', 'false');
 }
 async function load(): Promise<void> {
     content.setAttribute('aria-busy', 'true'); content.replaceChildren(loader('Cargando panel'));
     try {
-        const user = await restoreSession(); if (!user) { window.location.replace('acceder.html'); return; }
+        const user = await restoreSession();
+        if (!user) {
+            const login = new URL(appPath('acceder.html'), window.location.origin);
+            if (active !== 'dashboard') login.searchParams.set('next', ownerPages[active].path);
+            window.location.replace(login.href); return;
+        }
         requiredElement('ownerEmail', 'span').textContent = user.email;
         try { current = await api.getOwnerHotel(); }
         catch (error) { if (error instanceof HttpError && error.status === 404) current = null; else throw error; }
@@ -403,10 +407,9 @@ async function load(): Promise<void> {
         content.replaceChildren(); const retry = button('Reintentar', () => { void load(); }); content.append(retry); showFailure(content, globalError, error); content.setAttribute('aria-busy', 'false');
     }
 }
-requiredElement('panelNav', 'nav').addEventListener('click', event => { const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-section]'); if (target?.dataset.section) activate(target.dataset.section); });
 requiredElement('logout', 'button').addEventListener('click', () => {
     if (hasChanges() && !confirm('Hay cambios sin guardar. ¿Deseas cerrar sesión y descartarlos?')) return;
     const logout = requiredElement('logout', 'button');
-    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = 'acceder.html'; } catch (error) { showFailure(content, globalError, error); } });
+    void busy(logout, async () => { try { await signOut(); document.querySelectorAll<HTMLFormElement>('form').forEach(markSaved); window.location.href = appPath('acceder.html'); } catch (error) { showFailure(content, globalError, error); } });
 });
 void load();

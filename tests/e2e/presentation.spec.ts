@@ -23,9 +23,9 @@ test('presentation belongs to Information and saves compact cards independently'
         saved = body; return route.fulfill({ json: owner() });
     });
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto('panel-dueno.html');
+    await page.goto('panel/');
     await expect(page.locator('[data-section="content"]')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Información', exact: true }).click();
+    await page.getByRole('link', { name: 'Información', exact: true }).click();
     const form = page.getByRole('form', { name: 'Presentación', exact: true });
     const cards = form.locator('.presentation-card');
     const add = form.getByRole('button', { name: 'Añadir tarjeta' });
@@ -87,8 +87,7 @@ test('presentation belongs to Information and saves compact cards independently'
     await save.click();
     await expect(save).toBeDisabled();
     await page.reload();
-    await page.locator('#sidebarToggle').click();
-    await page.getByRole('button', { name: 'Información', exact: true }).click();
+    await expect(page).toHaveURL(/panel\/informacion\/$/);
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(1).getByLabel('Título *')).toHaveValue('Una visita especial');
     await expect(save).toBeDisabled();

@@ -1,5 +1,7 @@
 import { getApiBaseUrl } from '../config/env';
 import { HttpError } from '../api/client';
+import { appPath } from '../utils/urls';
+import { ownerPages } from '../config/owner-pages';
 export interface Account { id: number; email: string }
 interface AuthResponse { accessToken: string; expiresIn: number; user: Account }
 let accessToken = '';
@@ -82,7 +84,7 @@ export async function ownerFetch(path: string, init: RequestInit = {}): Promise<
 export async function initAuthHeader(): Promise<void> {
     localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userEmail');
     const button = document.getElementById('loginBtnTrigger');
-    button?.addEventListener('click', () => { window.location.href = account ? 'panel-dueno.html' : 'acceder.html'; });
+    button?.addEventListener('click', () => { window.location.href = appPath(account ? ownerPages.dashboard.path : 'acceder.html'); });
     try {
         const user = await restoreSession();
         const label = document.getElementById('authButtonLabel');

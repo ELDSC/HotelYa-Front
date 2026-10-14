@@ -44,7 +44,7 @@ npm run preview
 
 Abrir <http://127.0.0.1:4173>. El build utiliza la URL configurada en `.env`. Preview sirve el build existente: cambiar la variable al ejecutar preview no cambia su API.
 
-Publicar **solo el contenido de `dist`** en un hosting estático. Incluye `index.html`, `hotel-central.html`, `acceder.html`, `panel-dueno.html`, los recursos compilados y los archivos públicos del catálogo. Preview es una herramienta de comprobación local. El hosting debe servir las cuatro páginas como archivos y permitir el acceso directo a la ficha y al panel; no se requiere un fallback de SPA. En producción, configurar el dominio del frontend en CORS del backend.
+Publicar **solo el contenido de `dist`** en un hosting estático. Incluye `index.html`, `hotel-central.html`, `acceder.html`, las cuatro páginas del panel, los recursos compilados y los archivos públicos del catálogo. Preview es una herramienta de comprobación local. El hosting debe servir los HTML y resolver el index.html de cada directorio y permitir el acceso directo a la ficha y al panel; no se requiere un fallback de SPA. En producción, configurar el dominio del frontend en CORS del backend.
 
 Para montar el sitio bajo `/hotelya/`:
 
@@ -113,7 +113,7 @@ Dirección y teléfono proceden de las referencias conservadas en el proyecto: h
 
 ## Acceso y administración del dueño
 
-«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `panel-dueno.html` permite crear el único hotel de su cuenta como borrador y administrar **Inicio, Información, Habitaciones y Multimedia**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
+«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `/panel/` permite crear el único hotel de su cuenta como borrador y administrar **Inicio, Información, Habitaciones y Multimedia**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
 
 Usar `127.0.0.1` tanto para la web como para `VITE_API_BASE_URL` en desarrollo. Las llamadas de autenticación llevan credenciales y CSRF; las operaciones privadas llevan Authorization Bearer. Los errores se muestran por campo y conservan los datos para reintentar. El guardado es explícito por sección y el navegador advierte antes de abandonar formularios modificados.
 
@@ -136,3 +136,18 @@ Las confirmaciones del panel usan el componente Toast de Bootstrap, situado abaj
 Habitaciones usa una carga directa de imágenes con selección múltiple y miniaturas ordenables, sin biblioteca compartida ni campo de texto alternativo. Las características mantienen sus categorías en filas delimitadas. Las tarifas muestran siempre Por hora, Paquete de horas y Por noche; se activan individualmente y solo requieren precio en soles y duración del paquete. Las confirmaciones siguen apareciendo únicamente en el toast inferior de Bootstrap.
 
 Información incluye al final **Presentación**, con hasta tres tarjetas de «Tu próxima estadía» en un grid adaptable: comparten fila cuando hay espacio y se apilan en móvil. Se pueden añadir, ordenar y quitar, y se guardan con «Guardar presentación», independientemente de la ficha del hotel.
+
+### Páginas del panel
+
+El panel usa rutas agrupadas bajo `/panel/`, con páginas HTML independientes y enlaces normales en el menú:
+
+| Página | URL |
+| --- | --- |
+| Inicio | `/panel/` |
+| Información y Presentación | `/panel/informacion/` |
+| Habitaciones | `/panel/habitaciones/` |
+| Multimedia | `/panel/multimedia/` |
+
+Cada ruta corresponde a un `index.html` dentro de su directorio (por ejemplo, `panel/habitaciones/index.html`). Cada documento monta únicamente su sección. La estructura del menú y los estilos son compartidos. F5 vuelve a cargar la misma página, y Atrás/Adelante, abrir en otra pestaña y los enlaces directos funcionan mediante la navegación del navegador. Las rutas también funcionan bajo la base configurada en Vite, sin reglas de reescritura del servidor.
+
+Cada página recupera la sesión al cargar. Si falta el hotel se redirige a Información para crearlo. Si falta la sesión se abre Acceso y, después de ingresar, se regresa a la página solicitada; solo se aceptan destinos conocidos del panel. Al salir de una página con cambios pendientes, el navegador solicita confirmación para descartarlos.
