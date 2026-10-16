@@ -1,5 +1,5 @@
 export interface HotelSummary {
-    id: number; name: string; description: string; location: string; logoPath: string | null;
+    id: number; code: string; name: string; description: string; location: string; logoPath: string | null;
 }
 export interface HotelDetail extends HotelSummary {
     address: string; phone: string | null; facadePath: string | null; videoPath: string | null;

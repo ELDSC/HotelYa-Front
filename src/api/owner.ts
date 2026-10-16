@@ -1,7 +1,7 @@
 import { ownerFetch } from '../features/auth';
 import type { HotelDetail, RoomDetail, RateMode, StayCard } from '../types/catalog';
 export interface OwnerHotel { detail: HotelDetail; published: boolean }
-export type HotelWrite = Omit<HotelDetail, 'id' | 'roomTypes' | 'stayCards'>;
+export type HotelWrite = Omit<HotelDetail, 'id' | 'code' | 'roomTypes' | 'stayCards'>;
 export interface RoomRateWrite { mode: RateMode; amount: number; packageHours: number | null }
 export interface RoomWrite {
     name: string; description: string; displayOrder: number; totalUnits: number | null; availableUnits: number | null;

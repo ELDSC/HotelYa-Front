@@ -76,6 +76,14 @@ Los textos recibidos se insertan con `textContent`. Los medios admiten los recur
 
 El hotel inicial es **Lumi’s Hotel**, con tipos **Temática, Matrimonial y Premium**, tratados como productos. Las tarifas son de referencia. El dueño configura cantidades totales y disponibles por tipo. No hay habitaciones físicas identificadas, reservas en línea, calificaciones ni reseñas. El login usa JWT real con renovación por cookie HttpOnly; los valores antiguos de demostración en localStorage se descartan.
 
+## Búsquedas en Productos y Servicios
+
+El catálogo ofrece pestañas Estática y Dinámica con una única barra que admite el nombre o el código del hotel. Estática aplica los criterios al pulsar Buscar o Enter. Dinámica filtra mientras se escribe. Al cambiar de pestaña se conserva el texto y, al volver a Estática, el listado espera una nueva confirmación.
+
+La barra busca coincidencias parciales en el nombre o en el código, ignora mayúsculas y espacios al inicio y al final. La comparación del nombre también ignora tildes. Limpiar vacía la barra y restaura el listado sin cambiar la pestaña activa.
+
+El filtrado utiliza los hoteles publicados de una única carga de `GET /api/hotels`, sin consultas adicionales al escribir o limpiar. Las tarjetas muestran el campo real `code`, que el backend devuelve en el resumen y el detalle. El código es de solo lectura y no forma parte de `HotelWrite`.
+
 ## Calidad y pruebas
 
 ```bash
@@ -127,7 +135,7 @@ Las subidas requieren haber guardado primero el hotel. Se pueden ordenar y quita
 npm run test:e2e:owner
 ```
 
-Requiere Supabase HotelYa activo, Docker y el `.env` del backend configurado. Playwright levanta servidores propios en `127.0.0.1:5174` y `127.0.0.1:8081`, usa únicamente `hotelya_test`, prueba escritorio y móvil y limpia sus registros al terminar. No ejecutarlo simultáneamente con las pruebas de integración Java. No reutiliza ni detiene los servidores habituales de 5173/8080. Las capturas de habitaciones y publicación quedan en `test-results/`.
+Esta suite opcional queda fuera del requisito TDD, que corresponde únicamente al backend. Conserva la comprobación visual del login (spinner, dimensiones, error y conservación de entradas) en escritorio y móvil; se retiró el recorrido completo de administración que fallaba por su comparación del texto del toast. Requiere Supabase HotelYa activo y el `.env` del backend configurado. Playwright levanta servidores propios en `127.0.0.1:5174` y `127.0.0.1:8081`, usando únicamente `hotelya_test`. No ejecutarlo simultáneamente con las pruebas de integración Java. No reutiliza ni detiene los servidores habituales de 5173/8080. Las capturas de login quedan en `test-results/`.
 
 El panel comparte tipografía, paleta y botones con el catálogo. Inicio agrupa publicación y estacionamiento en switches uniformes con guardado inmediato. La ficha pública se abre desde la cabecera. Durante cada petición ambos switches quedan bloqueados; si falla, se conserva el valor anterior y se muestra el error junto al ajuste. Información guarda la ficha independientemente de las cantidades de habitaciones e incluye URL HTTPS del lugar y horas diarias de apertura/cierre. Los botones muestran un spinner centrado conservando su tamaño durante las peticiones.
 
