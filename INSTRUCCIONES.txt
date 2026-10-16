@@ -1,0 +1,15 @@
+INSTALACION DEL PANEL
+
+1. Copia admin/index.html en la carpeta admin/ de tu frontend.
+2. Copia src/pages/admin-panel.ts en src/pages/.
+3. Copia src/styles/admin.css en src/styles/.
+4. Copia ADMIN-PANEL.md si quieres conservar la documentación.
+5. En vite.config.ts, agrega 'admin/index.html' al arreglo input de build, sin quitar las entradas existentes.
+6. Ejecuta npm run build usando la versión de Node requerida por el proyecto (package.json declara >=24 <25).
+7. Inicia el frontend y abre /admin/.
+
+Endpoints utilizados:
+GET /api/hotels
+GET /api/hotels/{id}
+
+Nota: el backend proporcionado no tiene endpoints de administrador para crear, editar, borrar hoteles o administrar usuarios. Por ello, el panel consulta el catálogo publicado en modo lectura; no se agregan acciones falsas ni se reutilizan endpoints de propietario como administrativos.
