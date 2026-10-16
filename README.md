@@ -76,6 +76,14 @@ Los textos recibidos se insertan con `textContent`. Los medios admiten los recur
 
 El hotel inicial es **Lumi’s Hotel**, con tipos **Temática, Matrimonial y Premium**, tratados como productos. Las tarifas son de referencia. El dueño configura cantidades totales y disponibles por tipo. No hay habitaciones físicas identificadas, reservas en línea, calificaciones ni reseñas. El login usa JWT real con renovación por cookie HttpOnly; los valores antiguos de demostración en localStorage se descartan.
 
+## Búsquedas en Productos y Servicios
+
+El catálogo ofrece pestañas Estática y Dinámica con una única barra que admite el nombre o el código del hotel. Estática aplica los criterios al pulsar Buscar o Enter. Dinámica filtra mientras se escribe. Al cambiar de pestaña se conserva el texto y, al volver a Estática, el listado espera una nueva confirmación.
+
+La barra busca coincidencias parciales en el nombre o en el código, ignora mayúsculas y espacios al inicio y al final. La comparación del nombre también ignora tildes. Limpiar vacía la barra y restaura el listado sin cambiar la pestaña activa.
+
+El filtrado utiliza los hoteles publicados de una única carga de `GET /api/hotels`, sin consultas adicionales al escribir o limpiar. Las tarjetas muestran el campo real `code`, que el backend devuelve en el resumen y el detalle. El código es de solo lectura y no forma parte de `HotelWrite`.
+
 ## Calidad y pruebas
 
 ```bash

@@ -3,7 +3,7 @@ import type { HotelDetail, HotelSummary } from '../../src/types/catalog';
 import { api } from '../environment';
 export { api };
 export const hotel: HotelDetail = {
-    id: 1, name: "Lumi's Hotel", description: 'Hotel de prueba', location: 'Lima',
+    id: 1, code: "lumis-hotel", name: "Lumi's Hotel", description: 'Hotel de prueba', location: 'Lima',
     address: 'Dirección de prueba', phone: '+51999999999', logoPath: 'assets/images/lumis-hotel-logo.jpg',
     facadePath: 'assets/images/lumis-hotel-fachada.jpg', videoPath: 'assets/videos/lumis-promocional.mp4',
     latitude: null, longitude: null, openingHours: null, checkInOutConditions: null,
