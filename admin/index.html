@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Panel de control del catálogo de HoteleriasYa.">
+    <title>Administración | HoteleriasYa</title>
+    <link rel="icon" type="image/png" href="/src/assets/images/logoHoteleriasYa.png">
+</head>
+<body class="admin-app">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" aria-label="Navegación administrativa">
+            <a class="admin-brand" href="/" aria-label="HoteleriasYa, inicio">
+                <img src="/src/assets/images/logoHoteleriasYa.png" alt="" width="42" height="42">
+                <span>Hotelerias<span>Ya</span><small>CONTROL DEL CATÁLOGO</small></span>
+            </a>
+            <div class="admin-nav-label">ESPACIO DE TRABAJO</div>
+            <nav class="admin-nav">
+                <a class="admin-nav-link active" href="/admin/" aria-current="page"><span class="nav-symbol">▦</span> Resumen</a>
+                <a class="admin-nav-link" href="#hoteles" data-scroll-hotels><span class="nav-symbol">⌂</span> Hoteles publicados</a>
+            </nav>
+            <div class="admin-sidebar-bottom">
+                <div class="admin-sidebar-note"><span class="status-dot"></span><span>Catálogo público<br><strong id="sidebarApiStatus">Conectando con API…</strong></span></div>
+                <a class="admin-back-link" href="/">← Volver al sitio público</a>
+                <a class="admin-back-link" href="/panel/">Ir al panel de propietario ↗</a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-breadcrumb">HoteleriasYa <span>/</span> Administración</div>
+                <div class="admin-top-actions">
+                    <span class="admin-live-status"><span class="status-dot" id="apiStatusDot"></span><span id="apiStatusText">Conectando con API</span></span>
+                    <button class="admin-refresh" id="refreshButton" type="button"><span aria-hidden="true">↻</span> Actualizar</button>
+                </div>
+            </header>
+
+            <section class="admin-welcome">
+                <div>
+                    <p class="admin-eyebrow">CENTRO DE CONTROL</p>
+                    <h1>Resumen del catálogo</h1>
+                    <p class="admin-subtitle">Consulta el estado y los datos públicos de los alojamientos registrados.</p>
+                </div>
+                <div class="admin-date-chip"><span aria-hidden="true">◷</span><span id="lastUpdated">Esperando datos</span></div>
+            </section>
+
+            <div class="admin-error" id="adminError" role="alert" hidden></div>
+
+            <section class="admin-stats" aria-label="Indicadores del catálogo">
+                <article class="admin-stat-card">
+                    <div class="stat-card-top"><span>Hoteles publicados</span><span class="stat-icon">⌂</span></div>
+                    <strong id="hotelCount">—</strong>
+                    <p>Visibles en el catálogo público</p>
+                </article>
+                <article class="admin-stat-card">
+                    <div class="stat-card-top"><span>Ubicaciones</span><span class="stat-icon">⌖</span></div>
+                    <strong id="locationCount">—</strong>
+                    <p>Destinos distintos registrados</p>
+                </article>
+                <article class="admin-stat-card admin-stat-status">
+                    <div class="stat-card-top"><span>Estado de la API</span><span class="stat-icon">⌁</span></div>
+                    <strong id="apiMetric">Verificando</strong>
+                    <p id="apiMetricHint">Consultando GET /api/hotels</p>
+                </article>
+            </section>
+
+            <section class="admin-content-grid">
+                <section class="admin-panel-card admin-hotels-panel" id="hoteles">
+                    <div class="admin-panel-heading">
+                        <div><p class="admin-eyebrow">CATÁLOGO</p><h2>Hoteles publicados</h2><p class="admin-muted">Información recibida del backend.</p></div>
+                        <span class="admin-count-pill" id="visibleCount">0 hoteles</span>
+                    </div>
+                    <div class="admin-list-tools">
+                        <label class="admin-search"><span aria-hidden="true">⌕</span><span class="visually-hidden">Buscar hoteles</span><input id="hotelSearch" type="search" placeholder="Buscar por hotel o ubicación…" autocomplete="off"></label>
+                        <select id="locationFilter" class="admin-filter" aria-label="Filtrar por ubicación"><option value="">Todas las ubicaciones</option></select>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead><tr><th>ALOJAMIENTO</th><th>UBICACIÓN</th><th class="table-action-heading">DETALLE</th></tr></thead>
+                            <tbody id="hotelRows"><tr><td colspan="3" class="admin-table-state"><span class="admin-loader"></span> Cargando hoteles…</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="admin-list-footer"><span id="listFooterText">Conectando con el backend…</span><span class="api-source">GET /api/hotels</span></div>
+                </section>
+
+                <aside class="admin-panel-card admin-detail-panel" aria-labelledby="detailTitle" aria-live="polite">
+                    <div class="admin-panel-heading detail-heading"><div><p class="admin-eyebrow">FICHA DEL ALOJAMIENTO</p><h2 id="detailTitle">Selecciona un hotel</h2></div><span class="detail-badge" id="detailBadge">Detalle</span></div>
+                    <div id="hotelDetail" class="admin-detail-content"><div class="admin-detail-empty"><span class="detail-empty-icon">⌂</span><strong>Explora el catálogo</strong><p>Selecciona un hotel de la lista para consultar su información y tipos de habitación.</p></div></div>
+                </aside>
+            </section>
+
+            <footer class="admin-footer"><span>HoteleriasYa <span aria-hidden="true">·</span> Panel de control</span><span>Los datos mostrados proceden de los endpoints públicos disponibles.</span></footer>
+        </main>
+    </div>
+    <script type="module" src="/src/pages/admin-panel.ts"></script>
+</body>
+</html>
