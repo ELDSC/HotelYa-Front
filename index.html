@@ -185,6 +185,29 @@
                 <h2 class="hotel-list-title">Productos y Servicios</h2>
                 <p class="section-subtitle">Conoce los hoteles y consulta sus tipos de habitación.</p>
             </div>
+            <div class="catalog-search">
+                <div class="catalog-search-tabs" role="tablist" aria-label="Modo de búsqueda de hoteles">
+                    <button type="button" id="catalogStaticTab" role="tab" aria-selected="true" aria-controls="catalogSearchPanel" tabindex="0">Estática</button>
+                    <button type="button" id="catalogDynamicTab" role="tab" aria-selected="false" aria-controls="catalogSearchPanel" tabindex="-1">Dinámica</button>
+                </div>
+                <div id="catalogSearchPanel" role="tabpanel" aria-labelledby="catalogStaticTab" tabindex="0">
+                    <p class="catalog-search-hint" id="catalogSearchHint">Escribe el nombre o código y pulsa Buscar.</p>
+                    <form id="catalogSearchForm" aria-label="Buscar hoteles" aria-describedby="catalogSearchHint">
+                        <fieldset class="catalog-search-fields" id="catalogSearchFields" disabled>
+                            <legend class="catalog-search-legend">Filtrar hoteles por nombre o código</legend>
+                            <div class="catalog-search-field">
+                                <label for="catalogQuery">Nombre o código del hotel</label>
+                                <input id="catalogQuery" name="query" type="search" placeholder="Ej. Lumi’s Hotel o lumis-hotel" autocomplete="off" spellcheck="false">
+                            </div>
+                            <div class="catalog-search-actions">
+                                <button type="submit" id="catalogSearchButton" class="btn btn-primary">Buscar</button>
+                                <button type="button" id="catalogClearButton" class="btn catalog-clear">Limpiar</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+            <p id="catalogResultCount" class="catalog-result-count" role="status" aria-live="polite" aria-atomic="true" hidden></p>
             <div class="hotel-grid" id="hotelListContainer">
                 <p class="catalog-state" role="status">Cargando hoteles…</p>
             </div>
