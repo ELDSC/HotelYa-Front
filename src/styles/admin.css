@@ -1,98 +1,35 @@
-@import './main.css';
+@import './owner.css';
 
-[hidden] { display: none !important; }
-.admin-app { font-size: .875rem; }
-.admin-app button, .admin-app input, .admin-app select { font: inherit; }
-.admin-app button { cursor: pointer; }
-.admin-app button:disabled { cursor: wait; opacity: .65; }
-.admin-app :focus-visible { outline: 2px solid #557867; outline-offset: 3px; }
-.admin-shell { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: 100vh; }
-.admin-sidebar { background: var(--color-primary); color: white; padding: 28px 20px; display: flex; flex-direction: column; gap: 32px; }
-.admin-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-family-display); font-size: 1.1rem; }
-.admin-brand img { flex-shrink: 0; object-fit: contain; }
-.admin-brand small { display: block; font: .6rem var(--font-family-base); letter-spacing: .1em; margin-top: 6px; color: #c4ccc8; }
-.admin-nav-label { font-size: .65rem; letter-spacing: .12em; color: #c4ccc8; margin-bottom: -20px; }
-.admin-nav { display: grid; gap: 6px; }
-.admin-nav-link { padding: 10px; border-radius: 4px; }
-.admin-nav-link.active, .admin-nav-link:hover { background: #ffffff15; }
-.nav-symbol { margin-right: 6px; }
-.admin-sidebar-bottom { margin-top: auto; display: grid; gap: 18px; font-size: .75rem; }
-.admin-sidebar-note { display: flex; align-items: center; gap: 10px; color: #c4ccc8; }
-.admin-sidebar-note strong { color: white; }
-.admin-main { padding: 28px clamp(20px, 3vw, 48px); min-width: 0; }
-.admin-topbar, .admin-top-actions, .admin-panel-heading, .admin-welcome, .admin-list-footer, .admin-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.admin-topbar { border-bottom: 1px solid var(--color-border); padding-bottom: 20px; margin-bottom: 30px; }
-.admin-breadcrumb, .admin-date-chip, .admin-live-status, .admin-muted, .admin-subtitle, .admin-footer, .admin-list-footer { color: var(--color-text-muted); font-size: .75rem; }
-.admin-breadcrumb span { margin: 0 8px; }
-.admin-top-actions { justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
-.admin-refresh, .admin-view-button, .admin-gate button { border: 1px solid var(--color-border); border-radius: 4px; background: white; color: var(--color-primary); padding: 8px 12px; min-height: 40px; }
-.admin-welcome { margin-bottom: 24px; }
-.admin-welcome h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 8px 0; }
-.admin-eyebrow { color: var(--color-text-muted); font-size: .6rem; letter-spacing: .12em; }
-.admin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
-.admin-stat-card { background: white; padding: 20px; border: 1px solid var(--color-border); border-radius: 6px; min-width: 0; }
-.admin-stat-top { display: flex; justify-content: space-between; color: var(--color-text-muted); font-size: .75rem; }
-.admin-stat-card strong { display: block; font-size: 1.6rem; font-weight: 500; margin: 12px 0 6px; }
-.admin-stat-card p { color: var(--color-text-muted); font-size: .7rem; overflow-wrap: anywhere; }
-.admin-content-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.admin-panel-card { border: 1px solid var(--color-border); border-radius: 6px; background: white; padding: 22px; min-width: 0; }
-.admin-panel-heading { margin-bottom: 20px; }
-.admin-panel-heading h2 { font-size: 1.25rem; margin: 5px 0; }
-.admin-count-pill, .detail-badge { font-size: .7rem; padding: 4px 8px; border-radius: 4px; background: var(--color-secondary); white-space: nowrap; }
-.admin-list-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
-.admin-search { display: flex; align-items: center; flex: 1 1 170px; min-width: 0; gap: 8px; }
-.admin-search input, .admin-filter { padding: 9px; border: 1px solid var(--color-border); border-radius: 4px; min-width: 0; max-width: 100%; background: white; }
-.admin-search input { width: 100%; }
+.admin-main { width: 100%; max-width: 1380px; min-width: 0; margin: 0 auto; padding: 28px clamp(20px, 4vw, 60px) 64px; }
+.admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 32px; }
+.admin-label { color: var(--color-text-muted); font: .75rem var(--font-family-base); border-left: 1px solid var(--color-border); padding-left: 16px; }
+.admin-tools { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 24px; }
+.admin-search { width: 100%; max-width: 420px; }
+.admin-tools button { flex-shrink: 0; }
 .admin-table-wrap { overflow-x: auto; }
 .admin-table { border-collapse: collapse; width: 100%; text-align: left; }
-.admin-table th { font-size: .6rem; font-weight: 500; color: var(--color-text-muted); padding: 10px 8px; border-bottom: 1px solid var(--color-border); }
-.admin-table td { padding: 16px 8px; vertical-align: middle; font-size: .75rem; }
-.admin-hotel-row.selected { background: #f6f8f6; }
-.admin-hotel-cell { display: flex; align-items: center; gap: 10px; min-width: 130px; }
-.admin-hotel-logo { width: 42px; height: 42px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
-.admin-hotel-name, .admin-hotel-id { display: block; }
-.admin-hotel-id { font-size: .65rem; color: var(--color-text-muted); }
-.admin-view-button { padding: 6px 8px; font-size: .7rem!important; }
-.admin-list-footer { border-top: 1px solid var(--color-border); padding-top: 14px; flex-wrap: wrap; font-size: .65rem; }
-.admin-detail-cover { margin: 0 0 18px; }
-.admin-detail-logo { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; }
-.admin-detail-description { font-size: .8rem; margin-bottom: 18px; }
-.admin-detail-fields { display: grid; gap: 12px; margin-bottom: 22px; }
-.admin-detail-fields dt { color: var(--color-text-muted); font-size: .65rem; }
-.admin-detail-fields dd { margin: 3px 0 0; overflow-wrap: anywhere; font-size: .8rem; }
-.admin-detail-section { margin-top: 22px; border-top: 1px solid var(--color-border); padding-top: 18px; }
-.admin-detail-section h3 { font-size: 1rem; margin-bottom: 14px; }
-.admin-room-list { display: grid; gap: 10px; }
-.admin-room-item, .admin-stay-card { background: #f7f7f3; padding: 12px; border-radius: 4px; margin-bottom: 8px; }
-.admin-room-item h4, .admin-stay-card h4 { font-size: .9rem; margin-bottom: 5px; }
-.admin-room-item p, .admin-stay-card p { font-size: .75rem; color: var(--color-text-muted); }
-.admin-public-link { display: inline-block; margin-top: 20px; text-decoration: underline; font-size: .8rem; }
-.admin-error, .admin-detail-error { background: #fef3f2; color: #a93226; padding: 14px; border-radius: 4px; margin-bottom: 20px; }
-.admin-table-state, .admin-detail-empty { color: var(--color-text-muted); padding: 24px 0; }
-.admin-detail-empty { display: grid; gap: 8px; }
-.admin-footer { margin-top: 28px; border-top: 1px solid var(--color-border); padding-top: 18px; flex-wrap: wrap; }
-.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #84988d; margin-right: 6px; }
-.status-dot.offline { background: #b74130; }
+.admin-table th { color: var(--color-text-muted); font-size: .75rem; font-weight: 500; padding: 12px 16px; border-bottom: 1px solid var(--color-border); }
+.admin-table td { padding: 18px 16px; border-bottom: 1px solid var(--color-border); font-size: .85rem; }
+.admin-table th:first-child, .admin-table td:first-child { padding-left: 0; }
+.admin-table th:last-child, .admin-table td:last-child { padding-right: 0; }
+.admin-hotel-cell { display: flex; align-items: center; gap: 12px; }
+.admin-hotel-logo { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex-shrink: 0; overflow: hidden; background: var(--color-surface); border-radius: 4px; }
+.admin-hotel-logo img { width: 100%; height: 100%; object-fit: cover; }
+.admin-action { text-align: right; }
+.admin-view-link { white-space: nowrap; }
+.admin-table-state { color: var(--color-text-muted); }
+.admin-error { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #a93226; padding: 14px 0; margin-bottom: 16px; font-size: .85rem; }
 .admin-gate { min-height: 100vh; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
-@media (max-width: 1100px) { .admin-content-grid { grid-template-columns: minmax(0, 1fr); } .admin-date-chip { display: none; } }
-@media (max-width: 720px) {
- .admin-shell { grid-template-columns: minmax(0, 1fr); }
- .admin-sidebar { padding: 20px; gap: 16px; }
- .admin-nav-label, .admin-sidebar-note { display: none; }
- .admin-nav { display: flex; flex-wrap: wrap; }
- .admin-sidebar-bottom { display: flex; flex-wrap: wrap; gap: 16px; }
- .admin-main { padding: 22px 16px; }
- .admin-topbar { align-items: flex-start; flex-direction: column; }
- .admin-top-actions { justify-content: flex-start; }
- .admin-stats { grid-template-columns: minmax(0, 1fr); gap: 10px; }
- .admin-stat-card { padding: 16px; }
- .admin-stat-card strong { margin: 5px 0; }
- .admin-panel-card { padding: 16px; }
- .admin-panel-heading { align-items: flex-start; }
+@media (max-width: 600px) {
+ .admin-main { padding: 20px 16px 40px; }
+ .admin-topbar { align-items: flex-start; }
+ .admin-topbar .owner-brand { flex-wrap: wrap; white-space: normal; font-size: 1rem; gap: 8px; }
+ .admin-label { flex-basis: 100%; border: 0; padding: 0; }
+ .admin-topbar button { flex-shrink: 0; }
+ .admin-tools { gap: 12px; }
+ .admin-table td, .admin-table th { padding: 14px 8px; }
+ .admin-table td { font-size: .8rem; }
+ .admin-hotel-cell { gap: 8px; }
+ .admin-hotel-logo { width: 32px; height: 32px; }
+ .admin-view-link { padding: 8px 10px; }
 }
-.admin-app .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.admin-detail-cover { display: flex; align-items: center; gap: 14px; }
-.admin-detail-cover h3 { font-size: 1.1rem; }
-.admin-detail-cover p { font-size: .7rem; color: var(--color-text-muted); }
-.admin-room-item strong, .admin-room-item span { display: block; }
-.admin-room-item span { font-size: .7rem; color: var(--color-text-muted); margin-top: 4px; }

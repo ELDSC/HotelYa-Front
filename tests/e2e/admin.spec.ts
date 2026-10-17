@@ -18,9 +18,10 @@ test('admin redirects before requesting any catalog data and prefills its separa
     await page.screenshot({ path: test.info().outputPath('admin-login.png'), fullPage: true });
 });
 
-test('admin login, reload, detail and logout use only the authenticated admin API', async ({ page }) => {
+test('admin list, search, public links and logout use only the authenticated admin API', async ({ page }) => {
     let signedIn = false;
     let logins = 0;
+    let detailCalls = 0;
     await page.route(`${api}/api/admin/**`, async route => {
         const request = route.request();
         const path = new URL(request.url()).pathname;
@@ -32,6 +33,7 @@ test('admin login, reload, detail and logout use only the authenticated admin AP
         }
         if (path.endsWith('/logout')) { signedIn = false; return route.fulfill({ status: 204 }); }
         if (!signedIn) return route.fulfill({ status: 401, json: { message: 'Sin sesión', fields: {} } });
+        if (path.includes('/hotels/')) detailCalls++;
         if (path.includes('/hotels')) {
             expect(request.headers().authorization).toBe('Bearer admin-access');
             return route.fulfill({ json: path.endsWith('/hotels') ? [summary] : hotel });
@@ -44,7 +46,23 @@ test('admin login, reload, detail and logout use only the authenticated admin AP
     await expect(page).toHaveURL(/\/admin\/$/);
     await expect(page.locator('#adminShell')).toBeVisible();
     await expect(page.locator('#hotelRows')).toContainText(hotel.name);
-    await expect(page.locator('#detailTitle')).toHaveText(hotel.name);
+    await expect(page.locator('aside, #locationFilter, #refreshButton, #hotelDetail, .admin-stats')).toHaveCount(0);
+    const link = page.getByRole('link', { name: `Ver ficha de ${hotel.name}` });
+    await expect(link).toHaveAttribute('target', '_blank');
+    const popupPromise = page.waitForEvent('popup');
+    await link.click();
+    const popup = await popupPromise;
+    await expect(popup).toHaveURL(/hotel-central\.html\?id=1$/);
+    await popup.close();
+    await page.getByRole('searchbox', { name: 'Buscar hoteles' }).fill('inexistente');
+    await expect(page.locator('#hotelRows')).toContainText(hotel.name);
+    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+    await expect(page.locator('#hotelRows')).toContainText('No se encontraron hoteles.');
+    await page.getByRole('searchbox', { name: 'Buscar hoteles' }).fill('');
+    await expect(page.locator('#hotelRows')).toContainText('No se encontraron hoteles.');
+    await page.getByRole('searchbox', { name: 'Buscar hoteles' }).press('Enter');
+    await expect(page.locator('#hotelRows')).toContainText(hotel.name);
+    expect(detailCalls).toBe(0);
     await page.reload();
     await expect(page.locator('#hotelRows')).toContainText(hotel.name);
     expect(logins).toBe(1);
