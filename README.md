@@ -159,3 +159,11 @@ El panel usa rutas agrupadas bajo `/panel/`, con páginas HTML independientes y 
 Cada ruta corresponde a un `index.html` dentro de su directorio (por ejemplo, `panel/habitaciones/index.html`). Cada documento monta únicamente su sección. La estructura del menú y los estilos son compartidos. F5 vuelve a cargar la misma página, y Atrás/Adelante, abrir en otra pestaña y los enlaces directos funcionan mediante la navegación del navegador. Las rutas también funcionan bajo la base configurada en Vite, sin reglas de reescritura del servidor.
 
 Cada página recupera la sesión al cargar. Si falta el hotel se redirige a Información para crearlo. Si falta la sesión se abre Acceso y, después de ingresar, se regresa a la página solicitada; solo se aceptan destinos conocidos del panel. Al salir de una página con cambios pendientes, el navegador solicita confirmación para descartarlos.
+
+## Acceso administrativo global
+
+`/admin/acceder/` inicia una sesión independiente de dueños; `/admin/` muestra el catálogo publicado únicamente después de validar esa sesión. Incluye cierre de sesión y recuperación ante errores de conexión.
+
+Configurar `VITE_ADMIN_LOGIN_EMAIL` y `VITE_ADMIN_LOGIN_PASSWORD` en `.env`. Por decisión del proyecto, ambas credenciales se precargan también en producción y son públicas en el JavaScript generado: cualquier visitante puede utilizarlas. El login exige pulsar «Ingresar». Los JWT se conservan únicamente en memoria; la cookie HttpOnly de renovación está separada de la del dueño.
+
+Las pruebas de `tests/e2e/admin.spec.ts` verifican el flujo en desarrollo y en preview con la API simulada. El aislamiento real de cuentas, cookies y tokens se prueba en la integración del backend.

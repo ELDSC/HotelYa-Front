@@ -1,5 +1,8 @@
 import '../styles/admin.css';
-import { getHotel, getHotels } from '../api/catalog';
+import { adminFetch, restoreSession, signOut } from '../features/admin-auth';
+import { appPath } from '../utils/urls';
+async function getHotels(): Promise<HotelSummary[]> { return (await adminFetch('/admin/hotels')).json() as Promise<HotelSummary[]>; }
+async function getHotel(id: number): Promise<HotelDetail> { return (await adminFetch(`/admin/hotels/${id}`)).json() as Promise<HotelDetail>; }
 import type { HotelDetail, HotelSummary } from '../types/catalog';
 import { asset } from '../utils/assets';
 import { element, requiredElement } from '../ui/dom';
@@ -27,7 +30,7 @@ function setApiStatus(online: boolean, message: string): void {
     metric.textContent = online ? 'Conectada' : 'Sin conexión';
     metric.classList.toggle('is-online', online);
     metric.classList.toggle('is-offline', !online);
-    requiredElement('apiMetricHint', 'p').textContent = online ? 'GET /api/hotels respondió correctamente' : 'No se pudo consultar GET /api/hotels';
+    requiredElement('apiMetricHint', 'p').textContent = online ? 'GET /api/admin/hotels respondió correctamente' : 'No se pudo consultar GET /api/admin/hotels';
 }
 
 function showError(message: string): void {
@@ -137,7 +140,7 @@ function renderHotelDetail(hotel: HotelDetail): void {
         detailContainer.append(cardsSection);
     }
     const publicLink = element('a', 'admin-public-link', 'Abrir ficha pública ↗');
-    publicLink.href = `/hotel-central.html?id=${encodeURIComponent(hotel.id)}`;
+    publicLink.href = `${appPath('hotel-central.html')}?id=${encodeURIComponent(hotel.id)}`;
     publicLink.target = '_blank'; publicLink.rel = 'noopener noreferrer';
     detailContainer.append(publicLink);
 }
@@ -149,7 +152,7 @@ async function selectHotel(id: number): Promise<void> {
     detailTitle.textContent = summary?.name ?? 'Detalle del hotel';
     detailBadge.textContent = 'Cargando';
     detailContainer.replaceChildren();
-    const loading = element('div', 'admin-table-state'); loading.append(element('span', 'admin-loader'), document.createTextNode(' Consultando GET /api/hotels/' + id + '…'));
+    const loading = element('div', 'admin-table-state'); loading.append(element('span', 'admin-loader'), document.createTextNode(' Consultando GET /api/admin/hotels/' + id + '…'));
     detailContainer.append(loading);
     try {
         const hotel = await getHotel(id);
@@ -195,4 +198,34 @@ refreshButton.addEventListener('click', () => { void loadHotels(); });
 document.querySelector('[data-scroll-hotels]')?.addEventListener('click', event => {
     event.preventDefault(); requiredElement('hoteles', 'section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-void loadHotels();
+const shell = requiredElement('adminShell', 'div');
+const gate = requiredElement('adminGate', 'div');
+const gateMessage = requiredElement('adminGateMessage', 'p');
+const retry = requiredElement('adminGateRetry', 'button');
+function goToLogin(): void {
+    shell.hidden = true;
+    gate.hidden = false;
+    window.location.replace(appPath('admin/acceder/'));
+}
+window.addEventListener('admin-session-ended', goToLogin);
+async function start(): Promise<void> {
+    retry.hidden = true;
+    gateMessage.textContent = 'Comprobando sesión…';
+    try {
+        if (!await restoreSession()) { goToLogin(); return; }
+        gate.hidden = true; shell.hidden = false;
+        await loadHotels();
+    } catch {
+        shell.hidden = true; gate.hidden = false;
+        gateMessage.textContent = 'No se pudo comprobar la sesión. Revisa la conexión e inténtalo de nuevo.';
+        retry.hidden = false;
+    }
+}
+retry.addEventListener('click', () => { void start(); });
+const logout = requiredElement('adminLogout', 'button');
+logout.addEventListener('click', () => {
+    logout.disabled = true;
+    void signOut().then(goToLogin).catch(() => { showError('No se pudo cerrar la sesión. Inténtalo de nuevo.'); })
+        .finally(() => { logout.disabled = false; });
+});
+void start();
