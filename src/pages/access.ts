@@ -10,6 +10,8 @@ const message = requiredElement('accessMessage', 'div');
 const email = requiredElement('email', 'input');
 const password = requiredElement('password', 'input');
 const confirmation = requiredElement('confirmation', 'input');
+email.value = import.meta.env.VITE_OWNER_LOGIN_EMAIL;
+password.value = import.meta.env.VITE_OWNER_LOGIN_PASSWORD;
 let register = false;
 for (const id of ['loginTab', 'registerTab']) {
     requiredElement(id, 'button').addEventListener('click', () => {

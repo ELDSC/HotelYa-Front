@@ -5,6 +5,9 @@ export default defineConfig(({ mode, isPreview }) => {
     if (!isPreview) {
         const env = loadEnv(mode, process.cwd(), 'VITE_');
         validateApiOrigin(env.VITE_API_BASE_URL);
+        if (!env.VITE_OWNER_LOGIN_EMAIL?.trim() || !env.VITE_OWNER_LOGIN_PASSWORD) {
+            throw new Error('Configura VITE_OWNER_LOGIN_EMAIL y VITE_OWNER_LOGIN_PASSWORD; son valores públicos del formulario de dueños.');
+        }
         if (!env.VITE_ADMIN_LOGIN_EMAIL?.trim() || !env.VITE_ADMIN_LOGIN_PASSWORD) {
             throw new Error('Configura VITE_ADMIN_LOGIN_EMAIL y VITE_ADMIN_LOGIN_PASSWORD; son valores públicos del formulario administrativo.');
         }

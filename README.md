@@ -123,6 +123,8 @@ Dirección y teléfono proceden de las referencias conservadas en el proyecto: h
 
 «Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `/panel/` permite crear el único hotel de su cuenta como borrador y administrar **Inicio, Información, Habitaciones y Multimedia**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
 
+Configurar `VITE_OWNER_LOGIN_EMAIL` y `VITE_OWNER_LOGIN_PASSWORD` en `.env` con las credenciales del dueño de Lumi’s Hotel. Por decisión del proyecto, se precargan también en producción y son públicas en el JavaScript generado. El login exige pulsar «Ingresar al panel».
+
 Usar `127.0.0.1` tanto para la web como para `VITE_API_BASE_URL` en desarrollo. Las llamadas de autenticación llevan credenciales y CSRF; las operaciones privadas llevan Authorization Bearer. Los errores se muestran por campo y conservan los datos para reintentar. El guardado es explícito por sección y el navegador advierte antes de abandonar formularios modificados.
 
 El backend define las reglas de publicación y propiedad. La ficha muestra disponibilidad actual, tarifas del hotel o de demostración y tarjetas editables de estadía. «Vista previa privada» abre `hotel-central.html?preview=1`, obtiene la ficha del dueño y descarga sus medios protegidos como blobs. El catálogo público nunca utiliza ese acceso privado.
