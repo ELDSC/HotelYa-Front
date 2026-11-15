@@ -24,9 +24,9 @@ export default defineConfig({
     webServer: [
         ...(ownerSelected ? [
             { command: '../HotelYa-Back/scripts/run-browser-test-backend.sh', url: 'http://127.0.0.1:8081/api/hotels', timeout: 120_000, reuseExistingServer: false, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } },
-            { command: 'npm run dev -- --port 5174', url: 'http://127.0.0.1:5174', env: { VITE_API_BASE_URL: 'http://127.0.0.1:8081' }, reuseExistingServer: false, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } },
+            { command: 'npm run dev -- --port 5174', url: 'http://127.0.0.1:5174', env: { HOTELYA_API_BASE_URL: 'http://127.0.0.1:8081' }, reuseExistingServer: false, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } },
         ] : []),
-        ...(needs('dev') ? [{ command: 'npm run dev', url: 'http://127.0.0.1:5173', env: { VITE_API_BASE_URL: api }, reuseExistingServer: reuse, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } }] : []),
-        ...(needs('preview') ? [{ command: `npm run build -- --base=${base} && npm run preview -- --base=${base}`, url: `http://127.0.0.1:4173${base}`, env: { VITE_API_BASE_URL: api }, reuseExistingServer: reuse, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } }] : []),
+        ...(needs('dev') ? [{ command: 'npm run dev', url: 'http://127.0.0.1:5173', env: { HOTELYA_API_BASE_URL: api }, reuseExistingServer: reuse, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } }] : []),
+        ...(needs('preview') ? [{ command: `npm run build -- --base=${base} && npm run preview -- --base=${base}`, url: `http://127.0.0.1:4173${base}`, env: { HOTELYA_API_BASE_URL: api }, reuseExistingServer: reuse, gracefulShutdown: { signal: 'SIGTERM' as const, timeout: 5000 } }] : []),
     ],
 });

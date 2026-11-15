@@ -1,0 +1,161 @@
+@use "./scss/variables" as tokens;
+@use "bootstrap/scss/bootstrap" with (
+  $primary: tokens.$ink
+);
+@use "./scss/base";
+@use "./scss/hotel";
+@use "./scss/owner";
+@use "./scss/mixins" as m;
+app-root {
+  @include m.screen;
+}
+[hidden] {
+  display: none !important;
+}
+app-hotel-card,
+app-field-error,
+app-media-preview {
+  display: block;
+}
+button:focus-visible,
+a:focus-visible {
+  @include m.focus-ring;
+}
+.owner-app {
+  min-height: 100vh;
+}
+ngb-offcanvas-panel.owner-mobile-menu {
+  width: 280px;
+}
+ngb-modal-window .inquiry-form {
+  padding: 24px;
+}
+ngb-toast.owner-toast {
+  display: flex;
+  align-items: center;
+}
+@media (min-width: 761px) {
+  .owner-app .desktop-sidebar {
+    visibility: visible;
+    transform: none;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .owner-mobile-menu {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .owner-app .desktop-sidebar {
+    display: none;
+  }
+}
+.hotel-theme .catalog-hero .media-preview,
+.hotel-theme .catalog-hero .media-preview img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.hotel-theme .catalog-hero app-media-preview {
+  height: 100%;
+}
+.hotel-theme .editorial-room-image .media-preview img {
+  height: 100%;
+  object-fit: cover;
+}
+.hotel-theme .editorial-info-image .media-preview {
+  background: transparent;
+}
+.hotel-theme .editorial-info-image .media-preview img {
+  height: auto;
+  object-fit: contain;
+}
+.hotel-theme .video-player-box .media-preview video {
+  height: auto;
+}
+
+.owner-app .auth-box fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.owner-app .auth-box .is-loading .spinner {
+  position: absolute;
+  left: calc(50% - 10px);
+  top: calc(50% - 10px);
+}
+.hotel-theme .footer-col-brand app-media-preview {
+  max-width: 160px;
+}
+.hotel-theme .footer-col-brand .media-preview img {
+  height: 160px;
+  object-fit: contain;
+}
+
+.owner-app .access-header {
+  background: tokens.$ink;
+}
+
+.header .lumis-header-logo .media-preview {
+  width: 56px;
+  height: 56px;
+  background: transparent;
+}
+.header .lumis-header-logo .media-preview img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.header .logo-area {
+  min-width: 0;
+}
+.header .logo-area span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header .auth-area {
+  flex-shrink: 0;
+}
+.header .user-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header .btn-login {
+  white-space: nowrap;
+}
+.hotel-theme .editorial-room-image app-media-preview,
+.hotel-theme .editorial-room-image .media-preview {
+  height: 100%;
+}
+@media (max-width: 767px) {
+  .header .header-container {
+    gap: 12px;
+  }
+  .header .logo-area {
+    flex: 1;
+  }
+  .header .logo-area app-media-preview {
+    flex-shrink: 0;
+  }
+  .header .user-profile {
+    display: none;
+  }
+  .hotel-theme .header .btn-login {
+    padding: 10px 12px;
+  }
+}
+
+.home-carousel {
+  position: absolute;
+  inset: 0;
+}
+.home-carousel .carousel-inner,
+.home-carousel .carousel-item {
+  height: 100%;
+}

@@ -4,33 +4,49 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=24.15 <25"
   },
   "scripts": {
-    "dev": "vite",
-    "typecheck": "tsc --noEmit",
+    "dev": "node scripts/angular.mjs serve",
+    "build": "node scripts/angular.mjs build",
+    "preview": "node scripts/preview.mjs",
+    "typecheck": "ngc --noEmit -p tsconfig.app.json",
     "lint": "eslint . --max-warnings=0",
-    "build": "npm run typecheck && vite build",
-    "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test --project=dev",
     "test:e2e:build": "playwright test --project=preview",
     "test:e2e:live": "playwright test --project=live-dev --project=live-preview",
-    "test:e2e:owner": "playwright test --project=owner-desktop --project=owner-mobile"
+    "test:e2e:owner": "playwright test --project=owner-desktop --project=owner-mobile",
+    "format": "prettier --write src scripts tests *.json *.ts"
   },
   "devDependencies": {
+    "@angular/build": "22.2.6",
+    "@angular/cli": "22.2.6",
+    "@angular/compiler-cli": "22.2.6",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.0",
-    "@types/bootstrap": "5.2.11",
     "@types/node": "24.19.2",
     "eslint": "10.12.0",
     "globals": "17.13.0",
+    "jsdom": "^27.0.0",
+    "prettier": "^3.6.2",
+    "sass": "^1.93.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.2",
-    "vite": "8.3.4",
     "vitest": "5.0.4"
   },
   "dependencies": {
-    "bootstrap": "5.3.8"
+    "@angular/common": "22.2.6",
+    "@angular/compiler": "22.2.6",
+    "@angular/core": "22.2.6",
+    "@angular/forms": "22.2.6",
+    "@angular/localize": "22.2.6",
+    "@angular/platform-browser": "22.2.6",
+    "@angular/router": "22.2.6",
+    "@ng-bootstrap/ng-bootstrap": "21.0.0",
+    "@popperjs/core": "2.11.8",
+    "bootstrap": "5.3.8",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1"
   }
 }

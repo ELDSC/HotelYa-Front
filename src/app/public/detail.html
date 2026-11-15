@@ -1,0 +1,398 @@
+<div class="hotel-theme">
+  <app-header [hotel]="hotel()" [preview]="preview" />
+  <main>
+    <div class="container hotel-back-row">
+      <a routerLink="/" fragment="productos" class="hotel-back-button"
+        >Volver a HoteleriasYa</a
+      >
+    </div>
+    @if (loading()) {
+      <p class="container catalog-state" role="status">Cargando hotel…</p>
+    } @else if (error()) {
+      <div class="container catalog-state" role="alert">
+        {{ error() }}
+        <button class="btn btn-primary" (click)="load()">Reintentar</button>
+      </div>
+    } @else if (hotel(); as h) {
+      @if (preview) {
+        <div class="catalog-preview-banner">
+          Vista previa privada · Estos datos pueden no estar publicados.
+        </div>
+      }
+      <section class="hero-section catalog-hero">
+        @if (h.facadePath) {
+          <div class="carousel">
+            <div class="carousel-slide active">
+              <app-media-preview
+                [path]="h.facadePath"
+                [priority]="true"
+                [private]="preview"
+                [alt]="'Fachada de ' + h.name"
+              />
+            </div>
+          </div>
+        }
+        <div class="container hero-content">
+          <div class="hero-text-area">
+            <span class="hero-tagline">{{ h.location }}</span>
+            <h1 class="hero-title">{{ h.name }}</h1>
+            <p class="hero-subtitle-text">{{ h.address }}</p>
+          </div>
+        </div>
+      </section>
+      <section id="informacion" class="section-info">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Información</h2>
+            <p class="section-subtitle">{{ h.name }}</p>
+          </div>
+          <div class="editorial-info-split">
+            <div class="editorial-info-text">
+              <p class="editorial-paragraph">{{ h.description }}</p>
+              <ul class="editorial-list">
+                <li>
+                  <span class="editorial-list-title">Dirección: </span
+                  >{{ h.address }}
+                </li>
+                @if (h.phone) {
+                  <li>
+                    <span class="editorial-list-title"
+                      >Teléfono y WhatsApp: </span
+                    >{{ formatPhone(h.phone) }}
+                  </li>
+                }
+                <li>
+                  <span class="editorial-list-title">Horarios: </span
+                  >{{
+                    h.openingTime && h.closingTime
+                      ? h.openingTime.slice(0, 5) +
+                        " a
+                " +
+                        h.closingTime.slice(0, 5)
+                      : h.openingHours
+                  }}
+                </li>
+                @if (h.checkInOutConditions) {
+                  <li>
+                    <span class="editorial-list-title">Entrada y salida: </span
+                    >{{ h.checkInOutConditions }}
+                  </li>
+                }
+                <li>
+                  <span class="editorial-list-title">Estacionamiento: </span
+                  >{{
+                    h.hasParking === null
+                      ? "Por confirmar"
+                      : h.hasParking
+                        ? "Sí"
+                        : "No"
+                  }}
+                </li>
+              </ul>
+            </div>
+            <div class="editorial-info-image">
+              @if (h.logoPath) {
+                <app-media-preview
+                  [path]="h.logoPath"
+                  [private]="preview"
+                  [alt]="'Logo de ' + h.name"
+                />
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="productos" class="section-info">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Tipos de habitación</h2>
+            <p class="section-subtitle">
+              Consulta condiciones y disponibilidad directamente con el hotel.
+            </p>
+          </div>
+          <div class="hotel-grid">
+            @for (room of h.roomTypes; track room.id) {
+              <article class="editorial-room-card">
+                <div class="editorial-room-image">
+                  @if (room.photos[0]; as photo) {
+                    <app-media-preview
+                      [path]="photo.path"
+                      [private]="preview"
+                      [alt]="photo.altText"
+                    />
+                  }
+                </div>
+                <div class="editorial-room-content">
+                  <h3 class="editorial-room-title">{{ room.name }}</h3>
+                  <p class="editorial-room-desc">{{ room.description }}</p>
+                  @if (room.photos.length > 1) {
+                    <div class="catalog-gallery">
+                      @for (photo of room.photos.slice(1); track photo.path) {
+                        <app-media-preview
+                          [path]="photo.path"
+                          [private]="preview"
+                          [alt]="photo.altText"
+                        />
+                      }
+                    </div>
+                  }
+                  <ul class="catalog-details">
+                    @for (detail of room.details; track $index) {
+                      @if (
+                        detail.kind === "FEATURE" || detail.kind === "SERVICE"
+                      ) {
+                        <li>{{ detail.text }}</li>
+                      }
+                    }
+                  </ul>
+                  <p class="catalog-availability">
+                    {{
+                      room.availableUnits === null
+                        ? "Disponibilidad por confirmar con
+                el hotel."
+                        : room.availableUnits === 0
+                          ? "Sin unidades disponibles
+                actualmente."
+                          : room.availableUnits +
+                            " unidad(es) disponibles
+                actualmente."
+                    }}
+                  </p>
+                  @if (room.rates.length) {
+                    <h4 class="catalog-rate-title">Elige tu estadía</h4>
+                    <p class="catalog-rate-hint">
+                      Selecciona una tarifa para consultar.
+                    </p>
+                    <ul class="catalog-rates">
+                      @for (
+                        rate of room.rates;
+                        track rate.mode;
+                        let i = $index
+                      ) {
+                        <li>
+                          <button
+                            class="catalog-rate-option"
+                            aria-haspopup="dialog"
+                            (click)="inquire(room, i)"
+                          >
+                            <span class="catalog-rate-caption"
+                              ><span class="catalog-rate-mode">{{
+                                rateModeLabel(rate)
+                              }}</span
+                              ><span class="catalog-rate-price">{{
+                                formatMoney(rate.amount, rate.currency)
+                              }}</span></span
+                            ><span class="catalog-rate-arrow">→</span>
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="editorial-room-desc">
+                      Consulta tarifas directamente con el hotel.
+                    </p>
+                    <button class="btn btn-primary" (click)="inquire(room)">
+                      Consultar estadía
+                    </button>
+                  }
+                </div>
+              </article>
+            } @empty {
+              <p>Todavía no hay tipos de habitación registrados.</p>
+            }
+          </div>
+        </div>
+      </section>
+      @if (h.stayCards.length) {
+        <section id="clientes" class="section-info section-audience">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">Tu próxima estadía</h2>
+              <p class="section-subtitle">
+                Coordina tu visita directamente con el hotel.
+              </p>
+            </div>
+            <div class="audience-grid">
+              @for (card of h.stayCards; track $index) {
+                <div class="audience-card">
+                  <h3 class="audience-card-title">{{ card.title }}</h3>
+                  <p class="audience-card-desc">{{ card.description }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+      @if (h.videoPath) {
+        <section id="video" class="section-info">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">Video del hotel</h2>
+            </div>
+            <div class="video-player-box">
+              <app-media-preview
+                [path]="h.videoPath"
+                [private]="preview"
+                [video]="true"
+                [alt]="'Video de ' + h.name"
+              />
+            </div>
+          </div>
+        </section>
+      }
+      <section id="ubicacion" class="section-info">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Cómo llegar</h2>
+            <p class="section-subtitle">{{ h.address }}</p>
+          </div>
+          @if (h.mapUrl?.startsWith("https://")) {
+            <a
+              class="btn btn-primary"
+              [href]="h.mapUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ver ubicación en el mapa</a
+            >
+          }
+        </div>
+      </section>
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-grid">
+            <div class="footer-col footer-col-brand">
+              <h4 class="footer-title">{{ h.name }}</h4>
+              @if (h.logoPath) {
+                <app-media-preview
+                  [path]="h.logoPath"
+                  [private]="preview"
+                  [alt]="h.name"
+                />
+              }
+              <p class="footer-text">
+                Consulta los tipos de habitación y coordina tu visita.
+              </p>
+              <a routerLink="/" fragment="productos" class="social-text-link"
+                >Volver a HoteleriasYa</a
+              >
+              <div class="utp-logo-container">
+                <span class="utp-label">Proyecto académico:</span>
+                <a
+                  href="https://www.utp.edu.pe"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="utp-link"
+                  title="Universidad Tecnológica del Perú"
+                >
+                  <img
+                    src="assets/images/Utplogonuevo.svg.webp"
+                    alt="Logo Universidad Tecnológica del Perú"
+                    class="utp-logo-img"
+                    loading="lazy"
+                  />
+                </a>
+              </div>
+            </div>
+
+            <div class="footer-col footer-col-contact">
+              <h4 class="footer-title">Contacto</h4>
+              <p class="footer-text">
+                Comunícate con nuestro equipo para consultar habitaciones,
+                tarifas y disponibilidad.
+              </p>
+
+              <div class="contact-details">
+                <p>{{ h.address }}</p>
+                @if (h.phone) {
+                  <a [href]="'tel:' + h.phone">{{ formatPhone(h.phone) }}</a>
+                }
+              </div>
+            </div>
+
+            <div class="footer-col footer-col-rubros">
+              <h4 class="footer-title">Rubros Relacionados</h4>
+              <p class="footer-text">
+                Conoce establecimientos y aliados del sector hotelero:
+              </p>
+
+              <ul class="rubros-list">
+                <li class="rubro-item">
+                  <a
+                    href="https://www.instagram.com/hotel.smart.love/?hl=es"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rubro-link"
+                  >
+                    <img
+                      class="rubro-logo"
+                      src="assets/images/hotel-smart-love-logo.jpg"
+                      alt=""
+                      width="72"
+                      height="72"
+                      loading="lazy"
+                    />
+                    <div>
+                      <strong>Hotel Smart Love</strong>
+                      <span>Instagram Oficial</span>
+                    </div>
+                  </a>
+                </li>
+                <li class="rubro-item">
+                  <a
+                    href="https://www.facebook.com/p/Selva-Hotel-61560415207378/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rubro-link"
+                  >
+                    <img
+                      class="rubro-logo"
+                      src="assets/images/hotel-selva-suite-logo.jpg"
+                      alt=""
+                      width="72"
+                      height="72"
+                      loading="lazy"
+                    />
+                    <div>
+                      <strong>Hotel Selva Suite</strong>
+                      <span>Página en Facebook</span>
+                    </div>
+                  </a>
+                </li>
+                <li class="rubro-item">
+                  <a
+                    href="https://www.instagram.com/hoteldakmarlin/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rubro-link"
+                  >
+                    <img
+                      class="rubro-logo"
+                      src="assets/images/hotel-dak-marlin-logo.jpg"
+                      alt=""
+                      width="72"
+                      height="72"
+                      loading="lazy"
+                    />
+                    <div>
+                      <strong>Hotel Dak Marlin</strong>
+                      <span>Instagram Oficial</span>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
+            <p>&copy; 2026 HoteleriasYa - Todos los derechos reservados.</p>
+            <div class="legal-links">
+              <a href="#informacion">Información</a>
+              <a href="#productos">Habitaciones</a>
+              <a href="#clientes">Tu estadía</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    }
+  </main>
+</div>
