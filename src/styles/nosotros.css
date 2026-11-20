@@ -1,0 +1,132 @@
+.about-header {
+    background: var(--color-primary);
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+}
+
+.about-nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 4vw, 32px);
+}
+
+.about-nav [aria-current="page"] {
+    border-bottom: 1px solid currentColor;
+}
+
+.about-hero {
+    background: var(--color-primary);
+    color: var(--color-text-light);
+    padding: clamp(40px, 8vw, 100px) 0;
+}
+
+.about-hero-layout {
+    display: grid;
+    gap: clamp(30px, 6vw, 84px);
+    align-items: center;
+}
+
+.about-intro {
+    max-width: 550px;
+}
+
+.about-intro h1 {
+    color: inherit;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1;
+    margin-bottom: 20px;
+}
+
+.about-intro p {
+    max-width: 42ch;
+    margin-bottom: 24px;
+    color: #e2e7dd;
+    font-size: clamp(1rem, 2vw, 1.15rem);
+}
+
+.about-intro-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 4px;
+}
+
+.about-gallery {
+    min-width: 0;
+}
+
+.about-carousel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    background: var(--color-primary-hover);
+    aspect-ratio: 5 / 4;
+}
+
+.about-carousel .carousel-img {
+    object-position: center 35%;
+}
+
+.about-carousel .carousel-slide::after {
+    background: linear-gradient(0deg, rgba(11, 20, 16, 0.9), transparent 40%);
+}
+
+.about-carousel figcaption {
+    position: absolute;
+    bottom: 18px;
+    left: 20px;
+    z-index: 1;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.about-carousel .carousel-btn {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.about-carousel-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+}
+
+.about-carousel-dots {
+    display: flex;
+    gap: 10px;
+}
+
+.about-carousel-dots .carousel-dot {
+    width: 24px;
+    height: 24px;
+    border: 7px solid var(--color-primary);
+}
+
+.about-slide-status {
+    color: #e2e7dd;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+    .about-hero-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .about-nav .nav-link {
+        letter-spacing: 0.04em;
+        text-transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .about-carousel .carousel-slide {
+        transition: none;
+    }
+}

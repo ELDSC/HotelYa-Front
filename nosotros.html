@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conoce al equipo que desarrolla HotelYa y el propósito del proyecto.">
+    <title>Sobre nosotros | HoteleriasYa</title>
+    <link rel="icon" type="image/png" href="/src/assets/images/logoHoteleriasYa.png">
+</head>
+<body>
+    <header class="about-header">
+        <div class="container header-container">
+            <a href="./index.html" class="logo-area" aria-label="Inicio de HoteleriasYa">
+                <img src="/src/assets/images/logoHoteleriasYa.png" alt="" class="header-logo-img">
+            </a>
+            <nav class="about-nav" aria-label="Navegación principal">
+                <a href="./index.html" class="nav-link">Inicio</a>
+                <a href="./nosotros.html" class="nav-link" aria-current="page">Sobre nosotros</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="about-hero" aria-labelledby="about-title">
+            <div class="container about-hero-layout">
+                <div class="about-intro">
+                    <h1 id="about-title">Sobre nosotros</h1>
+                    <p>Somos el equipo detrás de HotelYa, un proyecto académico que acerca el catálogo del hotel a quienes están planificando su próxima estadía.</p>
+                </div>
+                <div class="about-gallery" role="group" aria-label="Galería del equipo">
+                    <div class="about-carousel">
+                        <figure class="carousel-slide active">
+                            <img src="/assets/images/equipo/alvaro-ramirez.jpg" alt="Retrato de Álvaro Ramírez" class="carousel-img" fetchpriority="high">
+                            <figcaption>Álvaro Ramírez</figcaption>
+                        </figure>
+                        <figure class="carousel-slide" aria-hidden="true">
+                            <img src="/assets/images/equipo/josue-sarango.jpg" alt="Retrato de Josué Sarango" class="carousel-img">
+                            <figcaption>Josué Sarango</figcaption>
+                        </figure>
+                        <figure class="carousel-slide" aria-hidden="true">
+                            <img src="/assets/images/equipo/jessus-chu.jpg" alt="Retrato de Jessus Hemir Chu Díaz" class="carousel-img">
+                            <figcaption>Jessus Hemir Chu Díaz</figcaption>
+                        </figure>
+                        <button class="carousel-btn prev-btn" id="carouselPrevBtn" aria-label="Imagen anterior" type="button">‹</button>
+                        <button class="carousel-btn next-btn" id="carouselNextBtn" aria-label="Imagen siguiente" type="button">›</button>
+                    </div>
+                    <div class="about-carousel-controls">
+                        <div class="about-carousel-dots" role="group" aria-label="Seleccionar imagen">
+                            <button class="carousel-dot active" type="button" aria-label="Imagen 1" aria-pressed="true"></button>
+                            <button class="carousel-dot" type="button" aria-label="Imagen 2" aria-pressed="false"></button>
+                            <button class="carousel-dot" type="button" aria-label="Imagen 3" aria-pressed="false"></button>
+                        </div>
+                        <span id="about-slide-status" class="about-slide-status" aria-live="polite">1 / 3</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="/src/pages/nosotros.ts"></script>
+</body>
+</html>

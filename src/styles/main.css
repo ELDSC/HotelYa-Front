@@ -201,6 +201,22 @@ input, select {
   width: 100%;
 }
 
+.about-mobile-nav {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .about-mobile-nav {
+        display: block;
+        margin-inline: auto 12px;
+    }
+
+    .about-mobile-nav .nav-link {
+        letter-spacing: 0.04em;
+        text-transform: none;
+    }
+}
+
 .auth-area { 
   display: flex; 
   align-items: center; 
