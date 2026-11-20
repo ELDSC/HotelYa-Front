@@ -10,11 +10,14 @@ export default defineConfig(({ mode, isPreview }) => {
             name: 'hotelya-site-footer',
             transformIndexHtml: {
                 order: 'pre',
-                handler(html) {
+                handler(html, { path }) {
                     const marker = '    <!-- HotelYa site footer -->';
                     if (!html.includes(marker)) return html;
                     const footer = readFileSync(fileURLToPath(new URL('./src/ui/site-footer.html', import.meta.url)), 'utf-8');
-                    return html.replace(marker, () => footer.trimEnd());
+                    const links = path.endsWith('/sobre_nosotros_participantes.html')
+                        ? footer.replaceAll('href="#', 'href="./index.html#')
+                        : footer;
+                    return html.replace(marker, () => links.trimEnd());
                 },
             },
         }],
