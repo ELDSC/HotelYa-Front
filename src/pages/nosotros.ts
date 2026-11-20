@@ -1,7 +1,7 @@
 import '../styles/main.css';
 import '../styles/nosotros.css';
 import { initCarousel } from '../ui/carousel';
-import { initOrgChart } from '../ui/team';
+import { initTeam } from '../ui/team';
 
 initCarousel({
     autoplay: false,
@@ -11,4 +11,4 @@ initCarousel({
     },
 });
 
-initOrgChart();
+initTeam();

@@ -90,7 +90,25 @@
                 </div>
             </div>
         </section>
+        <section class="about-section container" aria-labelledby="developers-title" id="desarrolladores">
+            <div class="about-section-heading">
+                <h2 id="developers-title">Desarrolladores Full Stack</h2>
+                <p>Conoce el perfil y el aporte de cada integrante al desarrollo de HotelYa.</p>
+            </div>
+            <div id="developer-cards" class="developer-grid"></div>
+        </section>
     </main>
+
+    <dialog class="cv-dialog" id="cv-dialog" aria-labelledby="cv-title">
+        <div class="cv-dialog-inner">
+            <form method="dialog">
+                <button class="cv-close" type="submit" aria-label="Cerrar perfil" autofocus>×</button>
+            </form>
+            <div id="cv-content">
+                <h2 id="cv-title"></h2>
+            </div>
+        </div>
+    </dialog>
 
     <script type="module" src="/src/pages/nosotros.ts"></script>
 </body>
