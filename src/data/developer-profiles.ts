@@ -6,7 +6,7 @@ interface DeveloperProfile {
     certifications?: readonly string[];
     cv: {
         view: string;
-        download?: string;
+        download: string;
     };
 }
 
@@ -38,7 +38,7 @@ export const developerProfiles: Readonly<Partial<Record<string, DeveloperProfile
         tools: ['Spring Boot', 'Node.js', 'Postman'],
         programmingLanguages: ['Java', 'JavaScript', 'SQL'],
         softSkills: ['Trabajo en equipo', 'Pensamiento analítico', 'Resolución de problemas', 'Aprendizaje continuo', 'Adaptabilidad'],
-        cv: { view: 'https://acrobat.adobe.com/id/urn:aaid:sc:US:f7e19d91-a2eb-48d0-a57a-1975c50d9d6e?view=1' },
+        cv: { view: 'assets/cv/jessus-chu.pdf', download: 'assets/cv/jessus-chu.pdf' },
     },
     'rafael-palomino': {
         summary: 'Desarrollador frontend enfocado en interfaces web responsivas, accesibles y fáciles de usar.',

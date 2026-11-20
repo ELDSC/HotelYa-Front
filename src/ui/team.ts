@@ -16,11 +16,16 @@ function portrait(member: TeamMember, className: string): HTMLElement {
     return image;
 }
 
-function externalLink(url: string, label: string): HTMLAnchorElement {
+function cvLink(url: string, label: string, download = false): HTMLAnchorElement {
     const link = element('a', 'cv-link', label);
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    const local = url.startsWith('assets/');
+    link.href = local ? appPath(url) : url;
+    if (local && download) {
+        link.download = '';
+    } else if (!download) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+    }
     return link;
 }
 
@@ -33,7 +38,7 @@ function skills(label: string, values: readonly string[]): HTMLElement {
 }
 
 function profileButton(member: TeamMember, open: () => void): HTMLButtonElement {
-    const button = element('button', 'cv-link', 'Ver CV');
+    const button = element('button', 'cv-link cv-trigger', 'Ver CV');
     button.type = 'button';
     button.setAttribute('aria-label', `Ver CV de ${member.name}`);
     button.addEventListener('click', open);
@@ -57,9 +62,7 @@ function memberCard(member: TeamMember, kind: 'org' | 'developer', open: () => v
         const actions = element('div', 'cv-actions');
         actions.append(profileButton(member, open));
         if (kind === 'developer') {
-            const link = profile.cv.download
-                ? externalLink(profile.cv.download, 'Descargar CV')
-                : externalLink(profile.cv.view, 'Descargar en Acrobat');
+            const link = cvLink(profile.cv.download, 'Descargar CV', true);
             link.setAttribute('aria-label', `${link.textContent} de ${member.name}`);
             actions.append(link);
         }
@@ -90,13 +93,10 @@ export function initTeam(): void {
         header.append(portrait(member, 'team-avatar'), identity);
 
         const documents = element('div', 'cv-actions');
-        const view = externalLink(profile.cv.view, 'Abrir PDF completo');
-        documents.append(view);
-        if (profile.cv.download) {
-            documents.append(externalLink(profile.cv.download, 'Descargar CV'));
-        } else {
-            documents.append(element('p', 'cv-pending', 'El PDF se descarga desde el visor de Acrobat.'));
-        }
+        documents.append(
+            cvLink(profile.cv.view, 'Abrir PDF completo'),
+            cvLink(profile.cv.download, 'Descargar CV', true),
+        );
 
         content.replaceChildren(
             header,
