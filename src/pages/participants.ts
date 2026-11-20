@@ -1,5 +1,5 @@
 import '../styles/main.css';
-import '../styles/nosotros.css';
+import '../styles/participants.css';
 import { initCarousel } from '../ui/carousel';
 import { initTeam } from '../ui/team';
 
