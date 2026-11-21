@@ -37,10 +37,10 @@ function skills(label: string, values: readonly string[]): HTMLElement {
     return group;
 }
 
-function profileButton(member: TeamMember, open: () => void): HTMLButtonElement {
-    const button = element('button', 'cv-link cv-trigger', 'Ver CV');
+function profileButton(member: TeamMember, open: () => void, owner?: string): HTMLButtonElement {
+    const button = element('button', 'cv-link cv-trigger', owner ? `Ver CV de ${owner}` : 'Ver CV');
     button.type = 'button';
-    button.setAttribute('aria-label', `Ver CV de ${member.name}`);
+    button.setAttribute('aria-label', `Ver CV de ${owner ?? member.name}`);
     button.addEventListener('click', open);
     return button;
 }
@@ -60,10 +60,11 @@ function memberCard(member: TeamMember, kind: 'org' | 'developer', open: () => v
 
     if (profile) {
         const actions = element('div', 'cv-actions');
-        actions.append(profileButton(member, open));
+        actions.append(profileButton(member, open, profile.cv.owner));
         if (kind === 'developer') {
-            const link = cvLink(profile.cv.download, 'Descargar CV', true);
-            link.setAttribute('aria-label', `${link.textContent} de ${member.name}`);
+            const label = `Descargar CV de ${profile.cv.owner ?? member.name}`;
+            const link = cvLink(profile.cv.download, profile.cv.owner ? label : 'Descargar CV', true);
+            link.setAttribute('aria-label', label);
             actions.append(link);
         }
         details.append(actions);
@@ -94,19 +95,22 @@ export function initTeam(): void {
 
         const documents = element('div', 'cv-actions');
         documents.append(
-            cvLink(profile.cv.view, 'Abrir PDF completo'),
-            cvLink(profile.cv.download, 'Descargar CV', true),
+            cvLink(profile.cv.view, profile.cv.owner ? `Abrir CV de ${profile.cv.owner}` : 'Abrir PDF completo'),
+            cvLink(profile.cv.download, profile.cv.owner ? `Descargar CV de ${profile.cv.owner}` : 'Descargar CV', true),
         );
 
         content.replaceChildren(
             header,
             element('p', 'cv-summary', profile.summary),
-            skills('Programas y herramientas', profile.tools),
-            skills('Lenguajes de programación', profile.programmingLanguages),
-            skills('Habilidades blandas', profile.softSkills),
         );
-        if (profile.certifications?.length) {
-            content.append(skills('Certificaciones y capacitación', profile.certifications));
+        const skillGroups = [
+            ['Programas y herramientas', profile.tools],
+            ['Lenguajes de programación', profile.programmingLanguages],
+            ['Habilidades blandas', profile.softSkills],
+            ['Certificaciones y capacitación', profile.certifications],
+        ] as const;
+        for (const [label, values] of skillGroups) {
+            if (values?.length) content.append(skills(label, values));
         }
         content.append(documents);
         dialog.showModal();

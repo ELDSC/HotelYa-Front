@@ -42,10 +42,11 @@ export const team: readonly TeamMember[] = [
         portrait: 'assets/images/equipo/rafael-palomino.jpg',
     },
     {
-        id: 'integrante-pendiente',
-        name: 'Integrante de prueba',
-        initials: '—',
-        role: 'Cargo por confirmar',
-        contribution: 'Espacio reservado para el próximo integrante del equipo.',
+        id: 'christian-villanueva',
+        name: 'Christian Hernán Villanueva Álvarez',
+        initials: 'CV',
+        role: 'Maquetación web',
+        contribution: 'Maquetación web y diseño adaptable.',
+        portrait: 'assets/images/equipo/christian-villanueva.jpg',
     },
 ];

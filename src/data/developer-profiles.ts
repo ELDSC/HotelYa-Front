@@ -7,6 +7,7 @@ interface DeveloperProfile {
     cv: {
         view: string;
         download: string;
+        owner?: string;
     };
 }
 
@@ -16,6 +17,8 @@ function driveCv(id: string): DeveloperProfile['cv'] {
         download: `https://drive.google.com/uc?export=download&id=${id}`,
     };
 }
+
+const rafaelCv = driveCv('1LUtmm0-FJNCvMpXAgul5RnHFmT4RJcVI');
 
 export const developerProfiles: Readonly<Partial<Record<string, DeveloperProfile>>> = {
     'alvaro-ramirez': {
@@ -45,6 +48,13 @@ export const developerProfiles: Readonly<Partial<Record<string, DeveloperProfile
         tools: ['Astro', 'Tailwind CSS', 'Git'],
         programmingLanguages: ['JavaScript'],
         softSkills: ['Trabajo en equipo', 'Comunicación', 'Resolución de problemas'],
-        cv: driveCv('1LUtmm0-FJNCvMpXAgul5RnHFmT4RJcVI'),
+        cv: rafaelCv,
+    },
+    'christian-villanueva': {
+        summary: 'Maquetación web y diseño adaptable.',
+        tools: [],
+        programmingLanguages: [],
+        softSkills: [],
+        cv: { ...rafaelCv, owner: 'Rafael Palomino' },
     },
 };

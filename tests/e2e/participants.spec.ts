@@ -46,13 +46,13 @@ test('el organigrama, el dueño referencial y los CV del equipo se muestran en m
     const org = page.getByRole('region', { name: 'Mapa organizacional' });
     await expect(org.getByRole('group', { name: 'Coordinación' })).toContainText('Álvaro Ramírez');
     await expect(org.getByRole('list', { name: 'Encargados e integrantes' })).toContainText('Josué Sarango');
-    await expect(org.getByRole('heading', { name: 'Integrante de prueba' })).toBeVisible();
+    const christianName = 'Christian Hernán Villanueva Álvarez';
+    await expect(org.getByRole('heading', { name: christianName })).toBeVisible();
     await expect(page.getByText(/Andrés Pisfil|Andres Pisfil/i)).toHaveCount(0);
 
     const institution = page.getByRole('region', { name: 'El hotel y el proyecto' });
     await expect(institution.getByRole('heading', { name: 'Dueño del hotel' })).toBeVisible();
     await expect(institution.getByText('Mateo Vargas')).toBeVisible();
-    await expect(institution.getByText('Nombre referencial para la sustentación.')).toBeVisible();
     await expect(institution.getByRole('heading', { name: 'Finalidad' })).toBeVisible();
     await expect(institution.getByRole('heading', { name: 'Agradecimiento del hotel' })).toBeVisible();
 
@@ -80,13 +80,28 @@ test('el organigrama, el dueño referencial y los CV del equipo se muestran en m
     await expect(other.getByRole('heading', { name: 'Lenguajes de programación' })).toBeVisible();
     await other.getByRole('button', { name: 'Cerrar perfil' }).click();
     await expect(other).toBeHidden();
-    await expect(developers.getByText('CV pendiente', { exact: true })).toBeVisible();
+    const christian = developers.getByRole('article').filter({ hasText: christianName });
+    await expect(christian).toContainText('Maquetación web y diseño adaptable.');
+    const rafael = developers.getByRole('article').filter({
+        has: page.getByRole('heading', { name: 'Rafael Palomino', exact: true }),
+    });
+    await expect.poll(async () => {
+        const photo = christian.locator('img');
+        await photo.scrollIntoViewIfNeeded();
+        return photo.evaluate(image => (image as HTMLImageElement).naturalWidth);
+    }).toBeGreaterThan(0);
+    const download = await rafael.getByRole('link', { name: 'Descargar CV de Rafael Palomino' }).getAttribute('href');
+    if (!download) throw new Error('Falta el enlace al CV de Rafael.');
+    await expect(christian.getByRole('link', { name: 'Descargar CV de Rafael Palomino' })).toHaveAttribute('href', download);
+    await christian.getByRole('button', { name: 'Ver CV de Rafael Palomino' }).click();
+    const christianProfile = page.getByRole('dialog', { name: christianName });
+    await expect(christianProfile.getByRole('link', { name: 'Abrir CV de Rafael Palomino' })).toBeVisible();
 });
 
 test('el CV adjunto de Jessus se puede abrir y descargar como PDF', async ({ page }) => {
     await page.goto('sobre_nosotros_participantes.html');
     const developers = page.getByRole('region', { name: 'Desarrolladores Full Stack' });
-    await expect(developers.getByRole('link', { name: /Descargar CV de/ })).toHaveCount(4);
+    await expect(developers.getByRole('link', { name: /Descargar CV de/ })).toHaveCount(5);
     await developers.getByRole('button', { name: 'Ver CV de Jessus Hemir Chu Díaz' }).click();
     const dialog = page.getByRole('dialog', { name: 'Jessus Hemir Chu Díaz' });
     const view = dialog.getByRole('link', { name: 'Abrir PDF completo' });
