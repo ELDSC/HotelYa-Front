@@ -1,3 +1,4 @@
+import { base } from '../environment';
 import { test, expect, summary, api } from './fixtures';
 
 const hotels = [
@@ -68,7 +69,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
         await clear.click();
         await search.click();
         await expect(cards).toHaveCount(3);
-        await expect(cards.first().getByRole('link', { name: 'Ver hotel' })).toHaveAttribute('href', 'hotel-central.html?id=7');
+        await expect(cards.first().getByRole('link', { name: 'Ver hotel' })).toHaveAttribute('href', base+'hoteles/7');
 
         const staticTab = section.getByRole('tab', { name: 'Estática', exact: true });
         const dynamicTab = section.getByRole('tab', { name: 'Dinámica', exact: true });

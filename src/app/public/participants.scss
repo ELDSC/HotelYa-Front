@@ -1,0 +1,475 @@
+.about-header {
+  background: var(--color-primary);
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+}
+
+.about-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 4vw, 32px);
+}
+
+.about-nav [aria-current="page"] {
+  border-bottom: 1px solid currentColor;
+}
+
+.about-hero {
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  padding: clamp(40px, 8vw, 100px) 0;
+}
+
+.about-hero-layout {
+  display: grid;
+  gap: clamp(30px, 6vw, 84px);
+  align-items: center;
+}
+
+.about-intro {
+  max-width: 550px;
+}
+
+.about-intro h1 {
+  color: inherit;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.about-intro p {
+  max-width: 42ch;
+  margin-bottom: 24px;
+  color: #e2e7dd;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+}
+
+.about-intro-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 4px;
+}
+
+.about-gallery {
+  min-width: 0;
+}
+
+.about-carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--color-primary-hover);
+  aspect-ratio: 5 / 4;
+}
+
+.participants-carousel {
+  position: absolute;
+  inset: 0;
+}
+
+.about-carousel .carousel-img {
+  object-position: center 35%;
+}
+
+.about-carousel .carousel-slide::after {
+  background: linear-gradient(0deg, rgba(11, 20, 16, 0.9), transparent 40%);
+}
+
+.about-carousel figcaption {
+  position: absolute;
+  bottom: 18px;
+  left: 20px;
+  z-index: 1;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.about-carousel .carousel-btn {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.about-carousel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+}
+
+.about-carousel-dots {
+  display: flex;
+  gap: 10px;
+}
+
+.about-carousel-dots .carousel-dot,
+.about-carousel-dots .carousel-dot.active {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.about-carousel-dots .carousel-dot::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border: 1px solid #d6e2d9;
+  border-radius: 50%;
+}
+
+.about-carousel-dots .carousel-dot.active::before {
+  background: #fff;
+  border-color: #fff;
+}
+
+.about-carousel-dots .carousel-dot:focus-visible {
+  outline: 2px solid #fff;
+}
+
+.about-slide-status {
+  color: #e2e7dd;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .about-hero-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .about-nav .nav-link {
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-carousel .carousel-slide {
+    transition: none;
+  }
+}
+
+.container.about-section {
+  padding-block: clamp(48px, 8vw, 88px);
+}
+
+.about-section-heading {
+  margin-bottom: clamp(24px, 4vw, 44px);
+}
+
+.about-section-heading h2 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.about-section-heading p {
+  margin-top: 8px;
+  color: var(--color-text-muted);
+}
+
+.org-chart {
+  --org-line: #9ba99e;
+}
+
+.org-leader {
+  max-width: 330px;
+  margin-inline: auto;
+}
+
+.org-members {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.org-card {
+  height: 100%;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.org-leader .org-card {
+  border-color: var(--color-primary);
+}
+
+.team-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #dde6dd;
+  color: var(--color-primary);
+  font-weight: 600;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.team-role {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.team-name {
+  font-size: 1.25rem;
+  margin: 4px 0 8px;
+}
+
+.team-contribution {
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+}
+
+@media (min-width: 960px) {
+  .org-leader::after,
+  .org-members > li::before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 22px;
+    margin-inline: auto;
+    background: var(--org-line);
+  }
+
+  .org-members {
+    position: relative;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 0;
+  }
+
+  .org-members::before {
+    content: "";
+    position: absolute;
+    inset: 0 12.5% auto;
+    border-top: 1px solid var(--org-line);
+  }
+
+  .org-members > li {
+    display: flex;
+    flex-direction: column;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .org-members {
+    grid-template-columns: 1fr;
+    border-left: 1px solid var(--org-line);
+    padding-inline-start: 12px;
+  }
+}
+
+.about-institution {
+  background: #e5ebe3;
+}
+
+.institution-grid,
+.institution-text {
+  display: grid;
+  align-items: start;
+  gap: clamp(20px, 5vw, 48px);
+}
+
+.institution-owner {
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  border-radius: 16px;
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.institution-owner h3 {
+  font-family: var(--font-family-base);
+  font-size: 0.88rem;
+  color: inherit;
+}
+
+.institution-owner-name {
+  font-family: var(--font-family-display);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-block: 8px;
+}
+
+.institution-text h3 {
+  font-size: 1.55rem;
+  margin-bottom: 8px;
+}
+
+.institution-text article + article {
+  border-top: 1px solid #b5c3b5;
+  padding-top: 20px;
+}
+
+@media (min-width: 768px) {
+  .institution-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+
+.team-role + .team-contribution {
+  margin-top: 8px;
+}
+
+.developer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 20px;
+}
+
+.developer-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.developer-card .team-avatar {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  border-radius: 0;
+  font-size: 2rem;
+}
+
+.developer-card-details {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cv-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.developer-card .cv-actions,
+.developer-card .cv-pending {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.org-card .cv-actions {
+  justify-content: center;
+}
+
+.cv-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: 7px;
+  color: var(--color-primary);
+  font: 600 0.87rem var(--font-family-base);
+}
+
+.cv-link:hover {
+  background: var(--color-primary);
+  color: var(--color-text-light);
+}
+
+.cv-pending {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.cv-dialog-inner {
+  display: grid;
+  padding: clamp(16px, 5vw, 32px);
+}
+
+.cv-dialog-inner .cv-close {
+  justify-self: end;
+}
+
+.cv-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.cv-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cv-profile-header .team-avatar {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.cv-summary,
+.cv-skills {
+  margin-top: 18px;
+}
+
+.cv-skills h3 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+
+.cv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.cv-tags li {
+  color: var(--color-primary);
+  background: var(--color-secondary);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.84rem;
+}
+
+.developer-card {
+  position: relative;
+}
+
+.developer-card .cv-trigger::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.developer-card .cv-actions a {
+  position: relative;
+}
+
+img.team-avatar[hidden],
+.avatar-fallback {
+  display: none;
+}
+
+img[hidden] + .avatar-fallback {
+  display: grid;
+}

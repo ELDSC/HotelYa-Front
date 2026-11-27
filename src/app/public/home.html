@@ -1,0 +1,502 @@
+<app-header />
+
+<section class="hero-section">
+  <ngb-carousel
+    class="home-carousel"
+    #hero
+    [interval]="5000"
+    [showNavigationArrows]="false"
+    [showNavigationIndicators]="false"
+  >
+    @for (n of [1, 2, 3, 4]; track n) {
+      <ng-template ngbSlide [id]="'' + n"
+        ><div class="carousel-slide active">
+          <img
+            [src]="'assets/images/hero' + n + '.jpg'"
+            alt="Alojamiento moderno y confortable"
+            class="carousel-img"
+          /></div
+      ></ng-template>
+    }
+  </ngb-carousel>
+  <div class="container hero-content">
+    <div class="hero-text-area">
+      <div class="hero-logo-wrapper">
+        <img
+          src="assets/images/logoHoteleriasYa.png"
+          alt="Logo HoteleriasYa"
+          class="hero-logo-img"
+        />
+      </div>
+      <span class="hero-tagline"
+        >Hoteles &middot; Tipos de habitación &middot; Contacto directo</span
+      >
+      <h1 class="hero-title">
+        HoteleriasYa<br /><span>Donde el Confort lo Encuentra Todo</span>
+      </h1>
+      <p class="hero-subtitle-text">
+        Conectamos a viajeros y huéspedes con los mejores alojamientos
+        disponibles en tiempo real.
+      </p>
+    </div>
+  </div>
+
+  <button
+    class="carousel-btn prev-btn"
+    id="carouselPrevBtn"
+    (click)="hero.prev()"
+    aria-label="Imagen anterior"
+  >
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+  <button
+    class="carousel-btn next-btn"
+    id="carouselNextBtn"
+    (click)="hero.next()"
+    aria-label="Siguiente imagen"
+  >
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+
+  <div class="carousel-controls" id="carouselControls">
+    <button
+      class="carousel-dot active"
+      (click)="hero.select('1')"
+      [class.active]="hero.activeId === '1'"
+      aria-label="Imagen 1"
+    ></button>
+    <button
+      class="carousel-dot"
+      (click)="hero.select('2')"
+      [class.active]="hero.activeId === '2'"
+      aria-label="Imagen 2"
+    ></button>
+    <button
+      class="carousel-dot"
+      (click)="hero.select('3')"
+      [class.active]="hero.activeId === '3'"
+      aria-label="Imagen 3"
+    ></button>
+    <button
+      class="carousel-dot"
+      (click)="hero.select('4')"
+      [class.active]="hero.activeId === '4'"
+      aria-label="Imagen 4"
+    ></button>
+  </div>
+</section>
+
+<section class="search-container" id="searchSection">
+  <div class="container">
+    <form
+      class="search-bar"
+      id="searchForm"
+      (submit)="$event.preventDefault(); scrollCatalog()"
+    >
+      <div class="search-field">
+        <label class="search-label" for="location">Destino o Ciudad</label>
+        <input
+          type="text"
+          id="location"
+          class="search-input"
+          placeholder="¿A dónde viajas?"
+        />
+      </div>
+      <div class="search-field">
+        <label class="search-label" for="dates">Modalidad de Estadía</label>
+        <select id="dates" class="search-input">
+          <option value="tonight">Por Noche</option>
+          <option value="3hours">Paquete 3 Horas</option>
+          <option value="6hours">Paquete 6 Horas</option>
+        </select>
+      </div>
+      <div class="search-field">
+        <label class="search-label" for="guests">Ocupación</label>
+        <select id="guests" class="search-input">
+          <option value="1">1 Huésped</option>
+          <option value="2" selected>2 Huéspedes</option>
+          <option value="3">3+ Huéspedes</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-search">Buscar</button>
+    </form>
+  </div>
+</section>
+
+<section class="section-info" id="informacion">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Información</h2>
+      <p class="section-subtitle">¿Qué es HoteleriasYa y por qué elegirnos?</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-content-left">
+        <h3 class="info-heading">
+          La plataforma ágil para tus estancias sin complicaciones
+        </h3>
+        <p class="info-paragraph">
+          <strong>HoteleriasYa</strong> es una solución moderna desarrollada
+          para transformar la manera en que buscas, comparas y aseguras tu
+          hospedaje. Explora los tipos de habitación y coordina tarifas y
+          disponibilidad directamente con cada establecimiento.
+        </p>
+        <p class="info-paragraph">
+          Sin intermediarios burocráticos ni comisiones sorpresa, facilitamos la
+          conexión directa entre el usuario y los establecimientos con altos
+          estándares de confort y seguridad.
+        </p>
+
+        <div class="info-highlights">
+          <div class="info-item">
+            <div class="info-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div>
+              <h4>Tipos de habitación</h4>
+              <p>
+                Conoce los tipos de habitación y consulta directamente con el
+                hotel.
+              </p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div>
+              <h4>Modalidad Flexible</h4>
+              <p>
+                Paquetes por horas o por noche que se adaptan a tu presupuesto.
+              </p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div>
+              <h4>Seguridad y Confianza</h4>
+              <p>Establecimientos validados y atención de soporte continua.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-image-side">
+        <div class="info-image-card">
+          <img
+            src="assets/images/hero2.jpg"
+            alt="Ambiente confortable en HoteleriasYa"
+            class="info-img"
+          />
+          <div class="info-stat-badge">
+            <span class="stat-number">Explora</span>
+            <span class="stat-text">Catálogo de Habitaciones</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-hotels" id="productos" #catalog>
+  <div class="container">
+    <div class="hotel-list-header">
+      <h2 class="hotel-list-title">Productos y Servicios</h2>
+      <p class="section-subtitle">
+        Conoce los hoteles y consulta sus tipos de habitación.
+      </p>
+    </div>
+    <div class="catalog-search">
+      <div
+        class="catalog-search-tabs"
+        role="tablist"
+        aria-label="Modo de búsqueda de hoteles"
+      >
+        <button
+          id="catalogStaticTab"
+          #staticTab
+          role="tab"
+          [attr.tabindex]="mode() === 'static' ? 0 : -1"
+          (keydown)="tabKey($event, 'static')"
+          [attr.aria-selected]="mode() === 'static'"
+          (click)="selectMode('static')"
+        >
+          Estática
+        </button>
+        <button
+          id="catalogDynamicTab"
+          #dynamicTab
+          role="tab"
+          [attr.tabindex]="mode() === 'dynamic' ? 0 : -1"
+          (keydown)="tabKey($event, 'dynamic')"
+          [attr.aria-selected]="mode() === 'dynamic'"
+          (click)="selectMode('dynamic')"
+        >
+          Dinámica
+        </button>
+      </div>
+      <p class="catalog-search-hint" id="catalogSearchHint">
+        {{
+          mode() === "static"
+            ? "Escribe el nombre o código y pulsa Buscar."
+            : "Los
+        resultados se actualizan mientras escribes."
+        }}
+      </p>
+      <form
+        id="catalogSearchForm"
+        aria-label="Buscar hoteles"
+        (submit)="$event.preventDefault(); apply()"
+      >
+        <fieldset class="catalog-search-fields" [disabled]="loading()">
+          <div class="catalog-search-field">
+            <label for="catalogQuery">Nombre o código del hotel</label
+            ><input
+              id="catalogQuery"
+              name="query"
+              type="search"
+              [formControl]="query"
+              placeholder="Ej. Lumi’s Hotel o lumis-hotel"
+            />
+          </div>
+          <div class="catalog-search-actions">
+            <button
+              id="catalogSearchButton"
+              class="btn btn-primary"
+              [hidden]="mode() === 'dynamic'"
+            >
+              Buscar</button
+            ><button
+              id="catalogClearButton"
+              type="button"
+              class="btn catalog-clear"
+              (click)="clear()"
+            >
+              Limpiar
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+    @if (loading()) {
+      <p class="catalog-state" role="status">Cargando hoteles…</p>
+    } @else if (error()) {
+      <p role="alert">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="load()">Reintentar</button>
+    } @else {
+      <p id="catalogResultCount" class="catalog-result-count" role="status">
+        {{ filtered().length }}
+        {{
+          filtered().length === 1
+            ? "hotel encontrado"
+            : "hoteles
+      encontrados"
+        }}
+      </p>
+      <div class="hotel-grid" id="hotelListContainer">
+        @for (hotel of filtered(); track hotel.id) {
+          <app-hotel-card [hotel]="hotel" />
+        } @empty {
+          <p class="catalog-state">
+            {{
+              hotels().length
+                ? "No encontramos hoteles con esos criterios"
+                : "No hay
+        hoteles registrados."
+            }}
+          </p>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section-audience" id="clientes">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Clientes</h2>
+      <p class="section-subtitle">¿Quiénes son sus clientes?</p>
+    </div>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="audience-image-box">
+          <img
+            src="assets/images/hero4.jpg"
+            alt="Viajeros Frecuentes y Nómadas Digitales"
+            class="audience-img"
+          />
+          <div class="audience-badge">Viajeros</div>
+        </div>
+        <h3 class="audience-card-title">Viajeros y Nómadas Digitales</h3>
+        <p class="audience-card-desc">
+          Profesionales en movimiento y turistas individuales que buscan
+          hospedajes rápidos, conectividad Wi-Fi de alta velocidad, check-in
+          express y tarifas competitivas.
+        </p>
+        <ul class="audience-perks">
+          <li>Check-in rápido</li>
+          <li>Wi-Fi garantizado</li>
+          <li>Ubicaciones estratégicas</li>
+        </ul>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-image-box">
+          <img
+            src="assets/images/hero1.jpg"
+            alt="Familias y Parejas"
+            class="audience-img"
+          />
+          <div class="audience-badge">Familias</div>
+        </div>
+        <h3 class="audience-card-title">Familias y Parejas</h3>
+        <p class="audience-card-desc">
+          Huéspedes que priorizan el descanso, la privacidad, la seguridad y el
+          confort con opciones de desayuno incluido, áreas verdes,
+          estacionamiento y ambientes cálidos.
+        </p>
+        <ul class="audience-perks">
+          <li>Ambiente seguro y tranquilo</li>
+          <li>Habitaciones espaciosas</li>
+          <li>Opciones con desayuno</li>
+        </ul>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-image-box">
+          <img
+            src="assets/images/hotel5.jpg"
+            alt="Propietarios y Cadenas Hoteleras"
+            class="audience-img"
+          />
+          <div class="audience-badge">Hoteleros</div>
+        </div>
+        <h3 class="audience-card-title">Propietarios y Cadenas Hoteleras</h3>
+        <p class="audience-card-desc">
+          Establecimientos que desean maximizar la ocupación de sus
+          habitaciones, comercializar paquetes de estancia por horas o días y
+          gestionar su inventario con analíticas en tiempo real.
+        </p>
+        <ul class="audience-perks">
+          <li>Mayor tasa de ocupación</li>
+          <li>Gestión de inventario flexible</li>
+          <li>Cero intermediarios abusivos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-video" id="video">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Video Representativo</h2>
+      <p class="section-subtitle">
+        Conoce cómo funciona la experiencia y el flujo de reserva de
+        HoteleriasYa
+      </p>
+    </div>
+
+    <div class="video-container-wide">
+      <div class="video-player-box" id="videoPlayerBox">
+        <video
+          controls
+          id="hotelVideo"
+          #hotelVideo
+          (pause)="playing.set(false)"
+          (ended)="playing.set(false)"
+          class="main-video-element"
+          poster="assets/images/hero3.jpg"
+          controls
+          preload="metadata"
+        >
+          <source
+            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+            type="video/mp4"
+          />
+          Tu navegador no soporta la reproducción de video HTML5.
+        </video>
+        <div
+          class="video-overlay"
+          id="videoOverlay"
+          [class.hidden]="playing()"
+          (click)="playVideo()"
+        >
+          <button
+            class="play-btn-overlay"
+            id="customPlayBtn"
+            (click)="playVideo()"
+            aria-label="Reproducir video representativo"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+          <span class="video-caption-label"
+            >Ver demostración de la plataforma</span
+          >
+        </div>
+      </div>
+      <div class="video-info-bar">
+        <span class="video-pill">Demostración en video &middot; 2 minutos</span>
+        <p class="video-note">
+          Aprende a buscar por ubicación, seleccionar estancias por hora o por
+          noche y confirmar al instante en HoteleriasYa.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-site-footer />

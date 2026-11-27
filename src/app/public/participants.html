@@ -1,0 +1,351 @@
+<header class="about-header">
+  <div class="container header-container">
+    <a
+      [routerLink]="['/']"
+      class="logo-area"
+      aria-label="Inicio de HoteleriasYa"
+    >
+      <img
+        src="assets/images/logoHoteleriasYa.png"
+        alt=""
+        class="header-logo-img"
+      />
+    </a>
+    <nav class="about-nav" aria-label="Navegación principal">
+      <a [routerLink]="['/']" class="nav-link">Inicio</a>
+      <a [routerLink]="['/participantes']" class="nav-link" aria-current="page"
+        >Participantes</a
+      >
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="about-hero" aria-labelledby="about-title">
+    <div class="container about-hero-layout">
+      <div class="about-intro">
+        <h1 id="about-title">Participantes de HotelYa</h1>
+        <p>
+          Somos el equipo detrás de HotelYa, un proyecto académico que acerca el
+          catálogo del hotel a quienes están planificando su próxima estadía.
+        </p>
+        <a [routerLink]="[]" fragment="organigrama" class="about-intro-link"
+          >Conoce nuestro equipo <span aria-hidden="true">↓</span></a
+        >
+      </div>
+      <div class="about-gallery" role="group" aria-label="Galería del equipo">
+        <div class="about-carousel">
+          <ngb-carousel
+            class="participants-carousel"
+            #carousel
+            [interval]="0"
+            [animation]="false"
+            [showNavigationArrows]="false"
+            [showNavigationIndicators]="false"
+            (slide)="activeSlide.set($event.current)"
+          >
+            @for (member of gallery; track member.id; let index = $index) {
+              <ng-template ngbSlide [id]="'' + (index + 1)">
+                <figure
+                  class="carousel-slide"
+                  [class.active]="activeSlide() === '' + (index + 1)"
+                >
+                  <img
+                    [src]="member.portrait"
+                    [alt]="'Retrato de ' + member.name"
+                    class="carousel-img"
+                  />
+                  <figcaption>{{ member.name }}</figcaption>
+                </figure>
+              </ng-template>
+            }
+          </ngb-carousel>
+          <button
+            class="carousel-btn prev-btn"
+            aria-label="Imagen anterior"
+            type="button"
+            (click)="carousel.prev()"
+          >
+            ‹
+          </button>
+          <button
+            class="carousel-btn next-btn"
+            aria-label="Imagen siguiente"
+            type="button"
+            (click)="carousel.next()"
+          >
+            ›
+          </button>
+        </div>
+        <div class="about-carousel-controls">
+          <div
+            class="about-carousel-dots"
+            role="group"
+            aria-label="Seleccionar imagen"
+          >
+            @for (member of gallery; track member.id; let index = $index) {
+              <button
+                class="carousel-dot"
+                type="button"
+                [class.active]="activeSlide() === '' + (index + 1)"
+                [attr.aria-label]="'Imagen ' + (index + 1)"
+                [attr.aria-pressed]="activeSlide() === '' + (index + 1)"
+                (click)="carousel.select('' + (index + 1))"
+              ></button>
+            }
+          </div>
+          <span class="about-slide-status" aria-live="polite"
+            >{{ activeSlide() }} / {{ gallery.length }}</span
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+  <section
+    class="about-section container"
+    id="organigrama"
+    aria-labelledby="org-title"
+  >
+    <div class="about-section-heading">
+      <h2 id="org-title">Mapa organizacional</h2>
+      <p>Así se organiza el equipo del proyecto HotelYa.</p>
+    </div>
+    <div class="org-chart">
+      <div
+        class="org-leader"
+        id="org-leader"
+        role="group"
+        aria-label="Coordinación"
+      >
+        <ng-container
+          *ngTemplateOutlet="
+            card;
+            context: { $implicit: coordinator, kind: 'org' }
+          "
+        />
+      </div>
+      <ul
+        class="org-members"
+        id="org-members"
+        aria-label="Encargados e integrantes"
+      >
+        @for (member of team; track member.id) {
+          <li>
+            <ng-container
+              *ngTemplateOutlet="
+                card;
+                context: { $implicit: member, kind: 'org' }
+              "
+            />
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+  <section class="about-institution" aria-labelledby="institution-title">
+    <div class="container about-section">
+      <div class="about-section-heading">
+        <h2 id="institution-title">El hotel y el proyecto</h2>
+      </div>
+      <div class="institution-grid">
+        <article class="institution-owner">
+          <h3>Dueño del hotel</h3>
+          <p class="institution-owner-name">Mateo Vargas</p>
+        </article>
+        <div class="institution-text">
+          <article>
+            <h3>Finalidad</h3>
+            <p>
+              Ofrecer a cada huésped un espacio cómodo para descansar y
+              brindarle información clara sobre los tipos de habitación y los
+              canales de contacto. HotelYa apoya esa labor al reunir el catálogo
+              del establecimiento en un sitio fácil de consultar desde el
+              celular.
+            </p>
+          </article>
+          <article>
+            <h3>Agradecimiento del hotel</h3>
+            <p>
+              Agradecemos al equipo de HotelYa y a la Universidad Tecnológica
+              del Perú por su trabajo en este proyecto. La iniciativa nos
+              permite presentar nuestros espacios de forma más clara y acercar
+              la información del hotel a quienes están planificando su visita.
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section
+    class="about-section container"
+    aria-labelledby="developers-title"
+    id="desarrolladores"
+  >
+    <div class="about-section-heading">
+      <h2 id="developers-title">Desarrolladores Full Stack</h2>
+      <p>
+        Conoce el perfil y el aporte de cada integrante al desarrollo de
+        HotelYa.
+      </p>
+    </div>
+    <div id="developer-cards" class="developer-grid">
+      @for (member of developers; track member.id) {
+        <ng-container
+          *ngTemplateOutlet="
+            card;
+            context: { $implicit: member, kind: 'developer' }
+          "
+        />
+      }
+    </div>
+  </section>
+</main>
+
+<app-site-footer />
+
+<ng-template #portrait let-member>
+  @if (member.portrait) {
+    <img
+      class="team-avatar"
+      #image
+      [src]="member.portrait"
+      alt=""
+      loading="lazy"
+      (error)="image.hidden = true"
+    />
+    <span class="team-avatar avatar-fallback" aria-hidden="true">{{
+      member.initials
+    }}</span>
+  } @else {
+    <span class="team-avatar" aria-hidden="true">{{ member.initials }}</span>
+  }
+</ng-template>
+
+<ng-template #card let-member let-kind="kind">
+  <article [class]="kind + '-card'">
+    <ng-container
+      *ngTemplateOutlet="portrait; context: { $implicit: member }"
+    />
+    <div [class]="kind + '-card-details'">
+      <h3 class="team-name">{{ member.name }}</h3>
+      <p class="team-role">{{ member.role }}</p>
+      <p class="team-contribution">{{ member.contribution }}</p>
+
+      @if (profiles[member.id]; as profile) {
+        <div class="cv-actions">
+          <button
+            class="cv-link cv-trigger"
+            type="button"
+            #trigger
+            [attr.aria-label]="'Ver CV de ' + member.name"
+            (click)="openProfile(profileDialog, trigger)"
+          >
+            Ver CV
+          </button>
+          @if (kind === "developer") {
+            <a
+              class="cv-link"
+              [href]="profile.cv.download"
+              [attr.download]="
+                profile.cv.download.startsWith('assets/') ? '' : null
+              "
+              [attr.aria-label]="'Descargar CV de ' + member.name"
+              >Descargar CV</a
+            >
+          }
+        </div>
+        <ng-template #profileDialog let-dialog>
+          <div class="modal-body cv-dialog-inner">
+            <button
+              class="cv-close"
+              type="button"
+              aria-label="Cerrar perfil"
+              ngbAutofocus
+              (click)="dialog.close()"
+            >
+              ×
+            </button>
+            <div class="cv-profile-header">
+              <ng-container
+                *ngTemplateOutlet="portrait; context: { $implicit: member }"
+              />
+              <div>
+                <h2 id="cv-title">{{ member.name }}</h2>
+                <p class="team-role">{{ member.role }}</p>
+              </div>
+            </div>
+            <p class="cv-summary">{{ profile.summary }}</p>
+            <ng-container
+              *ngTemplateOutlet="
+                skills;
+                context: {
+                  label: 'Programas y herramientas',
+                  values: profile.tools,
+                }
+              "
+            />
+            <ng-container
+              *ngTemplateOutlet="
+                skills;
+                context: {
+                  label: 'Lenguajes de programación',
+                  values: profile.programmingLanguages,
+                }
+              "
+            />
+            <ng-container
+              *ngTemplateOutlet="
+                skills;
+                context: {
+                  label: 'Habilidades blandas',
+                  values: profile.softSkills,
+                }
+              "
+            />
+            <ng-container
+              *ngTemplateOutlet="
+                skills;
+                context: {
+                  label: 'Certificaciones y capacitación',
+                  values: profile.certifications,
+                }
+              "
+            />
+            <div class="cv-actions">
+              <a
+                class="cv-link"
+                [href]="profile.cv.view"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Abrir PDF completo</a
+              >
+              <a
+                class="cv-link"
+                [href]="profile.cv.download"
+                [attr.download]="
+                  profile.cv.download.startsWith('assets/') ? '' : null
+                "
+                >Descargar CV</a
+              >
+            </div>
+          </div>
+        </ng-template>
+      } @else if (kind === "developer") {
+        <p class="cv-pending">CV pendiente</p>
+      }
+    </div>
+  </article>
+</ng-template>
+
+<ng-template #skills let-label="label" let-values="values">
+  @if (values?.length) {
+    <section class="cv-skills">
+      <h3>{{ label }}</h3>
+      <ul class="cv-tags">
+        @for (value of values; track value) {
+          <li>{{ value }}</li>
+        }
+      </ul>
+    </section>
+  }
+</ng-template>

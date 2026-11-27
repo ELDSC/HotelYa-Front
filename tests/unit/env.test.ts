@@ -6,6 +6,6 @@ describe('API origin', () => {
     });
     it.each([undefined, '', ' /api ', '/api', 'ftp://api.example.com', 'https://user:pass@example.com',
         'https://example.com/api', 'https://example.com?', 'https://example.com#', 'http://localhost:8080/a/..'])('rejects %s', value => {
-        expect(() => validateApiOrigin(value)).toThrow('VITE_API_BASE_URL');
+        expect(() => validateApiOrigin(value)).toThrow('HOTELYA_API_BASE_URL');
     });
 });

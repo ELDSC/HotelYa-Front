@@ -3,9 +3,9 @@ import { test, expect } from './fixtures';
 
 test('Participantes está en el menú y el carrusel manual tiene tres fotos', async ({ page }) => {
     await page.goto('./');
-    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', '#productos');
+    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', /\/#productos$/);
     await page.getByRole('link', { name: 'Participantes', exact: true }).click();
-    await expect(page).toHaveURL(/\/sobre_nosotros_participantes\.html$/);
+    await expect(page).toHaveURL(/\/participantes$/);
     await expect(page.getByRole('heading', { name: 'Participantes de HotelYa', exact: true })).toBeVisible();
 
     const gallery = page.getByRole('group', { name: 'Galería del equipo' });
@@ -32,15 +32,15 @@ test('Participantes está en el menú y el carrusel manual tiene tres fotos', as
     const footer = page.getByRole('contentinfo');
     await expect(footer.getByRole('heading', { name: 'Contacto', exact: true })).toBeVisible();
     await footer.getByRole('link', { name: 'Productos', exact: true }).click();
-    await expect(page).toHaveURL(/\/index\.html#productos$/);
+    await expect(page).toHaveURL(/\/#productos$/);
 });
 
 test('el organigrama, el dueño referencial y los CV del equipo se muestran en móvil', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('./');
-    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', '#productos');
+    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', /\/#productos$/);
     await page.getByRole('link', { name: 'Participantes', exact: true }).click();
-    await expect(page).toHaveURL(/\/sobre_nosotros_participantes\.html$/);
+    await expect(page).toHaveURL(/\/participantes$/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 
     const org = page.getByRole('region', { name: 'Mapa organizacional' });
@@ -104,7 +104,7 @@ test('el organigrama, el dueño referencial y los CV del equipo se muestran en m
 });
 
 test('el CV adjunto de Jessus se puede abrir y descargar como PDF', async ({ page }) => {
-    await page.goto('sobre_nosotros_participantes.html');
+    await page.goto('participantes');
     const developers = page.getByRole('region', { name: 'Desarrolladores Full Stack' });
     await expect(developers.getByRole('link', { name: /Descargar CV de/ })).toHaveCount(5);
     await developers.getByRole('button', { name: 'Ver CV de Jessus Hemir Chu Díaz' }).click();

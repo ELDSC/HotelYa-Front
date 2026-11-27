@@ -1,161 +1,68 @@
-# HoteleriasYa · Vite + TypeScript
+# HoteleriasYa
 
-Aplicación multipágina para el catálogo y el panel de administración de dueños. Usa Vite 8.3.4, TypeScript estricto y módulos ES. El listado y la ficha consultan Spring Boot; la configuración y los datos del backend no dependen de variables globales en `window`.
+Aplicación Angular 22 con TypeScript estricto, SCSS, Bootstrap 5 y ng-bootstrap. Consume la API REST de Spring Boot para el catálogo, la administración de dueños y el acceso administrativo global.
 
-## Instalar y ejecutar
+## Ejecución
 
-Requisitos: Node 24 y npm. Desde `HotelYa-Front`:
+Requisitos: Node 24.15 o superior dentro de la versión 24, npm y el backend configurado según su README.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abrir <http://127.0.0.1:5173>. La configuración actual está en `.env`. Para obtener datos reales, levantar Spring Boot y la instancia local de HotelYa siguiendo el README de `../HotelYa-Back`.
+Abrir `http://127.0.0.1:5173`. La configuración local vive en `.env`, ignorado por Git:
 
-Vite usa un puerto fijo: si 5173 está ocupado, informa del conflicto. Detenerlo con Ctrl+C en su terminal. En un IDE con soporte npm, seleccionar el script `dev` del `package.json` para el botón Ejecutar. Se retiraron el servidor Python y los scripts antiguos del frontend.
+| Variable | Uso |
+| --- | --- |
+| `HOTELYA_API_BASE_URL` | Origen HTTP(S) de Spring Boot, sin rutas, credenciales ni parámetros. Local: `http://127.0.0.1:8080`. |
+| `HOTELYA_OWNER_LOGIN_EMAIL`, `HOTELYA_OWNER_LOGIN_PASSWORD` | Credenciales de demostración precargadas en el acceso del dueño. |
+| `HOTELYA_ADMIN_LOGIN_EMAIL`, `HOTELYA_ADMIN_LOGIN_PASSWORD` | Credenciales de demostración precargadas en el acceso administrativo. |
+| `HOTELYA_E2E_BASE` | Base de las pruebas: `/` o una subruta terminada en `/`. |
+| `HOTELYA_E2E_REUSE_SERVER` | `0` para servidores propios de pruebas; `1` para reutilizar servidores activos del mismo proyecto. |
 
-## Configuración por entorno
+Todas son explícitas. Las variables del proceso tienen prioridad. El adaptador de Angular incorpora solo la configuración pública al compilar; las credenciales precargadas son visibles en el JavaScript y no crean cuentas ni inician sesión automáticamente. No colocar secretos del backend en estas variables. Cambiar la configuración requiere reconstruir el build.
 
-El archivo `.env` contiene la configuración explícita de la aplicación y de las pruebas:
+## Arquitectura y comportamiento
 
-```dotenv
-VITE_API_BASE_URL=http://127.0.0.1:8080
-HOTELYA_E2E_BASE=/
-HOTELYA_E2E_REUSE_SERVER=0
-```
+- `src/app`: componentes standalone por funcionalidad, servicios HttpClient, guards y controles compartidos. Signals gestionan el estado; `input()` y `output()` comunican componentes.
+- Los formularios usan Reactive Forms tipados, validadores, errores por campo y protección de cambios pendientes. El servidor determina autorización, propiedad y reglas de publicación.
+- `src/scss`: estilos comunes, variables y mixins; los temas del hotel y del panel están delimitados para evitar interferencias. ng-bootstrap gestiona carrusel, modal, menú lateral y notificaciones.
+- `public/assets`: recursos estáticos con nombres estables. Los archivos subidos se resuelven contra la API; la vista previa privada descarga blobs autenticados y libera sus URLs al salir.
 
-Usar directamente `.env`, tanto para desarrollo como para build. No hay archivos de plantilla ni valores de respaldo en el código. `.env` está ignorado por Git. En una copia nueva, crear ese archivo con los valores del entorno que se va a utilizar. Para publicar, establecer la URL real de Spring Boot en `VITE_API_BASE_URL` antes de construir. Solo esa variable se incorpora a la aplicación; las variables `HOTELYA_E2E_*` se usan exclusivamente en las pruebas.
+Las rutas son `/`, `/participantes`, `/hoteles/:id`, `/acceder`, `/panel`, `/panel/informacion`, `/panel/habitaciones`, `/panel/multimedia`, `/panel/vista-previa`, `/admin/acceder` y `/admin`. Las rutas desconocidas muestran una página no encontrada. El panel usa rutas hijas y carga diferida.
 
-La variable es obligatoria para desarrollo y build. Debe ser un origen HTTP(S), sin usuario, contraseña, rutas, query ni fragmento; se admite una barra final. La variable del proceso tiene prioridad sobre los archivos, según las reglas estándar de Vite.
+La búsqueda estática se aplica al confirmar; la dinámica filtra mientras se escribe, sobre una sola carga del catálogo. Las tarifas son por hora, paquete o noche, en soles. WhatsApp permite consultar la estadía; no se procesan reservas ni pagos.
 
-Vite incorpora la URL al build: después de cambiarla hay que reconstruir `dist`. No existe configuración pública inyectada al servir archivos. Las variables `HOTELYA_API_BASE_URL`, `FRONTEND_HOST` y `FRONTEND_PORT` del frontend quedaron reemplazadas por la configuración de Vite.
+Dueños y administradores tienen sesiones independientes. Los JWT de acceso permanecen en memoria; la renovación usa cookies HttpOnly y CSRF explícito. Los interceptores adjuntan el token únicamente a la API privada correspondiente y reintentan una vez tras renovar un `401`. Web Locks coordina la rotación entre pestañas cuando está disponible.
 
-El backend debe permitir mediante `HOTELYA_CORS_ORIGINS` los orígenes utilizados por el navegador. Localmente: `http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:4173` y `http://127.0.0.1:4173`. Si se cambia el puerto u origen, actualizar CORS y reiniciar Spring Boot. Cambiar de 5500 a 5173 crea un almacenamiento de navegador distinto; la sesión de demostración anterior no se traslada.
-
-## Build y publicación
-
-Para comprobar un build con el backend local:
+## Build y hosting
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Abrir <http://127.0.0.1:4173>. El build utiliza la URL configurada en `.env`. Preview sirve el build existente: cambiar la variable al ejecutar preview no cambia su API.
+Preview sirve `dist` en `http://127.0.0.1:4173`. Publicar el contenido de `dist` en un hosting estático con fallback de las rutas de aplicación a `index.html`. El backend debe permitir el origen web mediante `HOTELYA_CORS_ORIGINS`, con credenciales para autenticación.
 
-Publicar **solo el contenido de `dist`** en un hosting estático. Incluye `index.html`, `hotel-central.html`, `acceder.html`, las cuatro páginas del panel, los recursos compilados y los archivos públicos del catálogo. Preview es una herramienta de comprobación local. El hosting debe servir los HTML y resolver el index.html de cada directorio y permitir el acceso directo a la ficha y al panel; no se requiere un fallback de SPA. En producción, configurar el dominio del frontend en CORS del backend.
-
-Para montar el sitio bajo `/hotelya/`:
+Para montar el sitio en una subruta:
 
 ```bash
 npm run build -- --base=/hotelya/
+npm run preview -- --base=/hotelya/
 ```
 
-Para comprobar ese montaje localmente, ejecutar `npm run preview -- --base=/hotelya/` y abrir `http://127.0.0.1:4173/hotelya/`. La base de preview debe coincidir con la del build.
+La base del build y del servidor debe coincidir. Preview verifica el build existente; no cambia su API.
 
-El hosting debe montar el contenido de `dist` en esa subruta. Vite adapta los recursos procesados; el resolvedor de medios del catálogo utiliza `import.meta.env.BASE_URL`. Los enlaces entre las páginas conservan la subruta.
-
-## Organización y contratos
-
-- `src/pages`: una entrada por HTML; importa CSS e inicializa únicamente las funciones de esa página.
-- `src/api`: transporte HTTP con timeout de diez segundos y operaciones `getHotels()` / `getHotel(id)`.
-- `src/types`: tipos que reflejan los DTO de Spring Boot, sus valores enumerados y campos anulables. El tipado no sustituye la validación del servidor.
-- `src/features`: listado, ficha y autenticación real del dueño.
-- `src/ui`: DOM tipado, estados de carga/error y controles compartidos.
-- `src/utils`: referencias multimedia seguras y formato de tarifas.
-- `src/styles`: estilos importados por las entradas, procesados por Vite.
-- `src/assets`: recursos propios de la interfaz; Vite transforma sus URLs y nombres al construir.
-- `public/assets`: fotografías y video cuyos nombres devuelve la API; se copian a `dist/assets` sin cambiar nombres.
-
-Los módulos exportan funciones explícitas y no registran eventos ni realizan consultas al importarlos. Cada HTML tiene una sola entrada `type="module"`; no depende del orden de scripts clásicos. Vite comparte automáticamente las dependencias entre páginas.
-
-`index.html` consulta `GET /api/hotels`. «Ver hotel» abre `hotel-central.html?id=<id>` y consulta `GET /api/hotels/{id}`. Una ficha sin identificador consulta el listado y usa el primer hotel. Ambos flujos tienen carga, vacío, error y reintento, sin datos mock de respaldo.
-
-Los textos recibidos se insertan con `textContent`. Los medios admiten los recursos originales bajo `assets/images/` y `assets/videos/` y los UUID de medios del backend; se rechazan enlaces externos arbitrarios, traversal y referencias codificadas. Las referencias originales del catálogo permanecen en `public`; los medios subidos usan rutas `/api/media/{uuid}` resueltas exclusivamente contra el origen de API configurado.
-
-El hotel inicial es **Lumi’s Hotel**, con tipos **Temática, Matrimonial y Premium**, tratados como productos. Las tarifas son de referencia. El dueño configura cantidades totales y disponibles por tipo. No hay habitaciones físicas identificadas, reservas en línea, calificaciones ni reseñas. El login usa JWT real con renovación por cookie HttpOnly; los valores antiguos de demostración en localStorage se descartan.
-
-## Búsquedas en Productos y Servicios
-
-El catálogo ofrece pestañas Estática y Dinámica con una única barra que admite el nombre o el código del hotel. Estática aplica los criterios al pulsar Buscar o Enter. Dinámica filtra mientras se escribe. Al cambiar de pestaña se conserva el texto y, al volver a Estática, el listado espera una nueva confirmación.
-
-La barra busca coincidencias parciales en el nombre o en el código, ignora mayúsculas y espacios al inicio y al final. La comparación del nombre también ignora tildes. Limpiar vacía la barra y restaura el listado sin cambiar la pestaña activa.
-
-El filtrado utiliza los hoteles publicados de una única carga de `GET /api/hotels`, sin consultas adicionales al escribir o limpiar. Las tarjetas muestran el campo real `code`, que el backend devuelve en el resumen y el detalle. El código es de solo lectura y no forma parte de `HotelWrite`.
-
-## Calidad y pruebas
+## Verificación
 
 ```bash
 npm run typecheck
 npm run lint
 npm test
-npx playwright install chromium
 npm run test:e2e
 npm run test:e2e:build
-```
-
-`build` también ejecuta `typecheck`. ESLint usa configuración plana y rechaza advertencias. Vitest prueba el origen de la API, medios con distintas bases, tarifas, errores HTTP y timeout. Playwright prueba ambas páginas, imágenes, video, navegación, estados, renderizado seguro, controles y vista móvil. Sus fixtures son exclusivos de pruebas y no se incluyen en la aplicación.
-
-Playwright arranca y detiene las instancias de Vite que necesita. Los comandos generales usan respuestas HTTP controladas y no necesitan el backend. Las pruebas de preview construyen primero con la URL de API explícita de `.env`.
-
-Con Spring Boot activo:
-
-```bash
-npm run test:e2e:live
-```
-
-La suite live consulta el catálogo real tanto en desarrollo como en preview, sin cambiar datos. Para usar otro backend, cambiar `VITE_API_BASE_URL` en `.env`. Configurar `HOTELYA_E2E_BASE` con la base que se va a probar y `HOTELYA_E2E_REUSE_SERVER` con `0` (iniciar servidores propios) o `1` (reutilizar servidores activos). Ambas variables son obligatorias, sin valores de respaldo. Para reutilizar un servidor ya activo, establecer `HOTELYA_E2E_REUSE_SERVER=1`; ese servidor debe pertenecer a este checkout y tener la misma API y base esperadas. La reutilización de preview omite el build automático, por lo que antes se debe reconstruir con esa configuración.
-
-Prueba completa del build bajo una subruta:
-
-```bash
-HOTELYA_E2E_BASE=/hotelya/ npm run test:e2e:build
-```
-
-Las capturas de escritorio y móvil, trazas de fallos y evidencias quedan en `test-results/`. El informe HTML está en `playwright-report/`; ambos directorios están ignorados por Git. Las pruebas generales aíslan los recursos externos de demostración para evitar dependencia de su disponibilidad; la suite live comprueba los datos y recursos locales reales.
-
-## Fuente de los datos de Lumi’s
-
-Dirección y teléfono proceden de las referencias conservadas en el proyecto: https://yandex.com/maps/org/lumi_hotel/132122445572/; la dirección fue contrastada con https://monjitasclub.com/hospedajes/ el 18/09/2026. No se verificó contacto telefónico. Fotografías, video y nombres de tipos de habitación fueron proporcionados para el proyecto. Las descripciones se basan en las imágenes. Los importes actuales son datos de demostración, no tarifas confirmadas del hotel. WhatsApp, horarios, coordenadas y estacionamiento quedan sin confirmar.
-
-## Acceso y administración del dueño
-
-«Acceder» abre `acceder.html`, con login y registro por correo/contraseña. Tras autenticarse, `/panel/` permite crear el único hotel de su cuenta como borrador y administrar **Inicio, Información, Habitaciones y Multimedia**. El header público muestra «Mi panel» cuando existe una sesión. Cada página recupera su JWT de acceso mediante la cookie HttpOnly de renovación; los JWT no se guardan en localStorage ni sessionStorage. Las pestañas serializan la renovación mediante Web Locks cuando el navegador lo admite.
-
-Usar `127.0.0.1` tanto para la web como para `VITE_API_BASE_URL` en desarrollo. Las llamadas de autenticación llevan credenciales y CSRF; las operaciones privadas llevan Authorization Bearer. Los errores se muestran por campo y conservan los datos para reintentar. El guardado es explícito por sección y el navegador advierte antes de abandonar formularios modificados.
-
-El backend define las reglas de publicación y propiedad. La ficha muestra disponibilidad actual, tarifas del hotel o de demostración y tarjetas editables de estadía. «Vista previa privada» abre `hotel-central.html?preview=1`, obtiene la ficha del dueño y descarga sus medios protegidos como blobs. El catálogo público nunca utiliza ese acceso privado.
-
-Las subidas requieren haber guardado primero el hotel. Se pueden ordenar y quitar fotos del tipo, reemplazar o retirar logo/portada/video y eliminar archivos no utilizados desde Multimedia. Quitar una asociación no elimina el archivo de la biblioteca. Los archivos originales siguen disponibles y no son borrados por el panel.
-
-### Verificación del panel con backend real
-
-```bash
 npm run test:e2e:owner
 ```
 
-Esta suite opcional queda fuera del requisito TDD, que corresponde únicamente al backend. Conserva la comprobación visual del login (spinner, dimensiones, error y conservación de entradas) en escritorio y móvil; se retiró el recorrido completo de administración que fallaba por su comparación del texto del toast. Requiere Supabase HotelYa activo y el `.env` del backend configurado. Playwright levanta servidores propios en `127.0.0.1:5174` y `127.0.0.1:8081`, usando únicamente `hotelya_test`. No ejecutarlo simultáneamente con las pruebas de integración Java. No reutiliza ni detiene los servidores habituales de 5173/8080. Las capturas de login quedan en `test-results/`.
-
-El panel comparte tipografía, paleta y botones con el catálogo. Inicio agrupa publicación y estacionamiento en switches uniformes con guardado inmediato. La ficha pública se abre desde la cabecera. Durante cada petición ambos switches quedan bloqueados; si falla, se conserva el valor anterior y se muestra el error junto al ajuste. Información guarda la ficha independientemente de las cantidades de habitaciones e incluye URL HTTPS del lugar y horas diarias de apertura/cierre. Los botones muestran un spinner centrado conservando su tamaño durante las peticiones.
-
-Las confirmaciones del panel usan el componente Toast de Bootstrap, situado abajo, con cierre manual y automático a los 3,5 segundos. Los errores permanecen junto al campo o ajuste correspondiente. Solo se importa el JavaScript de Toast; sus estilos se adaptan a la paleta del aplicativo.
-
-Habitaciones usa una carga directa de imágenes con selección múltiple y miniaturas ordenables, sin biblioteca compartida ni campo de texto alternativo. Las características mantienen sus categorías en filas delimitadas. Las tarifas muestran siempre Por hora, Paquete de horas y Por noche; se activan individualmente y solo requieren precio en soles y duración del paquete. Las confirmaciones siguen apareciendo únicamente en el toast inferior de Bootstrap.
-
-Información incluye al final **Presentación**, con hasta tres tarjetas de «Tu próxima estadía» en un grid adaptable: comparten fila cuando hay espacio y se apilan en móvil. Se pueden añadir, ordenar y quitar, y se guardan con «Guardar presentación», independientemente de la ficha del hotel.
-
-### Páginas del panel
-
-El panel usa rutas agrupadas bajo `/panel/`, con páginas HTML independientes y enlaces normales en el menú:
-
-| Página | URL |
-| --- | --- |
-| Inicio | `/panel/` |
-| Información y Presentación | `/panel/informacion/` |
-| Habitaciones | `/panel/habitaciones/` |
-| Multimedia | `/panel/multimedia/` |
-
-Cada ruta corresponde a un `index.html` dentro de su directorio (por ejemplo, `panel/habitaciones/index.html`). Cada documento monta únicamente su sección. La estructura del menú y los estilos son compartidos. F5 vuelve a cargar la misma página, y Atrás/Adelante, abrir en otra pestaña y los enlaces directos funcionan mediante la navegación del navegador. Las rutas también funcionan bajo la base configurada en Vite, sin reglas de reescritura del servidor.
-
-Cada página recupera la sesión al cargar. Si falta el hotel se redirige a Información para crearlo. Si falta la sesión se abre Acceso y, después de ingresar, se regresa a la página solicitada; solo se aceptan destinos conocidos del panel. Al salir de una página con cambios pendientes, el navegador solicita confirmación para descartarlos.
+Instalar Chromium con `npx playwright install chromium` si no está disponible. Las suites generales simulan la API. La suite `owner` levanta Spring Boot en 8081 y Angular en 5174, utiliza exclusivamente `hotelya_test` y requiere PostgreSQL local activo. Limpia los datos de ese esquema antes y después de cada proyecto de navegador. No ejecutarla simultáneamente con las pruebas de integración Java. `npm run test:e2e:live` contrasta el catálogo público con el backend configurado sin escribir datos. Las capturas, trazas e informes quedan en directorios ignorados por Git.

@@ -1,0 +1,221 @@
+<section id="section-rooms">
+  <div class="rooms-layout">
+    <aside class="room-list">
+      <button class="primary" (click)="edit()" [disabled]="busy()">
+        + Nuevo tipo
+      </button>
+      <div>
+        @for (room of api.current()?.detail?.roomTypes; track room.id) {
+          <button
+            class="room-list-item"
+            [class.selected]="room.id === selected()"
+            [attr.aria-pressed]="room.id === selected()"
+            (click)="edit(room)"
+          >
+            <strong>{{ room.name }}</strong
+            ><span
+              >{{ room.availableUnits }} disponibles · {{ room.totalUnits }} en
+              total</span
+            >
+          </button>
+        } @empty {
+          <p class="muted">
+            Todavía no hay tipos de habitación. Crea el primero.
+          </p>
+        }
+      </div>
+    </aside>
+    <form class="editor-card" [formGroup]="form" (ngSubmit)="save()">
+      <fieldset [disabled]="busy()">
+        @if (selected() === undefined) {
+          <h2>Nuevo tipo de habitación</h2>
+        }
+        <div class="form-grid">
+          <label class="form-field"
+            >Nombre *<input
+              formControlName="name"
+              maxlength="200" /><app-field-error
+              [control]="form.controls.name" /></label
+          ><label class="form-field"
+            >Orden de presentación<input
+              formControlName="displayOrder"
+              type="number"
+              min="0"
+              step="1" /><app-field-error
+              [control]="form.controls.displayOrder" /></label
+          ><label class="form-field full-width"
+            >Descripción *<textarea
+              formControlName="description"
+              maxlength="10000"
+            ></textarea
+            ><app-field-error [control]="form.controls.description" /></label
+          ><label class="form-field"
+            >Cantidad total *<input
+              formControlName="totalUnits"
+              type="number"
+              min="0"
+              step="1" /><app-field-error
+              [control]="form.controls.totalUnits" /></label
+          ><label class="form-field"
+            >Disponibles ahora *<input
+              formControlName="availableUnits"
+              type="number"
+              min="0"
+              step="1"
+              [max]="form.controls.totalUnits.value" /><app-field-error
+              [control]="form.controls.availableUnits"
+          /></label>
+          @if (form.errors?.["availability"]) {
+            <p class="field-error full-width">
+              Disponibles entre cero y la cantidad total.
+            </p>
+          } @else if (
+            form.controls.totalUnits.value !== null &&
+            form.controls.availableUnits.value !== null
+          ) {
+            <p class="muted full-width">
+              No disponibles:
+              {{
+                form.controls.totalUnits.value! -
+                  form.controls.availableUnits.value!
+              }}
+            </p>
+          }
+        </div>
+        <div class="editor-subsection">
+          <h3>Fotografías</h3>
+          <input
+            #photosInput
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+            (change)="upload($event)"
+            aria-label="Subir fotografías"
+            class="sr-only"
+          /><button
+            type="button"
+            class="secondary"
+            (click)="photosInput.click()"
+          >
+            Subir fotografías
+          </button>
+          <app-photo-editor
+            [photos]="photos()"
+            (reordered)="movePhoto($event.index, $event.direction)"
+            (removed)="removePhoto($event)"
+          />
+        </div>
+        <div class="editor-subsection">
+          <div class="subsection-heading">
+            <h3>Características y condiciones</h3>
+            <button type="button" class="secondary" (click)="addDetail()">
+              Añadir detalle
+            </button>
+          </div>
+          <div class="detail-list" formArrayName="details">
+            @for (detail of details.controls; track detail; let i = $index) {
+              <div class="inline-editor" [formGroupName]="i">
+                <label class="form-field"
+                  >Categoría<select formControlName="kind">
+                    @for (kind of kinds; track kind.id) {
+                      <option [value]="kind.id">{{ kind.label }}</option>
+                    }
+                  </select></label
+                ><label class="form-field full-width"
+                  >Descripción *<textarea
+                    formControlName="text"
+                    maxlength="5000"
+                  ></textarea
+                  ><app-field-error [control]="detail.controls.text" /></label
+                ><button
+                  type="button"
+                  class="icon-button remove-icon"
+                  aria-label="Eliminar detalle"
+                  (click)="details.removeAt(i)"
+                >
+                  ×
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="editor-subsection">
+          <h3>Tarifas</h3>
+          <table class="rate-table">
+            <thead>
+              <tr>
+                <th>Modalidad</th>
+                <th>Activa</th>
+                <th>Precio (S/)</th>
+                <th>Duración (horas)</th>
+              </tr>
+            </thead>
+            <tbody formArrayName="rates">
+              @for (rate of rates.controls; track rate; let i = $index) {
+                <tr
+                  [formGroupName]="i"
+                  [class.rate-inactive]="!rate.controls.active.value"
+                >
+                  <th>{{ rate.controls.label.value }}</th>
+                  <td>
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      formControlName="active"
+                      role="switch"
+                      [attr.aria-label]="
+                        'Activar tarifa ' + rate.controls.label.value
+                      "
+                      (change)="syncRate(rate)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      class="form-control"
+                      formControlName="amount"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      [readOnly]="!rate.controls.active.value"
+                      [attr.aria-label]="'Precio ' + rate.controls.label.value"
+                    /><app-field-error [control]="rate.controls.amount" />
+                  </td>
+                  <td>
+                    @if (rate.controls.mode.value === "PACKAGE") {
+                      <input
+                        class="form-control"
+                        formControlName="packageHours"
+                        type="number"
+                        min="1"
+                        step="1"
+                        aria-label="Duración del paquete"
+                      /><app-field-error
+                        [control]="rate.controls.packageHours"
+                      />
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="notice error" role="alert">{{ error() }}</div>
+        <div class="form-actions">
+          @if (selected() !== undefined) {
+            <button type="button" class="danger" (click)="remove()">
+              Eliminar tipo de habitación
+            </button>
+          }
+          <button class="primary" [disabled]="busy() || !hasChanges()">
+            Guardar cambios
+            @if (busy()) {
+              <span class="spinner"></span>
+            }
+          </button>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</section>

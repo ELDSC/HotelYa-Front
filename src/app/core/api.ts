@@ -1,0 +1,146 @@
+import { Injectable, inject, signal } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { firstValueFrom } from "rxjs";
+import { APP_CONFIG } from "./config";
+import { asset } from "../../utils/assets";
+import type {
+  HotelDetail,
+  HotelSummary,
+  RoomDetail,
+  RateMode,
+  StayCard,
+} from "../../types/catalog";
+export interface OwnerHotel {
+  detail: HotelDetail;
+  published: boolean;
+}
+export type HotelWrite = Omit<
+  HotelDetail,
+  "id" | "code" | "roomTypes" | "stayCards"
+>;
+export interface RoomWrite {
+  name: string;
+  description: string;
+  displayOrder: number;
+  totalUnits: number | null;
+  availableUnits: number | null;
+  photoScope: string;
+  photos: { path: string }[];
+  details: RoomDetail[];
+  rates: { mode: RateMode; amount: number; packageHours: number | null }[];
+}
+export interface MediaInfo {
+  id: string;
+  path: string;
+  contentType: string;
+  originalName: string;
+  byteSize: number;
+}
+@Injectable({ providedIn: "root" })
+export class Api {
+  private http = inject(HttpClient);
+  readonly config = inject(APP_CONFIG);
+  readonly current = signal<OwnerHotel | null>(null);
+  private url(path: string) {
+    return this.config.API_BASE_URL + "/api" + path;
+  }
+  hotels() {
+    return firstValueFrom(
+      this.http.get<HotelSummary[]>(this.url("/hotels"), { timeout: 10000 }),
+    );
+  }
+  hotel(id: string) {
+    return firstValueFrom(
+      this.http.get<HotelDetail>(this.url("/hotels/" + id), { timeout: 10000 }),
+    );
+  }
+  adminHotels() {
+    return firstValueFrom(
+      this.http.get<HotelSummary[]>(this.url("/admin/hotels"), {
+        timeout: 30000,
+      }),
+    );
+  }
+  async ownerHotel() {
+    try {
+      const data = await firstValueFrom(
+        this.http.get<OwnerHotel>(this.url("/owner/hotel"), { timeout: 30000 }),
+      );
+      this.current.set(data);
+      return data;
+    } catch (e) {
+      if ((e as { status: number }).status === 404) {
+        this.current.set(null);
+        return null;
+      }
+      throw e;
+    }
+  }
+  async write(path: string, method: string, body?: unknown) {
+    const data = await firstValueFrom(
+      this.http.request<OwnerHotel>(method, this.url("/owner/hotel" + path), {
+        body,
+        timeout: 30000,
+      }),
+    );
+    this.current.set(data);
+    return data;
+  }
+  saveHotel(body: HotelWrite, create = false) {
+    return this.write("", create ? "POST" : "PUT", body);
+  }
+  saveRoom(body: RoomWrite, id?: number) {
+    return this.write(
+      "/room-types" + (id === undefined ? "" : "/" + id),
+      id === undefined ? "POST" : "PUT",
+      body,
+    );
+  }
+  deleteRoom(id: number) {
+    return this.write("/room-types/" + id, "DELETE");
+  }
+  publish(published: boolean) {
+    return this.write("/publication", "PUT", { published });
+  }
+  cards(cards: StayCard[]) {
+    return this.write("/stay-cards", "PUT", cards);
+  }
+  upload(file: File, scope?: string) {
+    const body = new FormData();
+    body.set("file", file);
+    if (scope) body.set("roomScope", scope);
+    return firstValueFrom(
+      this.http.post<MediaInfo>(this.url("/owner/media"), body, {
+        timeout: 120000,
+      }),
+    );
+  }
+  deleteMedia(path: string) {
+    return firstValueFrom(
+      this.http.delete<void>(
+        this.url(
+          "/owner/media/" + encodeURIComponent(path.replace("/api/media/", "")),
+        ),
+        { timeout: 30000 },
+      ),
+    );
+  }
+  blob(path: string) {
+    return firstValueFrom(
+      this.http.get(
+        this.url(
+          "/owner/media/" + encodeURIComponent(path.replace("/api/media/", "")),
+        ),
+        { responseType: "blob", timeout: 30000 },
+      ),
+    );
+  }
+  asset(path: unknown): string | null {
+    return asset(
+      path,
+      new URL(document.baseURI).pathname,
+      document.baseURI,
+      this.config.API_BASE_URL,
+    );
+  }
+}

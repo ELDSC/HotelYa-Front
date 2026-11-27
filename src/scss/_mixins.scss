@@ -1,0 +1,8 @@
+@mixin screen {
+  display: block;
+  min-height: 100vh;
+}
+@mixin focus-ring {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

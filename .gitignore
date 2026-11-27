@@ -8,3 +8,6 @@ __pycache__/
 .DS_Store
 playwright-report/
 test-results/
+
+.angular/
+out-tsc/

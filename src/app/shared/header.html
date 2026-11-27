@@ -1,0 +1,108 @@
+<header class="header" id="mainHeader" [class.scrolled]="scrolled()">
+  <div class="container header-container">
+    <a
+      [routerLink]="hotel() ? [] : ['/']"
+      class="logo-area"
+      [attr.aria-label]="hotel()?.name ?? 'HoteleriasYa'"
+    >
+      @if (hotel(); as h) {
+        @if (h.logoPath) {
+          <app-media-preview
+            class="lumis-header-logo"
+            [path]="h.logoPath"
+            [private]="preview()"
+            [alt]="h.name"
+          />
+        }
+        <span>{{ h.name }}</span>
+      } @else {
+        <img
+          src="assets/images/logoHoteleriasYa.png"
+          alt="Logo HoteleriasYa"
+          class="header-logo-img"
+        />
+      }
+    </a>
+
+    <nav class="nav-links">
+      <a [routerLink]="[]" fragment="informacion" class="nav-link"
+        >Información</a
+      >
+      <a [routerLink]="[]" fragment="productos" class="nav-link">{{
+        hotel() ? "Habitaciones" : "Productos"
+      }}</a>
+      <a
+        [routerLink]="[]"
+        fragment="clientes"
+        class="nav-link"
+        [hidden]="hotel() && !hotel()!.stayCards.length"
+        >{{ hotel() ? "Tu estadía" : "Clientes" }}</a
+      >
+      <a
+        [routerLink]="[]"
+        fragment="video"
+        class="nav-link"
+        [hidden]="hotel() && !hotel()!.videoPath"
+        >Video</a
+      >
+      @if (hotel()) {
+        <a [routerLink]="[]" fragment="ubicacion" class="nav-link">Ubicación</a>
+      } @else {
+        <a routerLink="/participantes" class="nav-link">Participantes</a>
+      }
+    </nav>
+
+    @if (!hotel()) {
+      <nav class="about-mobile-nav" aria-label="Conoce HotelYa">
+        <a routerLink="/participantes" class="nav-link">Participantes</a>
+      </nav>
+    }
+
+    <div class="auth-area">
+      <div
+        class="user-profile"
+        id="userProfileBtn"
+        [class.active]="!!auth.owner.user()"
+      >
+        <div class="user-avatar">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="user-name" id="userNameDisplay">{{
+          auth.owner.user()?.email ?? "Invitado"
+        }}</span>
+      </div>
+      <button
+        class="btn btn-primary btn-login"
+        id="loginBtnTrigger"
+        [routerLink]="auth.owner.user() ? '/panel' : '/acceder'"
+        type="button"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
+        </svg>
+        <span id="authButtonLabel">{{
+          auth.owner.user() ? "Mi panel" : "Acceder"
+        }}</span>
+      </button>
+    </div>
+  </div>
+</header>
