@@ -77,6 +77,32 @@
     color: var(--hotel-navy);
   }
 
+  & .hotel-mobile-nav .nav-link {
+    color: var(--hotel-navy);
+  }
+
+  & .hotel-public-nav a[aria-current="page"],
+  & .hotel-mobile-nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  @media (max-width: 1023px) {
+    & .hotel-public-nav {
+      display: none;
+    }
+
+    & .hotel-mobile-nav {
+      display: block;
+      margin-inline: auto 0.75rem;
+    }
+
+    & .hotel-mobile-nav .nav-link {
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+  }
+
   & .btn-primary {
     background-color: var(--hotel-navy);
     color: var(--hotel-white);

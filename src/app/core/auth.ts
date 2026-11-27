@@ -129,11 +129,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const path = req.url.startsWith(config.API_BASE_URL + "/api/")
     ? req.url.slice((config.API_BASE_URL + "/api/").length)
     : "";
-  const session = path.startsWith("owner/")
-    ? auth.owner
-    : path.startsWith("admin/") && !path.startsWith("admin/auth/")
-      ? auth.admin
-      : null;
+  const reviewSession =
+    (req.method === "GET" && /^hotels\/\d+\/reviews\/me$/.test(path)) ||
+    (req.method === "POST" && /^hotels\/\d+\/reviews$/.test(path));
+  const session =
+    path.startsWith("owner/") || reviewSession
+      ? auth.owner
+      : path.startsWith("admin/") && !path.startsWith("admin/auth/")
+        ? auth.admin
+        : null;
   if (!session) return next(req);
   const perform = async () => {
     if (!(await session.restore()))

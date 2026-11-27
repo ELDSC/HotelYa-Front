@@ -1,10 +1,17 @@
-import { Component, inject, input, signal, HostListener } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  HostListener,
+} from "@angular/core";
+import { RouterLink, RouterLinkActive } from "@angular/router";
 import { MediaPreview } from "./media-preview";
 import { Auth } from "../core/auth";
 @Component({
   selector: "app-header",
-  imports: [RouterLink, MediaPreview],
+  imports: [RouterLink, RouterLinkActive, MediaPreview],
   templateUrl: "./header.html",
 })
 export class Header {
@@ -12,6 +19,10 @@ export class Header {
     null,
   );
   readonly preview = input(false);
+  readonly hotelHome = computed(() => {
+    const hotel = this.hotel();
+    return hotel && !this.preview() ? ["/hoteles", hotel.id] : [];
+  });
   readonly auth = inject(Auth);
   readonly scrolled = signal(false);
   @HostListener("window:scroll") onScroll() {

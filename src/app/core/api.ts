@@ -6,6 +6,8 @@ import { asset } from "../../utils/assets";
 import type {
   HotelDetail,
   HotelSummary,
+  HotelReview,
+  HotelReviewPage,
   RoomDetail,
   RateMode,
   StayCard,
@@ -52,6 +54,34 @@ export class Api {
   hotel(id: string) {
     return firstValueFrom(
       this.http.get<HotelDetail>(this.url("/hotels/" + id), { timeout: 10000 }),
+    );
+  }
+  hotelReviews(id: number, before: string | null = null) {
+    return firstValueFrom(
+      this.http.get<HotelReviewPage>(this.url(`/hotels/${id}/reviews`), {
+        params: before ? { before } : {},
+        timeout: 10000,
+      }),
+    );
+  }
+  hotelReviewStatus(id: number) {
+    return firstValueFrom(
+      this.http.get<{ reviewed: boolean }>(
+        this.url(`/hotels/${id}/reviews/me`),
+        { timeout: 10000 },
+      ),
+    );
+  }
+  publishHotelReview(id: number, roomTypeId: number, comment: string) {
+    return firstValueFrom(
+      this.http.post<HotelReview>(
+        this.url(`/hotels/${id}/reviews`),
+        {
+          roomTypeId,
+          comment,
+        },
+        { timeout: 10000 },
+      ),
     );
   }
   adminHotels() {

@@ -22,3 +22,15 @@ export interface RateInfo {
 }
 
 export interface StayCard { title: string; description: string }
+
+export interface HotelReview {
+    id: number;
+    roomTypeName: string;
+    comment: string;
+    createdAt: string;
+}
+
+export interface HotelReviewPage {
+    items: HotelReview[];
+    nextCursor: string | null;
+}

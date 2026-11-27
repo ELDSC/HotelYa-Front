@@ -93,7 +93,9 @@ import { FieldError } from "./field";
                   ? "Ingresar"
                   : register()
                     ? "Crear cuenta"
-                    : "Ingresar al panel"
+                    : destination.startsWith("/hoteles/")
+                      ? "Ingresar"
+                      : "Ingresar al panel"
               }}</span>
               @if (busy()) {
                 <span class="spinner" aria-label="Ingresando"></span>

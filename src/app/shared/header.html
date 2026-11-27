@@ -1,7 +1,7 @@
 <header class="header" id="mainHeader" [class.scrolled]="scrolled()">
   <div class="container header-container">
     <a
-      [routerLink]="hotel() ? [] : ['/']"
+      [routerLink]="hotel() ? hotelHome() : ['/']"
       class="logo-area"
       [attr.aria-label]="hotel()?.name ?? 'HoteleriasYa'"
     >
@@ -24,35 +24,59 @@
       }
     </a>
 
-    <nav class="nav-links">
-      <a [routerLink]="[]" fragment="informacion" class="nav-link"
+    <nav class="nav-links" [class.hotel-public-nav]="hotel() && !preview()">
+      <a [routerLink]="hotelHome()" fragment="informacion" class="nav-link"
         >Información</a
       >
-      <a [routerLink]="[]" fragment="productos" class="nav-link">{{
+      <a [routerLink]="hotelHome()" fragment="productos" class="nav-link">{{
         hotel() ? "Habitaciones" : "Productos"
       }}</a>
       <a
-        [routerLink]="[]"
+        [routerLink]="hotelHome()"
         fragment="clientes"
         class="nav-link"
         [hidden]="hotel() && !hotel()!.stayCards.length"
         >{{ hotel() ? "Tu estadía" : "Clientes" }}</a
       >
       <a
-        [routerLink]="[]"
+        [routerLink]="hotelHome()"
         fragment="video"
         class="nav-link"
         [hidden]="hotel() && !hotel()!.videoPath"
         >Video</a
       >
       @if (hotel()) {
-        <a [routerLink]="[]" fragment="ubicacion" class="nav-link">Ubicación</a>
+        <a [routerLink]="hotelHome()" fragment="ubicacion" class="nav-link"
+          >Ubicación</a
+        >
+        @if (!preview()) {
+          <a
+            [routerLink]="['/hoteles', hotel()!.id, 'contactos']"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            class="nav-link"
+            >Contactos</a
+          >
+        }
       } @else {
         <a routerLink="/participantes" class="nav-link">Participantes</a>
       }
     </nav>
 
-    @if (!hotel()) {
+    @if (hotel() && !preview()) {
+      <nav
+        class="about-mobile-nav hotel-mobile-nav"
+        aria-label="Navegación del hotel"
+      >
+        <a
+          [routerLink]="['/hoteles', hotel()!.id, 'contactos']"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          class="nav-link"
+          >Contactos</a
+        >
+      </nav>
+    } @else if (!hotel()) {
       <nav class="about-mobile-nav" aria-label="Conoce HotelYa">
         <a routerLink="/participantes" class="nav-link">Participantes</a>
       </nav>
