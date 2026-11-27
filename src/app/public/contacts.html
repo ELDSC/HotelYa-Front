@@ -1,0 +1,171 @@
+<div class="hotel-theme">
+  <app-header [hotel]="hotel()" />
+  <main>
+    @if (hotel(); as h) {
+      <div class="container hotel-back-row">
+        <a [routerLink]="['/hoteles', h.id]" class="hotel-back-button"
+          >Volver al hotel</a
+        >
+      </div>
+      <app-hotel-hero [hotel]="h" />
+      <section class="section-info">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Contactos</h2>
+          </div>
+          <div class="contact-columns">
+            <section class="contact-card" aria-labelledby="review-title">
+              <h3 id="review-title">Deja una reseña</h3>
+              @if (statusLoading()) {
+                <p role="status">Comprobando tu sesión…</p>
+              } @else if (statusError()) {
+                <p role="alert">{{ statusError() }}</p>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  (click)="loadStatus()"
+                >
+                  Reintentar
+                </button>
+              } @else if (!session.user()) {
+                <p>Inicia sesión para dejar una reseña.</p>
+                <a
+                  routerLink="/acceder"
+                  [queryParams]="{ next: '/hoteles/' + h.id + '/contactos' }"
+                  class="btn btn-primary"
+                  >Iniciar sesión</a
+                >
+              } @else if (reviewed()) {
+                <p role="status">Ya publicaste una reseña para este hotel.</p>
+              } @else if (!h.roomTypes.length) {
+                <p>
+                  Este hotel todavía no tiene tipos de habitación disponibles
+                  para reseñar.
+                </p>
+              } @else {
+                <form
+                  [formGroup]="form"
+                  (ngSubmit)="publish()"
+                  [attr.aria-busy]="publishing()"
+                >
+                  <fieldset [disabled]="publishing()">
+                    <div>
+                      <label for="review-room">Tipo de habitación</label>
+                      <select
+                        id="review-room"
+                        class="form-select"
+                        formControlName="roomTypeId"
+                        required
+                      >
+                        <option [ngValue]="null" disabled>
+                          Selecciona un tipo de habitación
+                        </option>
+                        @for (room of h.roomTypes; track room.id) {
+                          <option [ngValue]="room.id">{{ room.name }}</option>
+                        }
+                      </select>
+                      <app-field-error [control]="form.controls.roomTypeId" />
+                    </div>
+                    <div>
+                      <label for="review-comment">Tu opinión</label>
+                      <textarea
+                        id="review-comment"
+                        class="form-control"
+                        formControlName="comment"
+                        rows="5"
+                        maxlength="1000"
+                        aria-describedby="review-limit"
+                        required
+                      ></textarea>
+                      <small id="review-limit">Hasta 1.000 caracteres.</small>
+                      <app-field-error [control]="form.controls.comment" />
+                    </div>
+                    @if (publishError()) {
+                      <p role="alert">{{ publishError() }}</p>
+                    }
+                    <button type="submit" class="btn btn-primary">
+                      {{ publishing() ? "Publicando…" : "Publicar" }}
+                    </button>
+                  </fieldset>
+                </form>
+              }
+            </section>
+            <section class="contact-card" aria-labelledby="contact-map-title">
+              <h3 id="contact-map-title">Ubicación</h3>
+              <p>{{ h.address }}</p>
+              <iframe
+                [src]="mapEmbed()"
+                [title]="'Ubicación de ' + h.name + ' en Google Maps'"
+                loading="lazy"
+                allowfullscreen
+              ></iframe>
+              <a
+                class="map-link"
+                [href]="mapLink()"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir ubicación en el mapa
+              </a>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section
+        class="section-info review-section"
+        aria-labelledby="review-list-title"
+      >
+        <div class="container">
+          <div class="section-header">
+            <h2 id="review-list-title" class="section-title">Opiniones</h2>
+          </div>
+          <ul class="review-list">
+            @for (review of reviews(); track review.id) {
+              <li class="contact-card">
+                <h3>{{ review.roomTypeName }}</h3>
+                <time [attr.datetime]="review.createdAt">{{
+                  review.createdAt | date: "dd/MM/yyyy" : "-0500"
+                }}</time>
+                <p>{{ review.comment }}</p>
+              </li>
+            }
+          </ul>
+          @if (listError()) {
+            <p role="alert">{{ listError() }}</p>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="loadReviews(cursor())"
+            >
+              Reintentar
+            </button>
+          } @else if (listLoading()) {
+            <p role="status">Cargando reseñas…</p>
+          } @else if (!reviews().length) {
+            <p>Todavía no hay reseñas para este hotel.</p>
+          }
+          @if (cursor() && !listError()) {
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="loadReviews(cursor())"
+              [disabled]="listLoading()"
+            >
+              Cargar más
+            </button>
+          }
+        </div>
+      </section>
+      <app-hotel-footer [hotel]="h" />
+    } @else if (hotelError()) {
+      <div class="container catalog-state" role="alert">
+        {{ hotelError() }}
+        <button type="button" class="btn btn-primary" (click)="load()">
+          Reintentar
+        </button>
+      </div>
+    } @else {
+      <p class="container catalog-state" role="status">Cargando hotel…</p>
+    }
+  </main>
+</div>

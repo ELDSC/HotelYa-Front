@@ -1,0 +1,21 @@
+<section class="hero-section catalog-hero">
+  @if (hotel().facadePath; as facadePath) {
+    <div class="carousel">
+      <div class="carousel-slide active">
+        <app-media-preview
+          [path]="facadePath"
+          [priority]="true"
+          [private]="preview()"
+          [alt]="'Fachada de ' + hotel().name"
+        />
+      </div>
+    </div>
+  }
+  <div class="container hero-content">
+    <div class="hero-text-area">
+      <span class="hero-tagline">{{ hotel().location }}</span>
+      <h1 class="hero-title">{{ hotel().name }}</h1>
+      <p class="hero-subtitle-text">{{ hotel().address }}</p>
+    </div>
+  </div>
+</section>

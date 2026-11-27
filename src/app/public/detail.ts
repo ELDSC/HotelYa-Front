@@ -5,12 +5,13 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { Api } from "../core/api";
 import { Header } from "../shared/header";
 import { MediaPreview } from "../shared/media-preview";
+import { HotelHero, HotelFooter } from "./hotel-chrome";
 import { Inquiry } from "./inquiry";
 import { HotelDetail, RoomTypeDetail } from "../../types/catalog";
 import { formatMoney, rateModeLabel } from "../../utils/rates";
 import { formatPhone } from "../../utils/phone";
 @Component({
-  imports: [RouterLink, Header, MediaPreview],
+  imports: [RouterLink, Header, MediaPreview, HotelHero, HotelFooter],
   templateUrl: "./detail.html",
 })
 export class Detail implements OnDestroy {

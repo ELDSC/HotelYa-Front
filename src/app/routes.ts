@@ -13,6 +13,11 @@ export const routes: Routes = [
     title: "Sobre nosotros | Participantes de HotelYa",
   },
   {
+    path: "hoteles/:id/contactos",
+    title: "Contactos | HoteleriasYa",
+    loadComponent: () => import("./public/contacts").then((m) => m.Contacts),
+  },
+  {
     path: "hoteles/:id",
     title: "Hotel | HoteleriasYa",
     loadComponent: () => import("./public/detail").then((m) => m.Detail),
