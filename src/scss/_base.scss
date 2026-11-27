@@ -250,19 +250,10 @@ select {
   border-color: #ffffff;
 }
 
-.user-profile {
-  display: none;
-  color: var(--color-text-light);
-}
-.user-profile.active {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.user-name {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+.profile-email {
+  max-width: 15rem;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 /* Slider Principal */

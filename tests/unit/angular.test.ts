@@ -75,13 +75,11 @@ it("retries a private request once after a 401 and does not recurse on auth endp
     .expectOne(origin + "/api/auth/csrf")
     .flush({ token: "csrf", headerName: "X-XSRF-TOKEN" });
   await vi.waitFor(() =>
-    http
-      .expectOne(origin + "/api/auth/login")
-      .flush({
-        accessToken: "old",
-        expiresIn: 600,
-        user: { id: 1, email: "a@b.com" },
-      }),
+    http.expectOne(origin + "/api/auth/login").flush({
+      accessToken: "old",
+      expiresIn: 600,
+      user: { id: 1, email: "a@b.com" },
+    }),
   );
   await login;
   const promise = TestBed.inject(Api).ownerHotel();
@@ -96,13 +94,11 @@ it("retries a private request once after a 401 and does not recurse on auth endp
       .flush({ token: "new-csrf", headerName: "X-XSRF-TOKEN" }),
   );
   await vi.waitFor(() =>
-    http
-      .expectOne(origin + "/api/auth/refresh")
-      .flush({
-        accessToken: "new",
-        expiresIn: 600,
-        user: { id: 1, email: "a@b.com" },
-      }),
+    http.expectOne(origin + "/api/auth/refresh").flush({
+      accessToken: "new",
+      expiresIn: 600,
+      user: { id: 1, email: "a@b.com" },
+    }),
   );
   await vi.waitFor(() => {
     const req = http.expectOne(origin + "/api/owner/hotel");
@@ -136,8 +132,12 @@ it("validates amounts, UTF-8 limits, integers and paired hours", () => {
     ),
   ).toEqual({ hours: true });
 });
-it("allows only current internal panel destinations", () => {
+it("allows only supported internal destinations", () => {
   expect(safeDestination("/panel/habitaciones")).toBe("/panel/habitaciones");
+  expect(safeDestination("/hoteles/42?reserva=7")).toBe(
+    "/hoteles/42?reserva=7",
+  );
+  expect(safeDestination("/mis-reservas")).toBe("/mis-reservas");
   for (const value of [
     "https://evil.com",
     "//evil.com",
@@ -145,5 +145,5 @@ it("allows only current internal panel destinations", () => {
     "panel/informacion/",
     "/panel/../admin",
   ])
-    expect(safeDestination(value)).toBe("/panel");
+    expect(safeDestination(value)).toBe("/");
 });

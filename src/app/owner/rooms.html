@@ -65,6 +65,10 @@
               [max]="form.controls.totalUnits.value" /><app-field-error
               [control]="form.controls.availableUnits"
           /></label>
+          <p class="muted full-width">
+            Las reservas web usan la cantidad total de este tipo de habitación
+            como cupo por horario.
+          </p>
           @if (form.errors?.["availability"]) {
             <p class="field-error full-width">
               Disponibles entre cero y la cantidad total.

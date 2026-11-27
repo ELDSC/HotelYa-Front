@@ -1,4 +1,4 @@
-<header class="header" id="mainHeader" [class.scrolled]="scrolled()">
+<header class="header" id="mainHeader" [class.scrolled]="solid() || scrolled()">
   <div class="container header-container">
     <a
       [routerLink]="hotel() ? hotelHome() : ['/']"
@@ -83,50 +83,54 @@
     }
 
     <div class="auth-area">
-      <div
-        class="user-profile"
-        id="userProfileBtn"
-        [class.active]="!!auth.owner.user()"
-      >
-        <div class="user-avatar">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
+      @if (auth.owner.user(); as account) {
+        <div ngbDropdown placement="bottom-end">
+          <button
+            type="button"
+            class="btn btn-primary btn-login"
+            ngbDropdownToggle
+            id="userProfileBtn"
           >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+            Mi perfil
+          </button>
+          <div ngbDropdownMenu aria-labelledby="userProfileBtn">
+            <div class="dropdown-header profile-email">{{ account.email }}</div>
+            <a ngbDropdownItem routerLink="/mis-reservas">Mis reservas</a>
+            @if (hasHotel() === true) {
+              <a ngbDropdownItem routerLink="/panel">Mi panel</a>
+            } @else if (hasHotel() === false) {
+              <a ngbDropdownItem routerLink="/panel/informacion"
+                >Crear un hotel</a
+              >
+            } @else if (profileError()) {
+              <button ngbDropdownItem type="button" (click)="loadProfile()">
+                Reintentar
+              </button>
+            }
+            <button
+              ngbDropdownItem
+              type="button"
+              [disabled]="signingOut()"
+              (click)="logout()"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+          @if (profileError()) {
+            <span class="visually-hidden" role="alert">{{
+              profileError()
+            }}</span>
+          }
         </div>
-        <span class="user-name" id="userNameDisplay">{{
-          auth.owner.user()?.email ?? "Invitado"
-        }}</span>
-      </div>
-      <button
-        class="btn btn-primary btn-login"
-        id="loginBtnTrigger"
-        [routerLink]="auth.owner.user() ? '/panel' : '/acceder'"
-        type="button"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
+      } @else {
+        <a
+          class="btn btn-primary btn-login"
+          id="loginBtnTrigger"
+          routerLink="/acceder"
         >
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-          <polyline points="10 17 15 12 10 7"></polyline>
-          <line x1="15" y1="12" x2="3" y2="12"></line>
-        </svg>
-        <span id="authButtonLabel">{{
-          auth.owner.user() ? "Mi panel" : "Acceder"
-        }}</span>
-      </button>
+          Acceder
+        </a>
+      }
     </div>
   </div>
 </header>

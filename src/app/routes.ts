@@ -28,6 +28,20 @@ export const routes: Routes = [
     title: "Acceder | HoteleriasYa",
   },
   {
+    path: "mis-reservas",
+    title: "Mis reservas | HoteleriasYa",
+    canActivate: [ownerGuard],
+    loadComponent: () =>
+      import("./reservations/list").then((m) => m.ReservationList),
+  },
+  {
+    path: "mis-reservas/:code",
+    title: "Comprobante de reserva | HoteleriasYa",
+    canActivate: [ownerGuard],
+    loadComponent: () =>
+      import("./reservations/receipt").then((m) => m.Receipt),
+  },
+  {
     path: "panel/vista-previa",
     title: "Vista previa privada | HoteleriasYa",
     canActivate: [ownerGuard],
@@ -57,6 +71,13 @@ export const routes: Routes = [
         title: "Habitaciones | HoteleriasYa",
         canDeactivate: [changesGuard],
         loadComponent: () => import("./owner/rooms").then((m) => m.Rooms),
+      },
+      {
+        path: "reservas",
+        title: "Reservas del hotel | HoteleriasYa",
+        data: { owner: true },
+        loadComponent: () =>
+          import("./reservations/list").then((m) => m.ReservationList),
       },
       {
         path: "multimedia",

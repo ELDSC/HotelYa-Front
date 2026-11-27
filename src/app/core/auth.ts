@@ -133,7 +133,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     (req.method === "GET" && /^hotels\/\d+\/reviews\/me$/.test(path)) ||
     (req.method === "POST" && /^hotels\/\d+\/reviews$/.test(path));
   const session =
-    path.startsWith("owner/") || reviewSession
+    path.startsWith("owner/") ||
+    path === "reservations" ||
+    path.startsWith("reservations/") ||
+    reviewSession
       ? auth.owner
       : path.startsWith("admin/") && !path.startsWith("admin/auth/")
         ? auth.admin

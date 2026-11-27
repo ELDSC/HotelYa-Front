@@ -60,7 +60,8 @@
     grid-template-columns: 230px minmax(0, 1fr);
     min-height: 100vh;
   }
-  .owner-sidebar {
+  .owner-sidebar,
+  &.owner-mobile-menu {
     background: var(--color-primary);
     color: white;
     padding: 30px 22px;
@@ -71,12 +72,14 @@
     top: 0;
     height: 100vh;
   }
-  .owner-sidebar nav {
+  .owner-sidebar nav,
+  &.owner-mobile-menu nav {
     display: flex;
     flex-direction: column;
     gap: 6px;
   }
-  .owner-sidebar nav a {
+  .owner-sidebar nav a,
+  &.owner-mobile-menu nav a {
     display: block;
     text-align: left;
     background: none;
@@ -86,10 +89,12 @@
     font-size: 0.85rem;
     text-decoration: none;
   }
-  .owner-sidebar nav a:hover {
+  .owner-sidebar nav a:hover,
+  &.owner-mobile-menu nav a:hover {
     background: #ffffff0a;
   }
-  .owner-sidebar nav a.selected {
+  .owner-sidebar nav a.selected,
+  &.owner-mobile-menu nav a.selected {
     color: white;
     background: #ffffff12;
     box-shadow: inset 2px 0 white;
@@ -1100,7 +1105,8 @@
   .owner-sidebar-footer {
     flex-shrink: 0;
   }
-  .owner-sidebar {
+  .owner-sidebar,
+  &.owner-mobile-menu {
     overflow-y: auto;
   }
   .owner-mobile-header,
@@ -1145,7 +1151,7 @@
       background: transparent;
       font-size: 1.6rem;
     }
-    .owner-sidebar.offcanvas {
+    &.owner-mobile-menu.offcanvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -1157,18 +1163,18 @@
       transform: translateX(-100%);
       transition: transform 0.25s ease-in-out;
     }
-    .owner-sidebar.offcanvas.showing,
-    .owner-sidebar.offcanvas.show:not(.hiding) {
+    &.owner-mobile-menu.offcanvas.showing,
+    &.owner-mobile-menu.offcanvas.show:not(.hiding) {
       transform: none;
     }
-    .owner-sidebar.offcanvas.showing,
-    .owner-sidebar.offcanvas.hiding,
-    .owner-sidebar.offcanvas.show {
+    &.owner-mobile-menu.offcanvas.showing,
+    &.owner-mobile-menu.offcanvas.hiding,
+    &.owner-mobile-menu.offcanvas.show {
       visibility: visible;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .owner-sidebar.offcanvas,
+    &.owner-mobile-menu.offcanvas,
     .offcanvas-backdrop.fade {
       transition: none;
     }

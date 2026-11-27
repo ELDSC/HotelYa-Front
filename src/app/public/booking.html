@@ -1,0 +1,150 @@
+@if (hotel && room) {
+  <div class="inquiry-header">
+    <div>
+      <p class="inquiry-eyebrow">{{ hotel.name }}</p>
+      <h2 id="booking-title">Reserva tu estadía</h2>
+    </div>
+    <button
+      type="button"
+      class="inquiry-close"
+      aria-label="Cerrar reserva"
+      [disabled]="submitting()"
+      (click)="modal.dismiss()"
+    >
+      ×
+    </button>
+  </div>
+  <form class="booking-form" [formGroup]="form" (ngSubmit)="confirm()">
+    <div class="inquiry-body modal-body">
+      <fieldset [disabled]="submitting()">
+        <h3 class="inquiry-room-name">{{ room.name }}</h3>
+        <div class="inquiry-fields">
+          <label
+            >Modalidad
+            <select formControlName="mode">
+              @for (rate of rates; track rate.mode) {
+                <option [value]="rate.mode">{{ rateModeLabel(rate) }}</option>
+              }
+            </select>
+          </label>
+          <label
+            >{{
+              form.controls.mode.value === "NIGHT"
+                ? "Cantidad de noches"
+                : form.controls.mode.value === "PACKAGE"
+                  ? "Cantidad de paquetes"
+                  : "Cantidad de horas"
+            }}
+            <input type="number" formControlName="quantity" min="1" step="1" />
+          </label>
+          <div>
+            <label for="booking-date">Fecha de llegada</label>
+            <button
+              id="booking-date"
+              type="button"
+              class="btn btn-outline-secondary"
+              (click)="calendar.toggle()"
+              [attr.aria-expanded]="calendar.isOpen()"
+            >
+              {{ form.controls.date.value.day }}/{{
+                form.controls.date.value.month
+              }}/{{ form.controls.date.value.year }}
+            </button>
+            <input
+              ngbDatepicker
+              #calendar="ngbDatepicker"
+              formControlName="date"
+              [minDate]="minDate()"
+              positionTarget="#booking-date"
+              restoreFocus="#booking-date"
+              placement="bottom-start"
+              outsideDays="hidden"
+              class="calendar-anchor"
+              readonly
+              tabindex="-1"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+        @if (form.controls.quantity.invalid) {
+          <p class="field-error" role="alert">
+            Introduce una cantidad entera mayor que cero.
+          </p>
+        }
+        @if (loading()) {
+          <p role="status">Consultando horarios…</p>
+        }
+        @if (availabilityError()) {
+          <p class="field-error" role="alert">{{ availabilityError() }}</p>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="load()"
+          >
+            Reintentar
+          </button>
+        }
+        @if (status(); as available) {
+          <section class="booking-hours" aria-labelledby="booking-hours-title">
+            <h4 id="booking-hours-title">
+              Horarios disponibles · hora de Perú
+            </h4>
+            @if (!available.slots.length) {
+              <p>La duración elegida no cabe en el horario del hotel.</p>
+            } @else if (!availableSlots().length) {
+              <p>No hay horarios disponibles en esta fecha. Elige otro día.</p>
+            } @else {
+              <div class="booking-slots">
+                @for (option of availableSlots(); track option.startsAt) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    [attr.aria-pressed]="slot()?.startsAt === option.startsAt"
+                    (click)="choose(option)"
+                  >
+                    {{ slotLabel(option.startsAt, option.endsAt) }}
+                  </button>
+                }
+              </div>
+            }
+          </section>
+        }
+        @if (hotel.checkInOutConditions) {
+          <div class="inquiry-guidance">
+            <h4>Entrada y salida</h4>
+            <p>{{ hotel.checkInOutConditions }}</p>
+          </div>
+        }
+        @for (detail of room.details; track $index) {
+          @if (
+            detail.kind === "RECOMMENDATION" || detail.kind === "PROHIBITION"
+          ) {
+            <p class="inquiry-contact-note">{{ detail.text }}</p>
+          }
+        }
+      </fieldset>
+    </div>
+    <div class="booking-actions">
+      @if (status(); as available) {
+        <div class="inquiry-summary" aria-live="polite">
+          @if (selectedRate(); as rate) {
+            <p>{{ stayDuration(rate, form.controls.quantity.value) }}</p>
+          }
+          <strong class="inquiry-total"
+            >Total de la reserva ·
+            {{ formatMoney(available.total, available.currency) }}</strong
+          >
+        </div>
+      }
+      @if (confirmationError()) {
+        <p class="field-error" role="alert">{{ confirmationError() }}</p>
+      }
+      <button
+        class="btn btn-primary w-100"
+        [disabled]="!slot() || form.invalid || submitting()"
+      >
+        {{ submitting() ? "Confirmando…" : "Confirmar reserva" }}
+      </button>
+    </div>
+  </form>
+}

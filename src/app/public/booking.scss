@@ -1,0 +1,72 @@
+:host,
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.booking-form {
+  flex: 1;
+}
+
+.inquiry-header,
+.booking-actions {
+  flex: none;
+}
+
+.modal-body {
+  min-width: 0;
+  min-height: 0;
+}
+
+.booking-actions {
+  padding: 0.75rem 1.5rem 1rem;
+  border-top: 1px solid var(--hotel-cream-dark);
+  background: var(--hotel-white, #fff);
+}
+
+.booking-actions .inquiry-summary {
+  margin: 0 0 0.65rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.calendar-anchor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.booking-hours {
+  margin: 1rem 0;
+}
+
+.booking-hours h4 {
+  font-size: 1rem;
+}
+
+.booking-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.booking-slots button[aria-pressed="true"] {
+  background: var(--color-primary, #223249);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .booking-form .inquiry-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .booking-actions {
+    padding-inline: 1.25rem;
+  }
+}

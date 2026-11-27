@@ -6,6 +6,7 @@ export interface HotelDetail extends HotelSummary {
     latitude: number | null; longitude: number | null;
     openingHours: string | null; checkInOutConditions: string | null;
     mapUrl?: string | null; openingTime?: string | null; closingTime?: string | null;
+    nightCheckIn?: string | null; nightCheckOut?: string | null; acceptsReservations?: boolean;
     hasParking: boolean | null; roomTypes: RoomTypeDetail[]; stayCards: StayCard[];
 }
 export interface RoomTypeDetail {

@@ -41,10 +41,11 @@ export const changesGuard: CanDeactivateFn<PendingChanges> = (c) =>
       confirm("Hay cambios sin guardar. ¿Deseas descartarlos?");
 export function safeDestination(value: string | null) {
   return value &&
-    (/^\/panel(?:\/(?:informacion|habitaciones|multimedia|vista-previa))?$/.test(
+    (/^\/panel(?:\/(?:informacion|habitaciones|multimedia|vista-previa|reservas))?$/.test(
       value,
     ) ||
-      /^\/hoteles\/[1-9]\d*\/contactos$/.test(value))
+      /^\/hoteles\/[1-9]\d*(?:\/contactos|\?reserva=[1-9]\d*)$/.test(value) ||
+      /^\/mis-reservas(?:\/[a-f0-9-]{36})?$/.test(value))
     ? value
-    : "/panel";
+    : "/";
 }

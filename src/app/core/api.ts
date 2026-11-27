@@ -4,6 +4,12 @@ import { firstValueFrom } from "rxjs";
 import { APP_CONFIG } from "./config";
 import { asset } from "../../utils/assets";
 import type {
+  Availability,
+  Confirmation,
+  Reservation,
+  ReservationPage,
+} from "../../types/reservations";
+import type {
   HotelDetail,
   HotelSummary,
   HotelReview,
@@ -18,7 +24,7 @@ export interface OwnerHotel {
 }
 export type HotelWrite = Omit<
   HotelDetail,
-  "id" | "code" | "roomTypes" | "stayCards"
+  "id" | "code" | "roomTypes" | "stayCards" | "acceptsReservations"
 >;
 export interface RoomWrite {
   name: string;
@@ -91,6 +97,57 @@ export class Api {
         timeout: 30000,
       }),
     );
+  }
+  availability(
+    hotelId: number,
+    roomTypeId: number,
+    mode: RateMode,
+    quantity: number,
+    date: string,
+  ) {
+    return firstValueFrom(
+      this.http.get<Availability>(
+        this.url(`/hotels/${hotelId}/room-types/${roomTypeId}/availability`),
+        {
+          params: { mode, quantity, date },
+          timeout: 10000,
+        },
+      ),
+    );
+  }
+  confirmReservation(body: Confirmation) {
+    return firstValueFrom(
+      this.http.post<Reservation>(this.url("/reservations"), body, {
+        timeout: 15000,
+      }),
+    );
+  }
+  reservations(page: number, owner = false) {
+    return firstValueFrom(
+      this.http.get<ReservationPage>(
+        this.url(owner ? "/owner/hotel/reservations" : "/reservations"),
+        {
+          params: { page },
+          timeout: 10000,
+        },
+      ),
+    );
+  }
+  receipt(code: string) {
+    return firstValueFrom(
+      this.http.get<Reservation>(
+        this.url(`/reservations/${encodeURIComponent(code)}`),
+        { timeout: 10000 },
+      ),
+    );
+  }
+  async hasHotel() {
+    const result = await firstValueFrom(
+      this.http.get<{ hasHotel: boolean }>(this.url("/owner/hotel/exists"), {
+        timeout: 10000,
+      }),
+    );
+    return result.hasHotel;
   }
   async ownerHotel() {
     try {

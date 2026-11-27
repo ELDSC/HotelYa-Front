@@ -87,7 +87,7 @@
           <div class="section-header">
             <h2 class="section-title">Tipos de habitación</h2>
             <p class="section-subtitle">
-              Consulta condiciones y disponibilidad directamente con el hotel.
+              Elige una habitación y revisa los horarios para reservar.
             </p>
           </div>
           <div class="hotel-grid">
@@ -125,35 +125,19 @@
                       }
                     }
                   </ul>
-                  <p class="catalog-availability">
-                    {{
-                      room.availableUnits === null
-                        ? "Disponibilidad por confirmar con
-                el hotel."
-                        : room.availableUnits === 0
-                          ? "Sin unidades disponibles
-                actualmente."
-                          : room.availableUnits +
-                            " unidad(es) disponibles
-                actualmente."
-                    }}
-                  </p>
                   @if (room.rates.length) {
                     <h4 class="catalog-rate-title">Elige tu estadía</h4>
                     <p class="catalog-rate-hint">
-                      Selecciona una tarifa para consultar.
+                      Selecciona una tarifa para elegir fecha y horario.
                     </p>
                     <ul class="catalog-rates">
-                      @for (
-                        rate of room.rates;
-                        track rate.mode;
-                        let i = $index
-                      ) {
+                      @for (rate of room.rates; track rate.mode) {
                         <li>
                           <button
                             class="catalog-rate-option"
                             aria-haspopup="dialog"
-                            (click)="inquire(room, i)"
+                            [disabled]="preview || !isBookable(h, room, rate)"
+                            (click)="book(h, room, rate.mode)"
                           >
                             <span class="catalog-rate-caption"
                               ><span class="catalog-rate-mode">{{
@@ -176,7 +160,13 @@
                                   rate.currency
                                 )
                               }}</span></span
-                            ><span class="catalog-rate-arrow">→</span>
+                            ><span class="catalog-rate-arrow">
+                              {{
+                                !preview && !isBookable(h, room, rate)
+                                  ? "Sin reserva web"
+                                  : "→"
+                              }}
+                            </span>
                           </button>
                         </li>
                       }
@@ -185,9 +175,6 @@
                     <p class="editorial-room-desc">
                       Consulta tarifas directamente con el hotel.
                     </p>
-                    <button class="btn btn-primary" (click)="inquire(room)">
-                      Consultar estadía
-                    </button>
                   }
                 </div>
               </article>

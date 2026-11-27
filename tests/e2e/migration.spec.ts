@@ -63,8 +63,8 @@ for (const width of [1280, 390]) {
     await expect(page.locator(".editorial-room-card")).toHaveCount(3);
     await page.locator(".catalog-rate-option").first().click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("dialog")).toContainText("Consulta tu estadía");
-    await page.getByRole("button", { name: "Cerrar consulta" }).click();
+    await expect(page.getByRole("dialog")).toContainText("Reserva tu estadía");
+    await page.getByRole("button", { name: "Cerrar reserva" }).click();
     await page.reload();
     await expect(page.locator(".hero-title")).toContainText(hotel.name);
     await page.goBack();
@@ -159,7 +159,8 @@ test("unauthenticated owner returns to the requested route after login", async (
     r.fulfill({ json: { detail: hotel, published: false } }),
   );
   await page
-    .getByRole("button", { name: "Ingresar al panel", exact: true })
+    .locator("form")
+    .getByRole("button", { name: "Ingresar", exact: true })
     .click();
   await expect(page).toHaveURL(/panel\/habitaciones$/);
   await expect(page.locator("#section-rooms")).toBeVisible();
@@ -444,52 +445,127 @@ test("editing presentation preserves every existing card returned by the API", a
   expect(saved).toHaveLength(4);
 });
 
-test("inquiry rejects invalid totals and sends the selected duration to WhatsApp", async ({
+test("booking restores the guest selection and refreshes a conflicting quote", async ({
   page,
-  context,
 }) => {
-  await context.route("https://wa.me/**", (r) =>
-    r.fulfill({ body: "Consulta de prueba", contentType: "text/html" }),
+  await page.route(`${api}/api/auth/login`, (route) =>
+    route.fulfill({ json: account }),
   );
+  const code = "1bf37f09-0f02-44ba-9ccd-a34eaf34ab20";
+  let attempts = 0;
+  let total = 120;
+  let reservation: Record<string, unknown> = {};
+  await page.route(
+    `${api}/api/hotels/1/room-types/1/availability?*`,
+    async (route) => {
+      const url = new URL(route.request().url());
+      const date = url.searchParams.get("date");
+      const today = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "America/Lima",
+      }).format(new Date());
+      await route.fulfill({
+        json: {
+          today,
+          total,
+          currency: "PEN",
+          slots: [
+            {
+              startsAt: `${date}T19:00:00Z`,
+              endsAt: new Date(Date.parse(`${date}T19:00:00Z`) + 6 * 3600000),
+              available: false,
+            },
+            {
+              startsAt: `${date}T20:00:00Z`,
+              endsAt: new Date(Date.parse(`${date}T20:00:00Z`) + 6 * 3600000),
+              available: url.searchParams.get("quantity") === "2",
+            },
+          ],
+        },
+      });
+    },
+  );
+  await page.route(`${api}/api/reservations`, (route) => {
+    const body = route.request().postDataJSON();
+    expect(body.quantity).toBe(2);
+    expect(body.mode).toBe("PACKAGE");
+    expect(body.total).toBe(total);
+    if (++attempts === 1) {
+      total = 140;
+      return route.fulfill({
+        status: 409,
+        json: { message: "El horario o el precio cambió.", fields: {} },
+      });
+    }
+    reservation = {
+      ...body,
+      code,
+      hotelName: hotel.name,
+      roomName: "Temática",
+      guestEmail: account.user.email,
+      status: "CONFIRMED",
+    };
+    return route.fulfill({ status: 201, json: reservation });
+  });
+  await page.route(`${api}/api/reservations/${code}`, (route) =>
+    route.fulfill({ json: reservation }),
+  );
+
   await page.goto(base + "hoteles/1");
   await page.locator(".catalog-rate-option").nth(1).click();
   const dialog = page.getByRole("dialog");
   const quantity = dialog.getByLabel("Cantidad de paquetes");
-  await quantity.fill("0");
-  await expect(dialog.locator(".inquiry-total")).toHaveCount(0);
+  const confirm = dialog.getByRole("button", { name: "Confirmar reserva" });
   await expect(
-    dialog.getByRole("button", { name: "Consultar por WhatsApp" }),
-  ).toBeDisabled();
+    dialog.getByText(
+      "No hay horarios disponibles en esta fecha. Elige otro día.",
+    ),
+  ).toBeVisible();
+  await expect(dialog.locator(".booking-slots button")).toHaveCount(0);
+  await quantity.fill("0");
+  await expect(confirm).toBeDisabled();
   await quantity.fill("2");
-  await expect(dialog.locator(".inquiry-duration")).toContainText(
-    "2 paquetes de 3 horas (6 horas en total)",
+  await dialog.getByRole("button", { name: "Fecha de llegada" }).click();
+  const calendar = dialog.locator("ngb-datepicker");
+  await expect(calendar).toBeVisible();
+  await calendar.locator('[role="gridcell"][aria-selected="true"]').click();
+  const selected = dialog.locator(".booking-slots button");
+  await expect(selected).toHaveCount(1);
+  await expect(selected).toBeEnabled();
+  await selected.click();
+  await confirm.click();
+  await expect(page).toHaveURL(/acceder\?next=/);
+  await page.getByLabel("Correo electrónico").fill(account.user.email);
+  await page.getByLabel("Contraseña *").fill("password123");
+  await page
+    .getByRole("button", { name: "Ingresar", exact: true })
+    .last()
+    .click();
+  await expect(quantity).toHaveValue("2");
+  await expect(selected).toHaveAttribute("aria-pressed", "true");
+  await confirm.click();
+  await expect(dialog.getByRole("alert")).toContainText(
+    "El horario o el precio cambió.",
   );
-  await expect(dialog.locator(".inquiry-total")).toContainText("120.00");
-  const opened = context.waitForEvent("page");
-  await dialog.getByRole("button", { name: "Consultar por WhatsApp" }).click();
-  const popup = await opened;
-  await popup.waitForURL("https://wa.me/**");
-  const url = new URL(popup.url());
-  expect(url.pathname).toBe("/51999999999");
-  expect(url.searchParams.get("text")).toContain("6 horas en total");
-  await popup.close();
+  await expect(dialog.locator(".inquiry-total")).toContainText("140.00");
+  await confirm.click();
+  await expect(
+    page.getByRole("heading", { name: "Comprobante de reserva" }),
+  ).toBeVisible();
+  await expect(page.getByText(code, { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Imprimir o guardar como PDF" }),
+  ).toBeVisible();
 });
 
-test("a room without rates remains consultable without a fabricated amount", async ({
-  page,
-}) => {
+test("a room without rates shows no booking action", async ({ page }) => {
   await page.route(`${api}/api/hotels/1`, (r) =>
     r.fulfill({
       json: { ...hotel, roomTypes: [{ ...hotel.roomTypes[0], rates: [] }] },
     }),
   );
   await page.goto(base + "hoteles/1");
-  await page
-    .getByRole("button", { name: "Consultar estadía", exact: true })
-    .click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog.locator(".inquiry-summary")).toHaveText(
-    "Consulta las tarifas directamente con el hotel.",
-  );
-  await expect(dialog.getByLabel("Modalidad")).toHaveCount(0);
+  await expect(
+    page.getByText("Consulta tarifas directamente con el hotel."),
+  ).toBeVisible();
+  await expect(page.locator(".catalog-rate-option")).toHaveCount(0);
 });

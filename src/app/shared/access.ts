@@ -42,7 +42,7 @@ import { FieldError } from "./field";
             admin
               ? "Acceso administrativo"
               : register()
-                ? "Crea tu cuenta de dueño"
+                ? "Crea tu cuenta"
                 : "Bienvenido de nuevo"
           }}
         </h1>
@@ -89,13 +89,7 @@ import { FieldError } from "./field";
               [class.is-loading]="busy()"
             >
               <span class="button-label">{{
-                admin
-                  ? "Ingresar"
-                  : register()
-                    ? "Crear cuenta"
-                    : destination.startsWith("/hoteles/")
-                      ? "Ingresar"
-                      : "Ingresar al panel"
+                admin ? "Ingresar" : register() ? "Crear cuenta" : "Ingresar"
               }}</span>
               @if (busy()) {
                 <span class="spinner" aria-label="Ingresando"></span>

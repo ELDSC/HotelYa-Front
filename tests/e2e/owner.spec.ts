@@ -2,9 +2,17 @@ import { execFileSync } from "node:child_process";
 import { test, expect, Page } from "@playwright/test";
 const backend = "http://127.0.0.1:8081";
 async function navigate(page: Page, name: string) {
-  if (page.viewportSize()!.width < 761)
+  const mobile = page.viewportSize()!.width < 761;
+  const mobilePanel = page.locator("ngb-offcanvas-panel");
+  if (mobile) {
     await page.getByRole("button", { name: "Abrir menú" }).click();
+    await expect(mobilePanel.getByRole("navigation")).toHaveCSS(
+      "flex-direction",
+      "column",
+    );
+  }
   await page.getByRole("link", { name, exact: true }).click();
+  if (mobile) await expect(mobilePanel).toBeHidden();
 }
 test.beforeAll(() => {
   execFileSync("../HotelYa-Back/scripts/clean-browser-test-data.sh", {
@@ -18,6 +26,7 @@ test.afterAll(() => {
 });
 test("real owner: register, draft, rooms, uploads, private preview, publication and logout", async ({
   page,
+  browser,
 }, info) => {
   test.setTimeout(120000);
   const errors: string[] = [];
@@ -40,6 +49,12 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
     .locator("form")
     .getByRole("button", { name: "Crear cuenta", exact: true })
     .click();
+  await expect(page).toHaveURL(/5174\/$/);
+  await page.getByRole("button", { name: "Mi perfil" }).click();
+  await expect(
+    page.getByRole("link", { name: "Mis reservas", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Crear un hotel", exact: true }).click();
   await expect(page).toHaveURL(/panel\/informacion$/);
   await page.getByLabel("Nombre del hotel *").fill(name);
   await page.getByLabel("Zona o distrito *").fill("Lima");
@@ -54,6 +69,8 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
     page.getByLabel("Teléfono y WhatsApp", { exact: true }),
   ).toHaveValue("987 654 321");
   await page.getByLabel("URL del lugar").fill("https://maps.example.com/hotel");
+  await page.getByLabel("Entrada por noche").selectOption("14:00");
+  await page.getByLabel("Salida por noche").selectOption("11:00");
   await page
     .getByRole("button", { name: "Crear mi hotel en borrador" })
     .click();
@@ -186,40 +203,95 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
 
   await rates.first().click();
   const dialog = page.getByRole("dialog");
+  const confirmReservation = dialog.getByRole("button", {
+    name: "Confirmar reserva",
+  });
+  await expect(confirmReservation).toBeInViewport();
   await dialog.getByLabel("Cantidad de horas").fill("2");
   await expect(dialog.locator(".inquiry-total")).toContainText("60.00");
-  await expect(dialog).toContainText("25 % de descuento aplicado a la tarifa");
+  await dialog.getByRole("button", { name: "Fecha de llegada" }).click();
+  const calendar = dialog.locator("ngb-datepicker");
+  await expect(calendar).toBeVisible();
+  await calendar
+    .locator('[role="gridcell"]:not([aria-disabled="true"])')
+    .nth(1)
+    .click();
+  await dialog.locator(".booking-slots button:not(:disabled)").first().click();
   await dialog.locator(".modal-content").screenshot({
-    path: info.outputPath("consulta-ofertas.png"),
+    path: info.outputPath("reserva-horarios.png"),
     animations: "disabled",
   });
-  await page
-    .context()
-    .route("https://wa.me/**", (route) =>
-      route.fulfill({ body: "Consulta de prueba" }),
-    );
-  const [popup] = await Promise.all([
-    page.waitForEvent("popup"),
-    dialog.getByRole("button", { name: "Consultar por WhatsApp" }).click(),
-  ]);
-  const message = new URL(popup.url()).searchParams.get("text");
-  expect(message).toMatch(/Tarifa: .*30.00 por hora/);
-  expect(message).toMatch(/Total de referencia: .*60.00/);
-  await popup.close();
-  await page.getByRole("button", { name: "Cerrar consulta" }).click();
+  await confirmReservation.click();
+  await expect(
+    page.getByRole("heading", { name: "Comprobante de reserva" }),
+  ).toBeVisible();
+  await expect(page.locator(".reservation-receipt")).toContainText(name);
+  await expect(page.locator(".reservation-receipt")).toContainText("60.00");
+  await expect(
+    page.getByRole("button", { name: "Imprimir o guardar como PDF" }),
+  ).toBeVisible();
+  const receiptCode = await page
+    .locator(".reservation-receipt .code")
+    .textContent();
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator("#mainHeader")).toBeHidden();
+  await expect(page.locator(".reservation-receipt")).toBeVisible();
+  await page.emulateMedia({ media: "screen" });
+  await page.screenshot({
+    path: info.outputPath("comprobante.png"),
+    fullPage: true,
+  });
+  await page.goto("/mis-reservas");
+  await page.getByRole("link", { name: "Ver comprobante" }).click();
+  await expect(page.locator(".reservation-receipt .code")).toHaveText(
+    receiptCode!,
+  );
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
   await page.screenshot({
-    path: info.outputPath("public-detail.png"),
+    path: info.outputPath("mis-reservas.png"),
     fullPage: true,
     animations: "disabled",
   });
   await page.reload();
-  await expect(page.locator(".hero-title")).toHaveText(name);
-  await page.goto("/panel");
+  await expect(page.locator(".reservation-receipt .code")).toHaveText(
+    receiptCode!,
+  );
+  const otherSession = await browser.newContext({
+    baseURL: new URL(page.url()).origin,
+  });
+  try {
+    const guestPage = await otherSession.newPage();
+    await guestPage.goto(`/mis-reservas/${receiptCode}`);
+    await expect(guestPage).toHaveURL(/acceder\?next=/);
+    await guestPage.getByLabel("Correo electrónico").fill(email);
+    await guestPage.getByLabel("Contraseña *").fill("password123");
+    await guestPage
+      .locator("form")
+      .getByRole("button", { name: "Ingresar" })
+      .click();
+    await expect(guestPage.locator(".reservation-receipt .code")).toHaveText(
+      receiptCode!,
+    );
+    await guestPage.getByRole("button", { name: "Mi perfil" }).click();
+    await guestPage.getByRole("button", { name: "Cerrar sesión" }).click();
+    await expect(guestPage).toHaveURL(/5174\/$/);
+    await expect(
+      guestPage.getByRole("link", { name: "Acceder", exact: true }),
+    ).toBeVisible();
+  } finally {
+    await otherSession.close();
+  }
+  await page.getByRole("button", { name: "Mi perfil" }).click();
+  await page.getByRole("link", { name: "Mi panel", exact: true }).click();
+  await navigate(page, "Reservas");
+  await expect(page.locator(".reservation-list")).toContainText(email);
+  await expect(page.locator(".reservation-list")).toContainText(receiptCode!);
+  await page.screenshot({ path: info.outputPath("reservas-panel.png") });
+  await navigate(page, "Inicio");
   await page.getByRole("switch", { name: "Hotel publicado" }).click();
   await expect(
     page.getByRole("switch", { name: "Hotel publicado" }),
@@ -229,7 +301,12 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
   await page
     .getByRole("button", { name: "Eliminar tipo de habitación" })
     .click();
-  await expect(page.locator(".room-list-item")).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "Este tipo de habitación tiene reservas vigentes." }),
+  ).toBeVisible();
+  await expect(page.locator(".room-list-item")).toHaveCount(1);
   await navigate(page, "Multimedia");
   for (const key of ["logoPath", "facadePath", "videoPath"]) {
     const row = page.locator(`[data-media="${key}"]`);

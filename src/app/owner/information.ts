@@ -47,6 +47,15 @@ import { Notice } from "./notice";
                   >Celular de 9 dígitos. Se utilizará para llamadas y consultas
                   por WhatsApp.</span
                 >
+              } @else if (
+                field.key === "nightCheckIn" || field.key === "nightCheckOut"
+              ) {
+                <select [formControlName]="field.key">
+                  <option value="">Selecciona una hora</option>
+                  @for (hour of nightHours; track hour) {
+                    <option [value]="hour">{{ hour }}</option>
+                  }
+                </select>
               } @else {
                 <input
                   [type]="field.type"
@@ -60,6 +69,11 @@ import { Notice } from "./notice";
         </div>
         @if (form.errors?.["hours"] && (form.touched || form.dirty)) {
           <p class="field-error">Completa las horas de apertura y cierre.</p>
+        }
+        @if (form.errors?.["nightHours"] && (form.touched || form.dirty)) {
+          <p class="field-error">
+            Completa las horas de entrada y salida para la tarifa por noche.
+          </p>
         }
         <div class="notice error" role="alert">{{ error() }}</div>
         <div class="form-actions">
@@ -161,6 +175,10 @@ export class Information extends Editor {
   readonly api = inject(Api);
   private fb = inject(FormBuilder).nonNullable;
   private notice = inject(Notice);
+  readonly nightHours = Array.from(
+    { length: 24 },
+    (_, hour) => `${String(hour).padStart(2, "0")}:00`,
+  );
   readonly fields = [
     { key: "name", label: "Nombre del hotel *", type: "text", max: 200 },
     { key: "location", label: "Zona o distrito *", type: "text", max: 200 },
@@ -175,6 +193,18 @@ export class Information extends Editor {
     { key: "mapUrl", label: "URL del lugar", type: "url", max: 2048 },
     { key: "openingTime", label: "Hora de apertura", type: "time", max: null },
     { key: "closingTime", label: "Hora de cierre", type: "time", max: null },
+    {
+      key: "nightCheckIn",
+      label: "Entrada por noche",
+      type: "select",
+      max: null,
+    },
+    {
+      key: "nightCheckOut",
+      label: "Salida por noche",
+      type: "select",
+      max: null,
+    },
     {
       key: "checkInOutConditions",
       label: "Condiciones de entrada y salida",
@@ -195,9 +225,20 @@ export class Information extends Editor {
       ],
       openingTime: [""],
       closingTime: [""],
+      nightCheckIn: [""],
+      nightCheckOut: [""],
       checkInOutConditions: ["", Validators.maxLength(5000)],
     },
-    { validators: hoursPair },
+    {
+      validators: [
+        hoursPair,
+        (control) =>
+          !!control.get("nightCheckIn")?.value ===
+          !!control.get("nightCheckOut")?.value
+            ? null
+            : { nightHours: true },
+      ],
+    },
   );
   readonly cards = this.fb.array<
     FormGroup<{ title: FormControl<string>; description: FormControl<string> }>
@@ -216,6 +257,8 @@ export class Information extends Editor {
         mapUrl: h.mapUrl ?? "",
         openingTime: h.openingTime?.slice(0, 5) ?? "",
         closingTime: h.closingTime?.slice(0, 5) ?? "",
+        nightCheckIn: h.nightCheckIn?.slice(0, 5) ?? "",
+        nightCheckOut: h.nightCheckOut?.slice(0, 5) ?? "",
         checkInOutConditions: h.checkInOutConditions ?? "",
       });
       for (const card of h.stayCards)
@@ -273,6 +316,8 @@ export class Information extends Editor {
         mapUrl: v.mapUrl.trim() || null,
         openingTime: v.openingTime || null,
         closingTime: v.closingTime || null,
+        nightCheckIn: v.nightCheckIn || null,
+        nightCheckOut: v.nightCheckOut || null,
         openingHours: null,
         checkInOutConditions: v.checkInOutConditions.trim() || null,
         latitude: h?.latitude ?? null,

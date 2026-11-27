@@ -12,7 +12,10 @@ import {
   RouterLink,
   RouterLinkActive,
   Router,
+  NavigationEnd,
 } from "@angular/router";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { filter, map } from "rxjs";
 import { NgbOffcanvas, NgbToast } from "@ng-bootstrap/ng-bootstrap";
 import { Api } from "../core/api";
 import { Auth } from "../core/auth";
@@ -53,12 +56,15 @@ import { Notice } from "./notice";
         } @else if (error()) {
           <p role="alert">{{ error() }}</p>
           <button (click)="load()">Reintentar</button>
+        } @else if (!api.current() && path() !== "/panel/informacion") {
+          <p>Todavía no has creado tu hotel.</p>
+          <a class="primary" routerLink="/panel/informacion">Crear un hotel</a>
         } @else {
           <router-outlet />
         }
       </main>
     </div>
-    <ng-template #menu
+    <ng-template #menu let-mobilePanel
       ><div class="owner-sidebar-header">
         <a routerLink="/" class="owner-brand"
           ><img
@@ -74,7 +80,10 @@ import { Notice } from "./notice";
           ×
         </button>
       </div>
-      <nav id="panelNav" aria-label="Administración">
+      <nav
+        [attr.id]="mobilePanel ? 'panelNav' : null"
+        aria-label="Administración"
+      >
         @for (page of pages; track page.path) {
           <a
             [routerLink]="page.path"
@@ -140,6 +149,13 @@ export class OwnerLayout implements OnDestroy {
   readonly offcanvas = inject(NgbOffcanvas);
   readonly notice = inject(Notice);
   readonly router = inject(Router);
+  readonly path = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects.split("?")[0]),
+    ),
+    { initialValue: this.router.url.split("?")[0] },
+  );
   readonly loading = signal(true);
   readonly error = signal("");
   readonly pages = [
@@ -147,23 +163,19 @@ export class OwnerLayout implements OnDestroy {
     { path: "/panel/informacion", title: "Información" },
     { path: "/panel/habitaciones", title: "Habitaciones" },
     { path: "/panel/multimedia", title: "Multimedia" },
+    { path: "/panel/reservas", title: "Reservas" },
   ];
   constructor() {
     void this.load();
   }
   heading() {
-    return (
-      this.pages.find((p) => p.path === this.router.url.split("?")[0])?.title ??
-      "Mi hotel"
-    );
+    return this.pages.find((p) => p.path === this.path())?.title ?? "Mi hotel";
   }
   async load() {
     this.loading.set(true);
     this.error.set("");
     try {
       await this.api.ownerHotel();
-      if (!this.api.current() && this.router.url !== "/panel/informacion")
-        await this.router.navigateByUrl("/panel/informacion");
     } catch (e) {
       this.error.set(serverError(e));
     } finally {
