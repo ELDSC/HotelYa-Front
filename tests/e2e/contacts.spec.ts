@@ -53,7 +53,7 @@ test("Contactos es público y lista reseñas de tres en tres", async ({
   );
   await expect(
     page.getByRole("link", { name: "Abrir ubicación en el mapa" }),
-  ).toHaveAttribute("href", /google\.com\/maps\/search/);
+  ).toHaveCount(0);
   const list = page.locator(".review-list");
   await expect(list.getByRole("listitem")).toHaveCount(3);
   await page.getByRole("button", { name: "Cargar más" }).click();

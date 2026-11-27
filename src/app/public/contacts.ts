@@ -69,10 +69,6 @@ export class Contacts implements OnDestroy {
       `https://maps.google.com/maps?output=embed&q=${encodeURIComponent(this.mapQuery())}`,
     ),
   );
-  readonly mapLink = computed(
-    () =>
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.mapQuery())}`,
-  );
 
   private generation = 0;
   private readonly subscription = this.route.paramMap.subscribe(
