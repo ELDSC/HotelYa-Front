@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { test, expect, Page } from "@playwright/test";
+import { todayInPeru } from "../../src/utils/reservations";
 const backend = "http://127.0.0.1:8081";
 async function navigate(page: Page, name: string) {
   const mobile = page.viewportSize()!.width < 761;
@@ -291,6 +293,22 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
   await expect(page.locator(".reservation-list")).toContainText(email);
   await expect(page.locator(".reservation-list")).toContainText(receiptCode!);
   await page.screenshot({ path: info.outputPath("reservas-panel.png") });
+  await navigate(page, "Reportes");
+  const reportEnd = new Date(`${todayInPeru()}T00:00:00Z`);
+  reportEnd.setUTCDate(reportEnd.getUTCDate() + 3);
+  await page.getByLabel("Hasta").fill(reportEnd.toISOString().slice(0, 10));
+  await page.getByRole("button", { name: "Aplicar filtro" }).click();
+  await expect(
+    page.getByRole("heading", { name: "1 reserva confirmada" }),
+  ).toBeVisible();
+  await expect(page.locator("canvas")).toHaveCount(5);
+  const [excel] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Descargar Excel" }).click(),
+  ]);
+  const workbook = info.outputPath(excel.suggestedFilename());
+  await excel.saveAs(workbook);
+  expect((await readFile(workbook)).subarray(0, 2).toString()).toBe("PK");
   await navigate(page, "Inicio");
   await page.getByRole("switch", { name: "Hotel publicado" }).click();
   await expect(

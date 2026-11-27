@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { firstValueFrom } from "rxjs";
 import { APP_CONFIG } from "./config";
 import { asset } from "../../utils/assets";
+import type { ReportPeriod, ReservationReport } from "../../types/reports";
 import type {
   Availability,
   Confirmation,
@@ -131,6 +132,23 @@ export class Api {
           timeout: 10000,
         },
       ),
+    );
+  }
+  reservationReport(period: ReportPeriod) {
+    return firstValueFrom(
+      this.http.get<ReservationReport>(
+        this.url("/owner/hotel/reservations/report"),
+        { params: { ...period }, timeout: 15000 },
+      ),
+    );
+  }
+  reservationExcel(period: ReportPeriod) {
+    return firstValueFrom(
+      this.http.get(this.url("/owner/hotel/reservations/export.xlsx"), {
+        params: { ...period },
+        responseType: "blob",
+        timeout: 60000,
+      }),
     );
   }
   receipt(code: string) {

@@ -1,0 +1,104 @@
+<div class="reports">
+  <form class="report-filters" (submit)="load($event)">
+    <p>
+      Elige las fechas de llegada para consultar las reservas confirmadas de tu
+      hotel. Los horarios están en hora de Perú.
+    </p>
+    <div class="filter-fields">
+      <label>
+        Desde
+        <input
+          type="date"
+          name="from"
+          min="1900-01-01"
+          max="9999-12-31"
+          required
+          [value]="from()"
+          (input)="from.set($any($event.target).value)"
+        />
+      </label>
+      <label>
+        Hasta
+        <input
+          type="date"
+          name="to"
+          min="1900-01-01"
+          max="9999-12-31"
+          required
+          [value]="to()"
+          (input)="to.set($any($event.target).value)"
+        />
+      </label>
+      <button
+        type="submit"
+        class="primary"
+        [disabled]="loading() || !!exporting()"
+      >
+        Aplicar filtro
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="report-state" role="status">Cargando reportes…</p>
+  } @else if (error()) {
+    <p class="notice error" role="alert">{{ error() }}</p>
+  } @else if (report(); as result) {
+    <section class="report-results" aria-label="Resultados del período">
+      <div class="report-summary">
+        <div>
+          <h2>
+            {{ result.total | number }}
+            {{
+              result.total === 1 ? "reserva confirmada" : "reservas confirmadas"
+            }}
+          </h2>
+          <p>{{ dateLabel(result.from) }} — {{ dateLabel(result.to) }}</p>
+        </div>
+        <div class="report-exports" aria-label="Descargas">
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="!result.total || !!exporting()"
+            (click)="download('docx')"
+          >
+            Descargar Word
+          </button>
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="!result.total || !!exporting()"
+            (click)="download('pdf')"
+          >
+            Descargar PDF
+          </button>
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="!!exporting()"
+            (click)="download('xlsx')"
+          >
+            Descargar Excel
+          </button>
+        </div>
+      </div>
+      @if (exporting()) {
+        <p class="report-state" role="status">Preparando descarga…</p>
+      }
+      @if (exportError()) {
+        <p class="notice error" role="alert">{{ exportError() }}</p>
+      }
+      @if (result.total) {
+        <div class="report-grid">
+          @for (graph of graphs(); track graph.id) {
+            <app-report-chart [graph]="graph" />
+          }
+        </div>
+      } @else {
+        <p class="report-empty" role="status">
+          No hay reservas confirmadas con llegada en este período.
+        </p>
+      }
+    </section>
+  }
+</div>

@@ -1,0 +1,112 @@
+:host {
+  --reports-border: #dce4de;
+  --reports-muted: #4f5f56;
+  display: block;
+  min-width: 0;
+}
+
+.reports,
+.report-results {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.report-filters,
+.report-summary,
+.report-empty {
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--reports-border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.report-filters p,
+.report-summary p,
+.report-state {
+  margin: 0;
+  color: var(--reports-muted);
+}
+
+.filter-fields,
+.report-exports {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem;
+}
+
+.filter-fields {
+  margin-top: 0.85rem;
+
+  label {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+  }
+
+  input {
+    min-height: 2.75rem;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+.report-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+
+  h2 {
+    margin: 0 0 0.3rem;
+    font-size: 1.4rem;
+  }
+}
+
+.reports button {
+  min-height: 2.75rem;
+}
+
+.reports button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.report-grid > :first-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1050px) {
+  .report-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .report-filters,
+  .report-summary,
+  .report-empty {
+    padding: 1rem;
+  }
+
+  .filter-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    button {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .report-exports button {
+    flex: 1 1 auto;
+  }
+}

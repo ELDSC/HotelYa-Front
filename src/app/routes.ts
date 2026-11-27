@@ -80,6 +80,12 @@ export const routes: Routes = [
           import("./reservations/list").then((m) => m.ReservationList),
       },
       {
+        path: "reportes",
+        title: "Reportes de reservas | HoteleriasYa",
+        loadComponent: () =>
+          import("./owner/reports/reports").then((m) => m.Reports),
+      },
+      {
         path: "multimedia",
         title: "Multimedia | HoteleriasYa",
         canDeactivate: [changesGuard],

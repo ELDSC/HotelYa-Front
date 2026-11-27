@@ -164,6 +164,7 @@ export class OwnerLayout implements OnDestroy {
     { path: "/panel/habitaciones", title: "Habitaciones" },
     { path: "/panel/multimedia", title: "Multimedia" },
     { path: "/panel/reservas", title: "Reservas" },
+    { path: "/panel/reportes", title: "Reportes" },
   ];
   constructor() {
     void this.load();
