@@ -562,6 +562,14 @@
     font-size: 0.9rem;
     color: #555b68;
   }
+  & .catalog-rate-offer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.65rem;
+    font-size: 0.85rem;
+    color: var(--hotel-navy);
+  }
   & .catalog-rate-price {
     font-size: 1.4rem;
     font-weight: 600;

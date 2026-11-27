@@ -81,6 +81,11 @@ export class Rooms extends Editor {
       label: [label],
       active: [false],
       amount: new FormControl<number | null>(null),
+      discountPercent: new FormControl<number | null>(null, [
+        Validators.min(5),
+        Validators.max(95),
+        integer,
+      ]),
       packageHours: new FormControl<number | null>(3),
     });
   }
@@ -118,6 +123,7 @@ export class Rooms extends Editor {
       rate.patchValue({
         active: !!existing,
         amount: existing?.amount ?? null,
+        discountPercent: existing?.discountPercent ?? null,
         packageHours: existing?.packageHours ?? 3,
       });
       this.syncRate(rate);
@@ -128,6 +134,8 @@ export class Rooms extends Editor {
   }
   syncRate(rate: (typeof this.rates.controls)[number]) {
     const active = rate.controls.active.value;
+    if (active) rate.controls.discountPercent.enable();
+    else rate.controls.discountPercent.disable();
     rate.controls.amount.setValidators(
       active ? [Validators.required, positiveMoney] : [],
     );
@@ -229,6 +237,13 @@ export class Rooms extends Editor {
         photoScope: this.scope,
         photos: this.photos().map((p) => ({ path: p.path })),
         details: v.details.map((d) => ({ kind: d.kind, text: d.text.trim() })),
+        rateDiscounts: Object.fromEntries(
+          v.rates.flatMap((rate) =>
+            rate.active && rate.discountPercent !== null
+              ? [[rate.mode, rate.discountPercent]]
+              : [],
+          ),
+        ),
         rates: v.rates
           .filter((r) => r.active)
           .map((r) => ({

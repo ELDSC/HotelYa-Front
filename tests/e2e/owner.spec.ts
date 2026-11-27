@@ -27,7 +27,7 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
   );
   const suffix = Date.now() + "-" + info.project.name;
   const email = `angular-${suffix}@example.com`,
-    name = `Hotel Angular ${suffix}`;
+    name = "Hotel Vista Lima";
   await page.goto("/acceder");
   await page
     .locator(".auth-tabs")
@@ -74,21 +74,29 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
     "Presentación guardada.",
   );
   await navigate(page, "Habitaciones");
-  await page.getByLabel("Nombre *", { exact: true }).fill("Suite Angular");
+  await page.getByLabel("Nombre *", { exact: true }).fill("Suite matrimonial");
   await page
     .getByLabel("Descripción *", { exact: true })
-    .fill("Suite con fotografías y tarifa real.");
+    .fill("Habitación amplia con cama matrimonial y luz natural.");
   await page.getByLabel("Cantidad total *").fill("3");
   await page.getByLabel("Disponibles ahora *").fill("2");
   await page
     .getByRole("switch", { name: "Activar tarifa Por hora", exact: true })
     .check();
-  await page.getByLabel("Precio Por hora", { exact: true }).fill("25.50");
+  await page.getByLabel("Precio Por hora", { exact: true }).fill("40");
+  await page.getByLabel("Descuento Por hora", { exact: true }).fill("25");
+  await page
+    .getByRole("switch", { name: "Activar tarifa Paquete de horas" })
+    .check();
+  await page.getByLabel("Precio Paquete de horas").fill("80");
+  await page.getByLabel("Descuento Paquete de horas").fill("15");
+  await page.getByRole("switch", { name: "Activar tarifa Por noche" }).check();
+  await page.getByLabel("Precio Por noche").fill("120");
   await page
     .getByLabel("Subir fotografías", { exact: true })
     .setInputFiles([
-      "public/assets/images/logoHoteleriasYa.png",
-      "public/assets/images/hero1.jpg",
+      "public/assets/images/lumis-cuarto-matrimonial.jpg",
+      "public/assets/images/lumis-cuarto-premium.jpg",
     ]);
   await expect(page.locator(".room-photo")).toHaveCount(2);
   await expect(
@@ -102,16 +110,29 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
     "Tipo de habitación guardado.",
   );
   await expect(page.locator(".room-list-item")).toHaveCount(1);
+  await page.reload();
+  await expect(
+    page.getByLabel("Descuento Por hora", { exact: true }),
+  ).toHaveValue("25");
+  await expect(page.getByLabel("Descuento Paquete de horas")).toHaveValue("15");
+  await expect(page.getByLabel("Descuento Por noche")).toHaveValue("");
+  await page
+    .getByRole("heading", { name: "Tarifas", exact: true })
+    .locator("..")
+    .screenshot({
+      path: info.outputPath("editor-ofertas.png"),
+      animations: "disabled",
+    });
   await navigate(page, "Multimedia");
   await page
     .getByLabel("Subir logo", { exact: true })
-    .setInputFiles("public/assets/images/logoHoteleriasYa.png");
+    .setInputFiles("public/assets/images/lumis-hotel-logo.jpg");
   await expect(page.locator("ngb-toast")).toContainText(
     "Logo guardado correctamente.",
   );
   await page
     .getByLabel("Subir portada", { exact: true })
-    .setInputFiles("public/assets/images/hero1.jpg");
+    .setInputFiles("public/assets/images/lumis-hotel-fachada.jpg");
   await expect(page.locator("ngb-toast")).toContainText(
     "Portada guardado correctamente.",
   );
@@ -125,7 +146,7 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
   await expect(page.locator(".catalog-preview-banner")).toBeVisible();
   await expect(page.locator(".hero-title")).toHaveText(name);
   await expect(page.locator(".editorial-room-card")).toContainText(
-    "Suite Angular",
+    "Suite matrimonial",
   );
   await expect(page.locator(".editorial-room-image img")).toBeVisible();
   expect(
@@ -150,8 +171,41 @@ test("real owner: register, draft, rooms, uploads, private preview, publication 
     .getByRole("link", { name: "Ver hotel" })
     .click();
   await expect(page.locator(".hero-title")).toHaveText(name);
-  await page.locator(".catalog-rate-option").first().click();
-  await expect(page.getByRole("dialog")).toContainText("Total de referencia:");
+  const rates = page.locator(".catalog-rate-option");
+  await expect(rates.nth(0)).toContainText("25 % de descuento");
+  await expect(rates.nth(0)).toContainText("30.00");
+  await expect(rates.nth(1)).toContainText("15 % de descuento");
+  await expect(rates.nth(1)).toContainText("68.00");
+  await expect(rates.nth(2)).toContainText("120.00");
+  await expect(rates.nth(2).locator("del")).toHaveCount(0);
+  await page.locator(".editorial-room-card").screenshot({
+    path: info.outputPath("ficha-ofertas.png"),
+    animations: "disabled",
+    style: "#mainHeader { visibility: hidden; }",
+  });
+
+  await rates.first().click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Cantidad de horas").fill("2");
+  await expect(dialog.locator(".inquiry-total")).toContainText("60.00");
+  await expect(dialog).toContainText("25 % de descuento aplicado a la tarifa");
+  await dialog.locator(".modal-content").screenshot({
+    path: info.outputPath("consulta-ofertas.png"),
+    animations: "disabled",
+  });
+  await page
+    .context()
+    .route("https://wa.me/**", (route) =>
+      route.fulfill({ body: "Consulta de prueba" }),
+    );
+  const [popup] = await Promise.all([
+    page.waitForEvent("popup"),
+    dialog.getByRole("button", { name: "Consultar por WhatsApp" }).click(),
+  ]);
+  const message = new URL(popup.url()).searchParams.get("text");
+  expect(message).toMatch(/Tarifa: .*30.00 por hora/);
+  expect(message).toMatch(/Total de referencia: .*60.00/);
+  await popup.close();
   await page.getByRole("button", { name: "Cerrar consulta" }).click();
   expect(
     await page.evaluate(

@@ -8,7 +8,11 @@ import { MediaPreview } from "../shared/media-preview";
 import { HotelHero, HotelFooter } from "./hotel-chrome";
 import { Inquiry } from "./inquiry";
 import { HotelDetail, RoomTypeDetail } from "../../types/catalog";
-import { formatMoney, rateModeLabel } from "../../utils/rates";
+import {
+  effectiveRateAmount,
+  formatMoney,
+  rateModeLabel,
+} from "../../utils/rates";
 import { formatPhone } from "../../utils/phone";
 @Component({
   imports: [RouterLink, Header, MediaPreview, HotelHero, HotelFooter],
@@ -25,6 +29,7 @@ export class Detail implements OnDestroy {
   readonly error = signal("");
   readonly preview = !!this.route.snapshot.data["preview"];
   readonly formatMoney = formatMoney;
+  readonly effectiveRateAmount = effectiveRateAmount;
   readonly rateModeLabel = rateModeLabel;
   readonly formatPhone = formatPhone;
   private generation = 0;

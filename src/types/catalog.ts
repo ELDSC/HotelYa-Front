@@ -19,6 +19,7 @@ export type RateMode = 'HOUR' | 'PACKAGE' | 'NIGHT';
 export interface RateInfo {
     mode: RateMode; amount: number; currency: string; packageHours: number | null;
     additionalHourAmount: number | null; simulated: boolean;
+    discountPercent?: number | null; effectiveAmount?: number;
 }
 
 export interface StayCard { title: string; description: string }

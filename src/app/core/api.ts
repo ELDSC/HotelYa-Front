@@ -29,6 +29,7 @@ export interface RoomWrite {
   photoScope: string;
   photos: { path: string }[];
   details: RoomDetail[];
+  rateDiscounts?: Partial<Record<RateMode, number>>;
   rates: { mode: RateMode; amount: number; packageHours: number | null }[];
 }
 export interface MediaInfo {

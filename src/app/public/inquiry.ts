@@ -3,7 +3,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 import { HotelDetail, RoomTypeDetail, RateInfo } from "../../types/catalog";
 import {
+  effectiveRateAmount,
   formatMoney,
+  rateTotal,
   rateModeLabel,
   rateLabel,
   stayDuration,
@@ -36,7 +38,7 @@ import { integer } from "../core/forms";
               @for (rate of room().rates; track rate.mode; let i = $index) {
                 <option [ngValue]="i">
                   {{ rateModeLabel(rate) }} ·
-                  {{ formatMoney(rate.amount, rate.currency) }}
+                  {{ formatMoney(effectiveRateAmount(rate), rate.currency) }}
                 </option>
               }
             </select></label
@@ -55,11 +57,16 @@ import { integer } from "../core/forms";
             <p class="inquiry-duration">
               {{ stayDuration(rate, form.controls.quantity.value) }}
             </p>
+            @if (rate.discountPercent; as discount) {
+              <p class="inquiry-duration">
+                {{ discount }} % de descuento aplicado a la tarifa
+              </p>
+            }
             <strong class="inquiry-total"
               >Total de referencia:
               {{
                 formatMoney(
-                  rate.amount * form.controls.quantity.value,
+                  rateTotal(rate, form.controls.quantity.value),
                   rate.currency
                 )
               }}</strong
@@ -110,6 +117,8 @@ export class Inquiry {
     quantity: [1, [Validators.required, Validators.min(1), integer]],
   });
   readonly formatMoney = formatMoney;
+  readonly effectiveRateAmount = effectiveRateAmount;
+  readonly rateTotal = rateTotal;
   readonly rateModeLabel = rateModeLabel;
   readonly stayDuration = stayDuration;
   selected(): RateInfo | undefined {
@@ -123,7 +132,7 @@ export class Inquiry {
     if (!this.phone() || this.form.invalid) return;
     const rate = this.selected(),
       q = this.form.controls.quantity.value;
-    if (rate && !Number.isFinite(rate.amount * q)) return;
+    if (rate && !Number.isFinite(rateTotal(rate, q))) return;
     const message = [
       `Hola, quisiera consultar una estadía en ${this.hotel().name}.`,
       `Habitación: ${this.room().name}.`,
@@ -133,7 +142,7 @@ export class Inquiry {
         `Modalidad: ${rateModeLabel(rate)}.`,
         `Estadía: ${stayDuration(rate, q)}.`,
         `Tarifa: ${rateLabel(rate)}.`,
-        `Total de referencia: ${formatMoney(rate.amount * q, rate.currency)}.`,
+        `Total de referencia: ${formatMoney(rateTotal(rate, q), rate.currency)}.`,
       );
     message.push("¿Podrían confirmar disponibilidad y condiciones?");
     window.open(
