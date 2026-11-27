@@ -10,11 +10,17 @@ export function stayDuration(rate: RateInfo, quantity: number): string {
     if (rate.mode === 'NIGHT') return `${quantity} ${quantity === 1 ? 'noche' : 'noches'}`;
     return `${quantity} ${quantity === 1 ? 'paquete' : 'paquetes'} de ${rate.packageHours} horas (${quantity * rate.packageHours!} horas en total)`;
 }
+export function effectiveRateAmount(rate: RateInfo): number {
+    return rate.effectiveAmount ?? rate.amount;
+}
+export function rateTotal(rate: RateInfo, quantity: number): number {
+    return Math.round(effectiveRateAmount(rate) * 100) * quantity / 100;
+}
 export function rateLabel(rate: RateInfo): string {
     const money = (value: number | null): string => value === null ? 'Por confirmar' : new Intl.NumberFormat('es-PE', {
         style: 'currency', currency: rate.currency,
     }).format(value);
-    if (rate.mode === 'HOUR') return `${money(rate.amount)} por hora`;
-    if (rate.mode === 'PACKAGE') return `${money(rate.amount)} por paquete de ${rate.packageHours} horas${rate.additionalHourAmount === null ? '' : ` · Hora adicional: ${money(rate.additionalHourAmount)}`}`;
-    return `${money(rate.amount)} por noche`;
+    if (rate.mode === 'HOUR') return `${money(effectiveRateAmount(rate))} por hora`;
+    if (rate.mode === 'PACKAGE') return `${money(effectiveRateAmount(rate))} por paquete de ${rate.packageHours} horas${rate.additionalHourAmount === null ? '' : ` · Hora adicional: ${money(rate.additionalHourAmount)}`}`;
+    return `${money(effectiveRateAmount(rate))} por noche`;
 }

@@ -158,9 +158,23 @@
                             <span class="catalog-rate-caption"
                               ><span class="catalog-rate-mode">{{
                                 rateModeLabel(rate)
-                              }}</span
-                              ><span class="catalog-rate-price">{{
-                                formatMoney(rate.amount, rate.currency)
+                              }}</span>
+                              @if (rate.discountPercent; as discount) {
+                                <span class="catalog-rate-offer">
+                                  <span class="visually-hidden"
+                                    >Precio original</span
+                                  >
+                                  <del>{{
+                                    formatMoney(rate.amount, rate.currency)
+                                  }}</del>
+                                  <strong>{{ discount }} % de descuento</strong>
+                                </span>
+                              }
+                              <span class="catalog-rate-price">{{
+                                formatMoney(
+                                  effectiveRateAmount(rate),
+                                  rate.currency
+                                )
                               }}</span></span
                             ><span class="catalog-rate-arrow">→</span>
                           </button>

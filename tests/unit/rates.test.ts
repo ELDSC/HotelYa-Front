@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { rateLabel } from '../../src/utils/rates';
+import { rateLabel, rateTotal } from '../../src/utils/rates';
 import type { RateInfo } from '../../src/types/catalog';
 const rate: RateInfo = { mode: 'HOUR', amount: 25, currency: 'PEN', packageHours: null, additionalHourAmount: null, simulated: true };
 it('formats hourly, package, and nightly reference prices', () => {
@@ -12,4 +12,10 @@ it('formats hourly, package, and nightly reference prices', () => {
 it('omits an additional hourly charge when the owner only configures a package price', () => {
     expect(rateLabel({ ...rate, mode: 'PACKAGE', amount: 70, packageHours: 3 })).toContain('70.00 por paquete de 3 horas');
     expect(rateLabel({ ...rate, mode: 'PACKAGE', amount: 70, packageHours: 3 })).not.toContain('Hora adicional');
+});
+
+it('uses the effective unit price for the label and the total', () => {
+    const discounted = { ...rate, discountPercent: 15, effectiveAmount: 21.25 };
+    expect(rateLabel(discounted)).toContain('21.25 por hora');
+    expect(rateTotal(discounted, 3)).toBe(63.75);
 });

@@ -141,6 +141,10 @@
         </div>
         <div class="editor-subsection">
           <h3>Tarifas</h3>
+          <p class="muted" id="room-discount-help">
+            Para ofrecer un descuento, ingresa un porcentaje entero del 5 al 95.
+            Deja el campo vacío para cobrar el precio normal.
+          </p>
           <table class="rate-table">
             <thead>
               <tr>
@@ -148,6 +152,7 @@
                 <th>Activa</th>
                 <th>Precio (S/)</th>
                 <th>Duración (horas)</th>
+                <th>Descuento (%)</th>
               </tr>
             </thead>
             <tbody formArrayName="rates">
@@ -157,7 +162,7 @@
                   [class.rate-inactive]="!rate.controls.active.value"
                 >
                   <th>{{ rate.controls.label.value }}</th>
-                  <td>
+                  <td class="rate-state">
                     <input
                       class="form-check-input"
                       type="checkbox"
@@ -169,7 +174,7 @@
                       (change)="syncRate(rate)"
                     />
                   </td>
-                  <td>
+                  <td class="rate-value" data-label="Precio (S/)">
                     <input
                       class="form-control"
                       formControlName="amount"
@@ -180,7 +185,11 @@
                       [attr.aria-label]="'Precio ' + rate.controls.label.value"
                     /><app-field-error [control]="rate.controls.amount" />
                   </td>
-                  <td>
+                  <td
+                    class="rate-value"
+                    data-label="Duración (horas)"
+                    [class.rate-empty]="rate.controls.mode.value !== 'PACKAGE'"
+                  >
                     @if (rate.controls.mode.value === "PACKAGE") {
                       <input
                         class="form-control"
@@ -195,6 +204,23 @@
                     } @else {
                       —
                     }
+                  </td>
+                  <td class="rate-value" data-label="Descuento (%)">
+                    <input
+                      class="form-control"
+                      formControlName="discountPercent"
+                      type="number"
+                      min="5"
+                      max="95"
+                      step="1"
+                      [attr.aria-label]="
+                        'Descuento ' + rate.controls.label.value
+                      "
+                      aria-describedby="room-discount-help"
+                    />
+                    <app-field-error
+                      [control]="rate.controls.discountPercent"
+                    />
                   </td>
                 </tr>
               }
