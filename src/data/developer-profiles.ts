@@ -7,7 +7,6 @@ interface DeveloperProfile {
     cv: {
         view: string;
         download: string;
-        owner?: string;
     };
 }
 
@@ -55,6 +54,6 @@ export const developerProfiles: Readonly<Partial<Record<string, DeveloperProfile
         tools: [],
         programmingLanguages: [],
         softSkills: [],
-        cv: { ...rafaelCv, owner: 'Rafael Palomino' },
+        cv: rafaelCv,
     },
 };

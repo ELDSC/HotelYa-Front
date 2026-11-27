@@ -37,10 +37,10 @@ function skills(label: string, values: readonly string[]): HTMLElement {
     return group;
 }
 
-function profileButton(member: TeamMember, open: () => void, owner?: string): HTMLButtonElement {
-    const button = element('button', 'cv-link cv-trigger', owner ? `Ver CV de ${owner}` : 'Ver CV');
+function profileButton(member: TeamMember, open: () => void): HTMLButtonElement {
+    const button = element('button', 'cv-link cv-trigger', 'Ver CV');
     button.type = 'button';
-    button.setAttribute('aria-label', `Ver CV de ${owner ?? member.name}`);
+    button.setAttribute('aria-label', `Ver CV de ${member.name}`);
     button.addEventListener('click', open);
     return button;
 }
@@ -60,11 +60,10 @@ function memberCard(member: TeamMember, kind: 'org' | 'developer', open: () => v
 
     if (profile) {
         const actions = element('div', 'cv-actions');
-        actions.append(profileButton(member, open, profile.cv.owner));
+        actions.append(profileButton(member, open));
         if (kind === 'developer') {
-            const label = `Descargar CV de ${profile.cv.owner ?? member.name}`;
-            const link = cvLink(profile.cv.download, profile.cv.owner ? label : 'Descargar CV', true);
-            link.setAttribute('aria-label', label);
+            const link = cvLink(profile.cv.download, 'Descargar CV', true);
+            link.setAttribute('aria-label', `Descargar CV de ${member.name}`);
             actions.append(link);
         }
         details.append(actions);
@@ -95,8 +94,8 @@ export function initTeam(): void {
 
         const documents = element('div', 'cv-actions');
         documents.append(
-            cvLink(profile.cv.view, profile.cv.owner ? `Abrir CV de ${profile.cv.owner}` : 'Abrir PDF completo'),
-            cvLink(profile.cv.download, profile.cv.owner ? `Descargar CV de ${profile.cv.owner}` : 'Descargar CV', true),
+            cvLink(profile.cv.view, 'Abrir PDF completo'),
+            cvLink(profile.cv.download, 'Descargar CV', true),
         );
 
         content.replaceChildren(

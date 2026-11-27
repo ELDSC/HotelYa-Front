@@ -92,10 +92,15 @@ test('el organigrama, el dueño referencial y los CV del equipo se muestran en m
     }).toBeGreaterThan(0);
     const download = await rafael.getByRole('link', { name: 'Descargar CV de Rafael Palomino' }).getAttribute('href');
     if (!download) throw new Error('Falta el enlace al CV de Rafael.');
-    await expect(christian.getByRole('link', { name: 'Descargar CV de Rafael Palomino' })).toHaveAttribute('href', download);
-    await christian.getByRole('button', { name: 'Ver CV de Rafael Palomino' }).click();
+    const christianDownload = christian.getByRole('link', { name: `Descargar CV de ${christianName}` });
+    await expect(christianDownload).toHaveAttribute('href', download);
+    await expect(christianDownload).toHaveText('Descargar CV');
+    const christianTrigger = christian.getByRole('button', { name: `Ver CV de ${christianName}` });
+    await expect(christianTrigger).toHaveText('Ver CV');
+    await christianTrigger.click();
     const christianProfile = page.getByRole('dialog', { name: christianName });
-    await expect(christianProfile.getByRole('link', { name: 'Abrir CV de Rafael Palomino' })).toBeVisible();
+    await expect(christianProfile.getByRole('link', { name: 'Abrir PDF completo' })).toBeVisible();
+    await expect(christianProfile.getByRole('link', { name: 'Descargar CV' })).toHaveAttribute('href', download);
 });
 
 test('el CV adjunto de Jessus se puede abrir y descargar como PDF', async ({ page }) => {
